@@ -1,0 +1,1518 @@
+:root {
+    --fontColor: #4C6A94;
+    --backgroundColor:  #F0F0F0;
+    --hoverColor: #D0D0D0;
+    --disabledColor: #C0C0C0;
+    --oldButtonColor: #C4D8F2;
+}
+
+html {
+    font-family: var(--font);
+    font-size: 100%;
+    color: #4C6A94;
+    background-color: #F0F0F0;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+.prevent-select {
+}
+
+#mainContainer {
+    
+    height: 610px;
+    position: relative;
+    margin-top: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    column-gap: 10px;
+    z-index: 1;
+    /* border: 1px solid black; */
+}
+
+#leftPanel {
+    width: 150px;
+    height: 610px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+/*    border: 1px solid black; */
+}
+
+#leftScrim {
+    position: absolute;
+    width: 150px;
+    height: 610px;
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    z-index: 1;
+    display: none;
+}
+
+#skipMessageBox {
+    position: absolute;
+    width: 150px;
+    height: 200px;
+    margin-top: 230px;
+    z-index: 2;
+    display: none;
+}
+
+#skipMessageText {
+    width: 125px;
+    height: 100px;
+    padding: 10px;
+    color: var(--fontColor);
+    background-color: var(--backgroundColor);
+    border: 2px solid var(--fontColor);
+    border-radius: 6px;
+    text-align: center;
+}    
+
+#titleBlock {
+    width: 150px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}    
+
+#title {
+    font-size: 200%;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+}
+
+#subTitle {
+    font-size: 120%;
+    padding: 0;
+    margin: 0;
+}
+
+.dxButton {
+    font-family: var(--font);
+    font-size: 100%;
+    color: var(--fontColor);
+    background-color: var(--backgroundColor);
+    border: 2px solid var(--fontColor);
+    border-radius: 6px;
+    width: 140px;
+    margin-top: 10px;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    text-align: center;
+    outline: none;
+}
+
+
+.disButton {
+    font-family: var(--font);
+    font-size: 100%;
+    color: var(--disabledColor);
+    background-color: var(--backgroundColor);
+    border: 2px solid var(--disabledColor);
+    border-radius: 6px;
+    width: 140px;
+    margin-top: 10px;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    text-align: center;
+}
+
+#getButton, #measureButton, #getHelpButton, #newVideoButton {
+    margin-top: 19px;
+}
+
+#whileCollectingButtons {
+    width: 150px;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 19px;
+}
+
+#doneCollecting, #cancelCollecting {
+    width: 65px;
+}
+    
+#administriviaButtons {
+    width: 150px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    z-index: 0;
+/*    border: 1px solid black; */
+}
+
+#intro {
+    margin: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 0;
+    border: 1px solid black;
+}
+
+
+#dialogContainer {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    justify-content: space-around;
+    z-index: 0;
+}
+
+
+
+#calDialogPane {
+    display: none;
+/*    position: fixed;
+    left: 0;
+    top: 0;
+    width: 1355px; */
+    position: relative;
+    height: 100%;
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    z-index: 11;
+}
+
+#calDialogContainer {
+    float: right;
+    width: 238px;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding-top: 100px;
+    z-index: 11;
+}
+
+#calDialog {
+    width: 200px;
+    height: 280px;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+}
+
+#calInstructions {
+    width: 150px;
+    margin-top: 40px;
+    font-size: 120%;
+    text-align: center;
+}
+    
+#calFields {
+    width: 130px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.inputBox {
+    width: 130px;
+    font-size: 120%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.calInput {
+    width: 50px;
+    border: 1px solid #4c6a94;
+    border-radius: 4px;
+    font-size: 80%;
+    height: 25px;
+    text-align: center;
+    margin-left: 10px;
+}
+
+#calButtons {
+    width: 180px;
+    margin-top: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#calDone, #calCancel {
+    width: 75px;
+}
+
+#vidContainer {
+    width: 960px;
+    height: 620px;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+/*    border: 1px solid black; */
+}    
+
+#videoWrapper {
+    width: 960px;
+    height: 540px;
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0;
+/*    border: 1px solid black; */
+}    
+
+#dropBox {
+    width:960px;
+    height:540px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 2px dashed #333333;
+    padding:0;
+    z-index: 10; */
+}    
+
+#theVideo {
+    display: none;
+    width: 960px;
+    top: 0;
+    left: 0;
+    height: 540px;
+    margin: 0;
+}
+
+
+#loaderDiv {
+    width:960px;
+    height:540px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#qStart {
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: left;
+    border-radius: 4px;
+    border: 2px solid var(--fontColor);
+    margin-top: 20px;
+}
+
+#qiHead {
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: left;
+    font-size: 150%;
+    font-weight: 500;
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-bottom: 0;
+}
+#quickInstructions {
+    margin: 0;
+    margin-left: 20px;
+    font-size: 120%;
+}
+
+#quickInstructions ol {
+    margin-top: 10px;
+}
+ 
+#loadInstr {
+    margin-top: 30px;
+    font-size: 150%;
+}
+
+#readInstr {
+    margin-top: 50px;
+    font-size: 150%;
+}
+
+.loadButton {
+    margin-top: 30px;
+    height: 35px;
+    padding-top: 7px;
+    width: 200px;
+    cursor: pointer;
+    font-size: 150%;
+    color: var(--fontColor);
+    background-color: var(--backgroundColor);
+    border: 2px solid var(--fontColor);
+    border-radius: 12px;
+    text-align: center;
+}
+
+@media (hover: hover) {
+.loadButton:hover {
+    background-color: var(--hoverColor);
+}
+}    
+
+#controlWrapper   {
+    width: 960px;
+    height: 30px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#videoControls {
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+}
+
+#frameCounter {
+    width: 90px;
+    font-family: courier, monospace;
+    font-weight: bold;
+    text-align: right;
+    margin: 0;
+    margin-top: 7px;
+}
+
+#skipContainer{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-right;
+}
+
+#skipText {
+    width: 100px;
+    font-size: 85%;
+}
+
+#skipInput {
+    height: 25px;
+    width: 25px;
+    background-color: #ffffff;
+    border: 1px solid #4C6A94;
+    border-radius: 2px;
+    font-family: var(--font);
+    color: var(--fontColor);
+    font-size: 120%;
+    text-align: right;
+    
+}
+
+.vcSpacer {
+    width: 10px;
+}
+
+.material-icons {
+    color: var(--fontColor);
+}
+
+.vcButton {
+    /*    background-color: #e3ecf9; */
+    width: 33px;
+    height: 30px;
+    padding: 0;
+    padding-top: 2px;
+    background-color: var(--backgroundColor);
+    border: 1px solid var(--fontColor);
+    border-radius: 2px;
+}
+
+@media (hover: hover) {
+.vcButton:hover {
+    background-color: #c4d8f2;
+    cursor: pointer;
+}
+}
+
+#progressContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+#vcProgressBar {
+    background-color: #f0f0f0;
+    border: 1px solid #4C6A94;
+    border-radius: 2px;
+    width: 470px;
+    padding: 0;
+    margin: 0;
+    height: 29px;
+}
+
+@media (hover: hover) {
+#vcProgressBar:hover {
+    cursor: pointer;
+}
+}
+
+#videoProgress {
+    background-color: var(--fontColor);
+    width: 469px;
+    max-width: 0px; /* max is 469 px */
+    height: 27px;
+    padding: 1px;
+    padding-left: 0px;
+}
+   
+#tableContainer {
+    width: 220px;
+    height: 608px;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+#logo {
+    padding: 0;
+    margin: 0;
+    margin-left: 30px;
+    margin-bottom: 10px;
+}    
+
+#tableWrapper {
+    width: 220px;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: scroll;
+    margin-top: 10px;
+}
+
+#theTable {
+    width: 200px;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.edgeClass {
+    border: 1px solid black;
+    width: 20px;
+    padding-right: 4px;
+    margin: 0;
+    text-align: right;
+    color: #ffffff;
+    background: #4c6a94;
+}
+
+.headClass {
+    border: 1px solid black;
+    width: 55px;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    color: #ffffff;
+    background: #4c6a94;
+}
+
+.cellClass {
+    border: 1px solid black;
+    width: 55px;
+    padding: 0;
+    margin: 0;
+    text-align: right;
+    padding-right: 4px;
+    font-family: sans-serif;
+    color: black;
+    font-size: 80%
+}
+
+#copyButtonWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 199px;
+    height: 154px;
+    border-top: 1px solid black;
+    padding: 0;
+    padding-left: 1px;
+    margin: 0;
+    margin-left: 2px;
+}
+
+#copyInstructions {
+    font-size: 100%;
+    margin-top: 10px;
+    height: 20px;
+}
+
+#topRowButtons {
+    width: 199px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 0;
+    margin: 0;
+}
+
+#copyXData, #copyYData {
+    width: 75px;
+}
+
+#copyBothXandY {
+    width: 150px;
+    margin: 0;
+    margin-top: 20px;
+    margin-bottom: -10px;
+}
+
+#nPlotWrapper {
+    width: 199px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding-top: 10px;
+    border-top: 2px solid #9A9A9A;
+}
+
+#nPlotLauncher {
+    width: 150px;
+    margin: 0;
+    margin-top: -2px;
+/*    padding: 0; */
+    margin-left: 4px;
+}
+
+#dataWarnContainer {
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 2;
+    padding-top: 100px;
+    margin: 0;
+    z-index: 11;
+}
+
+#dataWarnDiv {
+    width: 500px;
+    height: 230px;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    border-radius: 12px;
+    padding: 0;
+    margin: 0;
+}
+
+#dataWarnMessage {
+    width: 400px;
+    margin-top: 40px;
+    font-size: 120%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#dataWarnMessage p {
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+    text-align: center;
+}
+
+#dataWarnButtons {
+    width: 400px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#doIt, #nope {
+    width: 150px;
+}
+
+#messagePane {
+    display: none; 
+/*    display: flex; */
+    position: relative;
+    width: 1366px;
+    height: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-basis: 1366px;
+    flex-grow: 2;
+    z-index: 11;
+}
+
+#confirmCopyContainer {
+    width: 650px;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 2;
+    padding-top: 100px;
+    margin: 0;
+    z-index: 11;
+}
+
+#confirmCopyDiv {
+    width: 500px;
+    height: 80px;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+    margin-top: 100px;
+}
+
+#confirmCopyMessage {
+    margin-top: 30px;
+    font-size: 120%;
+}
+
+#confirmTZeroContainer {
+    width: 650px;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 2;
+    padding-top: 100px;
+    margin: 0;
+    z-index: 11;
+}
+
+#confirmTZeroDiv {
+    width: 500px;
+    height: 80px;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+    margin-top: 100px;
+}
+
+#confirmTZeroMessage {
+    margin-top: 30px;
+    font-size: 120%;
+}
+
+#badVideoContainer, #noVideoContainer, #largeVideoContainer {
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 2;
+    padding-top: 100px;
+    margin: 0;
+    z-index: 11;
+}
+
+#noVideoDiv {
+    width: 500px;
+    height: 180px;
+    background-color: var(--backgroundColor);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    border-radius: 12px;
+    padding: 0;
+    margin: 0;
+}
+
+#badVideoDiv {
+    width: 500px;
+    height: 270px;
+    background-color: var(--backgroundColor);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    border-radius: 12px;
+    padding: 0;
+    margin: 0;
+}
+
+#largeVideoDiv {
+    width: 500px;
+    height: 240px;
+    background-color: var(--backgroundColor);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    border-radius: 12px;
+    padding: 0;
+    margin: 0;
+}
+
+#noVideoMessage, #largeVideoMessage {
+    width: 400px;
+    margin-top: 40px;
+    font-size: 120%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#badVideoMessage {
+    width: 400px;
+    margin-top: 40px;
+    font-size: 120%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#badVideoText {
+    width: 400px;
+    text-align: left;
+}
+    
+#badVideoOKButton, #noVideoOKButton {
+    width: 150px;
+    margin-top: 20px;
+}
+
+#largeVideoOKButton {
+    width: 300px;
+    margin-top: 20px;
+}
+
+#updateMessageContainer {
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    flex-basis: 1366px;
+    flex-shrink: 0;
+    flex-grow: 2;
+    padding-top: 50px;
+    margin: 0;
+    z-index: 11;
+}
+
+#updateMessageDiv {
+    width: 900px;
+    height: min-content;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    border-radius: 12px;
+    padding: 0;
+    margin: 0;
+}
+
+#updateMessage {
+    width: 860px;
+    margin-top: 20px;
+    margin-bottom: 50px;
+    font-size: 110%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#updateMessageButton {
+    width: 50px;
+    margin-top: 20px;
+}
+
+#helpPane {
+    z-index: 11;
+    display: none; 
+/*    display: flex; */
+    position: relative;
+    width: 1366px;
+    height: 100%;
+    overflow-y: scroll;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#helpContainer {
+    width: 70%;
+    margin: auto;
+    margin-top: 50px;
+    border-radius: 12px;
+    background-color: #fefefe;
+    font-size: 110%;
+    padding-top: 30px;
+}
+
+#helpContainer ul {
+    list-style-type: none;
+    margin-left: 70px;
+    font-weight: bold;
+}
+
+#helpContainer p {
+    margin: 0;
+    margin-left: 50px;
+    margin-right: 40px;
+    margin-top: 5px;
+    text-align: justify;
+    padding: 0;
+    
+}
+#helpContainer h2,
+#helpContainer h4 {
+    margin: 0;
+    margin-left: 40px;
+    margin-top: 20px;
+}
+
+#helpClose {
+    color: #aaaaaa;
+    float: right;
+    margin-right: 40px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#helpClose:hover, #helpClose:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.TOC:link {
+    color: #4C6A94;
+    text-decoration: none;
+}
+
+.TOC:visited {
+    color: #4C6A94;
+}
+
+@media (hover: hover) {
+.TOC:hover {
+    color: #88B1E4;
+}
+}
+
+.helpLink {
+    margin-right: 20px;
+}
+
+.helpLink:link {
+    color: #4C6A94;
+    text-decoration: none;
+}
+
+.helpLink:visited {
+    color: #4C6A94;
+}
+
+@media (hover: hover) {
+.helpLink:hover {
+    color: #88B1E4;
+}
+}
+
+#aboutPane {
+    z-index: 11;
+    display: none; 
+/*    display: flex; */
+    position: relative;
+    width: 1366px;
+    height: 100%;
+    overflow-y:auto;
+    flex-direction: row;
+    justify-content: center;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#aboutContainer {
+    width: 65%;
+    height: auto;
+    overflow-y: hidden;
+    margin: auto;
+    margin-top: 50px;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    font-size: 100%;
+    padding-top: 30px;
+}
+
+.aboutPara {
+    margin: 0;
+    margin-left: 60px;
+    margin-right: 40px;
+    margin-top: 10px;
+    text-align: justify;
+    padding: 0;
+}
+
+#aboutClose {
+    color: #aaaaaa;
+    float: right;
+    margin-right: 40px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#aboutClose:hover,
+#aboutClose:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#changeLogTitle {
+    font-family: var(--font);
+    font-size: 110%;
+    font-weight: 1000;
+    color: #4C6A94;
+    margin: 0;
+    margin-top: 25px;
+    margin-left: 60px;
+    margin-right: 40px;
+}
+
+#version {
+    font-family: var(--font);
+    font-size: 120%;
+    font-weight: 900;
+    color: #4C6A94;
+}
+
+.verNumber {
+    font-family: var(--font);
+    font-size: 100%;
+    font-weight: 900;
+    color: #4C6A94;
+    margin: 0;
+    margin-left: 60px;
+    margin-right: 40px;
+    margin-top: 5px;
+    padding: 0;
+}
+
+.change {
+    font-family: var(--font);
+    font-size: 100%;
+    font-weight: 350;
+    color: #4C6A94;
+    margin: 0;
+    margin-left: 60px;
+    margin-right: 40px;
+    padding: 0;
+}
+
+.change b{
+    font-weight: 550;
+}
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: #f0f0f0;
+  color: #4c6a94;
+  text-align: center;
+  padding: 5px 0;
+  border: 1px solid #4c6a94;
+  border-radius: 6px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 11;
+  left: 105%;
+  bottom: -5%;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity .25s;
+  transition-delay: .5s;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptextR {
+  visibility: hidden;
+  background-color: #f0f0f0;
+  color: #4c6a94;
+  text-align: center;
+  padding: 5px 0;
+  border: 1px solid #4c6a94;
+  border-radius: 6px;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 11;
+  right: 105%;
+  bottom: -5%;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity .25s;
+  transition-delay: .5s;
+}
+
+.tooltiptext.fatToolTipText {
+    bottom: -35%;
+}
+
+.tooltiptextR.fatToolTipText {
+    bottom: -35%;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #4c6a94 transparent transparent;
+}
+
+.tooltip .tooltiptextR::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent #4c6a94;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+@media (hover: hover) {
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+}
+
+@media (hover: hover) {
+.tooltip:hover .tooltiptextR {
+  visibility: visible;
+  opacity: 1;
+}
+}
+
+#bottomRow {
+    width: 960px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#leftStuffContainer {
+    width: 205px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#fpsDisplay {
+    margin-top: 10px;
+}
+
+#skipFrameButton {
+    margin-top: 5px;
+    height: 28px;
+    width: 143px;
+    background-color: #f0f0f0;
+    border: 1px solid #4C6A94;
+    border-radius: 2px;
+    font-family: var(--font);
+    font-size: 100%;
+    color: #4C6A94;
+}
+
+@media (hover: hover) {
+#skipFrameButton:hover {
+    background-color: #c4d8f2;
+    cursor: pointer;
+}
+}
+
+#fileNameContainer {
+    width: 260px;
+    padding-top: 10px;
+}
+
+.muteButton {
+    /*    background-color: #e3ecf9; */
+    width: 30px;
+    height: 28px;
+    padding: 0;
+    padding-top: 2px;
+    background-color: var(--backgroundColor);
+    border: 1px solid var(--fontColor);
+    border-radius: 2px;
+}
+
+@media (hover: hover) {
+.muteButton:hover {
+    background-color: #c4d8f2;
+    cursor: pointer;
+}
+}
+
+#muteContainer {
+    width: 175px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#muteTextBox {
+    width: 150px;
+    text-align: right;
+    padding-top: 10px;
+}
+
+#muteText {
+    text-align: right;
+}
+
+#muted, #unmuted {
+    margin-top: 5px;
+}
+
+#manualFPScontainer {
+    width: 280px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+.checkBoxes {
+    display: block;
+    position: relative;
+    padding-top: 3px;
+    padding-left: 25px;
+    font-size: 15px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin-left: 15px;
+}
+
+#useManualFPS {
+    margin-top: 3px;
+}
+
+#manualFPSwrapper {
+    position: relative;
+}
+
+#manualFrameRate {
+    height: 25px;
+    width: 50px;
+    background-color: #ffffff;
+    border: 1px solid #4C6A94;
+    border-radius: 2px;
+    font-family: var(--font);
+    color: var(--fontColor);
+    font-size: 120%;
+    text-align: right;
+}
+
+#frameRateSelector {
+    display: none;
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 2px solid var(--fontColor);
+    border-radius: 6px;
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.frameRateValue {
+    text-align: center;
+    padding-top: 2px;
+    paccing-bottom: 2px;
+}
+
+@media (hover: hover) {
+.frameRateValue:hover {
+    background-color: var(--hoverColor);
+}
+}
+
+.checkBoxes input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  height: 15px;
+  width: 15px;
+  background-color:  #C4D8F2; /* #88B1E4; */
+  border-radius: 4px;
+}
+
+/* On mouse-over, add a grey background color */
+@media (hover: hover) {
+.checkBoxes:hover input ~ .checkmark {
+    background-color: #4C6A94;
+}
+}
+
+/* When the checkbox is checked, add a blue background */
+.checkBoxes input:checked ~ .checkmark {
+  background-color: #4C6A94;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.checkBoxes input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.checkBoxes .checkmark:after {
+  left: 5px;
+  top: 2px;
+  width: 3px;
+  height: 7px;
+  border: solid #C4D8F2;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.upara {
+    padding:0;
+    margin-top: -15px;
+}
+
+
+/* =====================================================================================
+   Compatibility layer (modified version, 2026)
+   - the app is a fixed 1366x620 "stage" that JS scales with transform (not CSS zoom)
+   - system fonts (the original needed a font file that is not redistributable)
+   - touch-friendly: no sticky hover, 16px inputs (no iOS focus-zoom), bigger hit areas
+   ===================================================================================== */
+/* The layout is built from fixed-size boxes and the whole stage already scales to the window, so the text size
+   must NOT follow the browser's own "font size" setting (Chrome: Settings > Appearance > Font size).
+   With "Large" selected, every label used to outgrow its box. */
+html { font-size: 16px; }
+#title, #subTitle, #skipFrameButton, #fpsDisplay, #muteTextBox, .headClass { white-space: nowrap; }
+.headClass { overflow: hidden; text-overflow: ellipsis; max-width: 55px; }
+
+:root {
+    --font: Bahnschrift, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overscroll-behavior: none;
+}
+body {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: block;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+#stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1366px;
+    height: 620px;
+    transform-origin: 0 0;
+}
+#mainContainer {
+    width: -moz-fit-content;
+    width: fit-content;
+    margin: 5px auto 0;
+}
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+canvas, #vcProgressBar {
+    touch-action: none;
+}
+button, .dxButton, .vcButton, .muteButton, #skipFrameButton {
+    -webkit-appearance: none;
+    appearance: none;
+    touch-action: manipulation;
+}
+.calInput, #skipInput, #manualFrameRate {
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 16px;
+}
+.dxButton { white-space: nowrap; }
+/* a tooltip that is still fading out must never swallow a click meant for the video */
+.tooltip .tooltiptext, .tooltip .tooltiptextR { pointer-events: none; }
+
+/* icons are inline SVG now (no web-font download); any leftover ligature text stays invisible */
+.material-icons {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    font-size: 0;
+    line-height: 0;
+    vertical-align: middle;
+}
+.material-icons svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+/* bigger invisible hit areas on touch screens, without changing the layout */
+@media (pointer: coarse) {
+    .vcButton, .muteButton, .dxButton, #skipFrameButton { position: relative; }
+    .vcButton::after, .muteButton::after, .dxButton::after, #skipFrameButton::after {
+        content: "";
+        position: absolute;
+        left: -6px; right: -6px; top: -6px; bottom: -6px;
+    }
+}
+
+/* new controls */
+/* Instructions, About and New video stay usable while the guided setup dims the other buttons */
+#getHelpButton, #newVideoButton, #aboutWrap { z-index: 11; }
+#skipMessageText { height: auto; }
+#skipStepButton { display: block; width: 110px; margin: 10px auto 0; }
+#skipText { width: 170px; line-height: 1.15; }
+.checkBoxes { white-space: nowrap; }
+#fileNameContainer { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#logoDiv { height: 34px; }
+#creditLink {
+    display: block;
+    margin: 4px 0 0 30px;
+    font-size: 80%;
+    line-height: 1.2;
+    color: var(--fontColor);
+    text-decoration: none;
+}
+#extraCopyOptions {
+    width: 199px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 6px;
+}
+#extraCopyOptions .dxButton { width: 150px; margin-top: 6px; }
+#includeHeadingsLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 85%;
+    cursor: pointer;
+}
+#includeHeadings { width: 16px; height: 16px; margin: 0; accent-color: #4C6A94; }
+#fitTip {
+    display: none;
+    position: fixed;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    max-width: 90%;
+    padding: 6px 10px 6px 14px;
+    background-color: var(--backgroundColor);
+    color: var(--fontColor);
+    border: 2px solid var(--fontColor);
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 100;
+    align-items: center;
+    gap: 10px;
+}
+#fitTip button {
+    background: none;
+    border: none;
+    color: var(--fontColor);
+    font-size: 22px;
+    line-height: 1;
+    padding: 0 4px;
+}

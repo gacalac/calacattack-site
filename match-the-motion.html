@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Match the Motion — Kinematics Card Deck</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #eef2ec;
+    --paper-line: #d9e1d4;
+    --card: #fbfbf8;
+    --ink: #1f2b22;
+    --ink-soft: #52604f;
+    --rail: #c4cfbe;
+    --green: #2e7d32;
+    --green-soft: #e4efe1;
+    --red: #a63a2c;
+    --red-soft: #f7e5e0;
+    --blue: #2c5f8a;
+    --blue-soft: #e2ecf3;
+    --gold: #b9812c;
+    --gold-soft: #f6ecd8;
+    --tan: #cbb37a;
+    --tan-soft: #f3ecd9;
+    --shadow: rgba(31,43,34,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #161d18; --paper-line: #212b21; --card: #1f281f;
+      --ink: #eaf1e6; --ink-soft: #a9b8a3; --rail: #3a4838;
+      --green: #6bbf73; --green-soft: #22321f;
+      --red: #e2897a; --red-soft: #3a2320;
+      --blue: #8fb8dd; --blue-soft: #22303a;
+      --gold: #e0b767; --gold-soft: #3a3020;
+      --tan: #cdb989; --tan-soft: #34301f;
+      --shadow: rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #161d18; --paper-line: #212b21; --card: #1f281f;
+    --ink: #eaf1e6; --ink-soft: #a9b8a3; --rail: #3a4838;
+    --green: #6bbf73; --green-soft: #22321f;
+    --red: #e2897a; --red-soft: #3a2320;
+    --blue: #8fb8dd; --blue-soft: #22303a;
+    --gold: #e0b767; --gold-soft: #3a3020;
+    --tan: #cdb989; --tan-soft: #34301f;
+    --shadow: rgba(0,0,0,0.4);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 28px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    padding-bottom:210px;
+    min-height:100vh;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px;}
+
+  header.top{
+    position:sticky; top:0; z-index:30;
+    background:var(--paper); border-bottom:2px solid var(--ink);
+    padding:12px 0 10px;
+  }
+  header.top .row{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;}
+  h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.4rem; margin:0 0 2px; letter-spacing:-0.01em;}
+  header.top p{margin:0; color:var(--ink-soft); font-size:0.86rem; max-width:56ch; line-height:1.4;}
+  .statline{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .score-pill{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.9rem;
+    background:var(--card); border:2px solid var(--ink); border-radius:999px; padding:5px 13px; white-space:nowrap;
+  }
+  .name-field{display:flex; align-items:center; gap:6px; font-size:0.82rem; color:var(--ink-soft);}
+  .name-field input{
+    font-family:'Inter',sans-serif; font-size:0.88rem; padding:5px 9px;
+    border:2px solid var(--rail); border-radius:6px; background:var(--card); color:var(--ink); width:150px;
+  }
+  .name-field input:focus{outline:2px solid var(--blue); outline-offset:1px;}
+  button.reset-btn{
+    font-family:'Inter',sans-serif; font-size:0.78rem; color:var(--ink-soft);
+    background:none; border:1px solid var(--rail); border-radius:6px; padding:5px 9px; cursor:pointer;
+  }
+  button.reset-btn:hover{background:var(--card);}
+
+  .intro{
+    margin:14px 0 14px; padding:12px 14px; background:var(--card);
+    border-left:4px solid var(--blue); border-radius:4px; font-size:0.88rem; line-height:1.48;
+  }
+
+  .pagebar{
+    display:flex; align-items:center; gap:8px; margin:0 0 16px; flex-wrap:wrap;
+  }
+  .pagebar .navbtn{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1rem;
+    background:var(--card); border:2px solid var(--ink); border-radius:6px;
+    width:34px; height:34px; cursor:pointer; flex:0 0 auto;
+  }
+  .pagebar .navbtn:disabled{opacity:0.35; cursor:default;}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  button.pagetab{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.9rem;
+    width:34px; height:34px; border-radius:6px; border:2px solid var(--rail);
+    background:var(--card); color:var(--ink); cursor:pointer;
+  }
+  button.pagetab.active{border-color:var(--ink); box-shadow:0 0 0 2px var(--ink) inset;}
+  button.pagetab.partial{background:var(--gold-soft); border-color:var(--gold);}
+  button.pagetab.solved{background:var(--green-soft); border-color:var(--green); color:var(--green);}
+
+  .banner{
+    display:none; margin:0 0 18px; padding:16px 18px; border-radius:8px;
+    background:var(--gold-soft); border:2px solid var(--gold); text-align:center;
+  }
+  .banner.show{display:block;}
+  .banner h2{margin:0 0 6px; font-family:'Space Grotesk',sans-serif; font-size:1.2rem;}
+  .banner p{margin:4px 0; font-size:0.92rem;}
+
+  .page{
+    background:var(--card); border:1.5px solid var(--rail); border-radius:8px;
+    padding:16px 18px 18px; margin-bottom:18px;
+  }
+  .page-head{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .page-num{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.95rem;
+    background:var(--ink); color:var(--paper); border-radius:999px; padding:3px 12px; flex:0 0 auto;
+  }
+  .setup-strip{flex:1; max-width:280px;}
+  .setup-strip svg{width:100%; height:auto; display:block;}
+
+  .cols{display:grid; grid-template-columns:1.35fr 1fr; gap:18px;}
+  @media (max-width:680px){ .cols{grid-template-columns:1fr;} }
+
+  .colhead{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.85rem; color:var(--ink-soft); margin:0 0 8px;}
+
+  .graph-row{margin-bottom:10px;}
+  .graph-row .lbl{font-size:0.72rem; font-weight:600; color:var(--ink-soft); margin:0 0 3px;}
+  button.slot{
+    width:100%; min-height:104px; border:2.5px dashed var(--rail); border-radius:6px;
+    background:transparent; display:flex; align-items:center; justify-content:center;
+    padding:5px; cursor:pointer; font-size:0.8rem; color:var(--ink-soft); text-align:center;
+  }
+  button.slot:hover{border-color:var(--blue); background:rgba(44,95,138,0.06);}
+  button.slot:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  button.slot svg{width:100%; height:auto;}
+  button.slot.correct{border-style:solid; border-color:var(--green); background:var(--green-soft); cursor:default;}
+  button.slot.wrong{border-style:solid; border-color:var(--red); background:var(--red-soft); animation:shake 0.45s;}
+  button.slot.locked{background:repeating-linear-gradient(135deg, var(--paper-line), var(--paper-line) 6px, transparent 6px, transparent 12px); cursor:not-allowed; color:var(--ink-soft);}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(4px);}
+    30%,50%,70%{transform:translateX(-7px);} 40%,60%{transform:translateX(7px);}
+  }
+  .accel-box{
+    min-height:70px; border:2px solid var(--rail); border-radius:6px; display:flex; align-items:center; justify-content:center;
+    background:var(--paper); font-size:0.78rem; color:var(--ink-soft); text-align:center; padding:6px;
+  }
+  .accel-box svg{width:100%; height:auto;}
+
+  .status-row{display:flex; align-items:center; gap:8px; margin-top:4px; min-height:20px; flex-wrap:wrap;}
+  .status-text{font-size:0.78rem; font-weight:600;}
+  .status-text.correct{color:var(--green);}
+  .status-text.wrong{color:var(--red);}
+  button.hint-btn{
+    font-size:0.74rem; background:none; color:var(--gold); border:1px solid var(--gold);
+    border-radius:5px; padding:2px 8px; cursor:pointer; display:none;
+  }
+  button.hint-btn.show{display:inline-block;}
+  .hint-text{display:none; font-size:0.78rem; margin-top:5px; padding:7px 9px; background:var(--gold-soft); border-radius:5px; line-height:1.4;}
+  .hint-text.show{display:block;}
+
+  .desc-col .slot{min-height:150px;}
+  .desc-preview{font-size:0.78rem; line-height:1.5; text-align:left; padding:4px;}
+  .desc-preview b{color:var(--ink);}
+
+  .reveal{display:none; margin-top:14px; padding-top:12px; border-top:1px dashed var(--rail);}
+  .reveal.show{display:block;}
+  .reveal h3{margin:0 0 4px; font-family:'Space Grotesk',sans-serif; font-size:0.95rem; color:var(--green);}
+  .reveal p{margin:0 0 8px; font-size:0.84rem; line-height:1.5;}
+  .reveal .mm-box svg{width:100%; height:auto;}
+
+  footer.tray-wrap{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:var(--card); border-top:2px solid var(--ink); box-shadow:0 -6px 18px var(--shadow);
+    padding:8px 14px 12px;
+  }
+  .tray-head{max-width:900px; margin:0 auto 6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;}
+  .decktabs{display:flex; gap:6px;}
+  button.decktab{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:0.8rem;
+    background:var(--paper); border:2px solid var(--rail); border-radius:999px; padding:5px 13px; cursor:pointer;
+  }
+  button.decktab.active{border-color:var(--ink); background:var(--card);}
+  .tray-head p{margin:0; font-size:0.76rem; color:var(--ink-soft);}
+  .tray-track{max-width:900px; margin:0 auto; display:flex; gap:9px; overflow-x:auto; padding:2px 2px 4px; min-height:96px;}
+  button.tray-card{
+    flex:0 0 auto; width:104px; background:var(--paper); border:2.5px solid var(--rail);
+    border-radius:6px; padding:4px; cursor:pointer;
+  }
+  button.tray-card.desc-card{width:150px; background:var(--tan-soft); border-color:var(--tan);}
+  button.tray-card svg{width:100%; height:auto; display:block;}
+  button.tray-card .desc-mini{font-size:0.66rem; line-height:1.35; text-align:left; color:var(--ink);}
+  button.tray-card:hover{border-color:var(--blue);}
+  button.tray-card:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  button.tray-card.selected{border-color:var(--blue); border-style:solid; box-shadow:0 0 0 3px rgba(44,95,138,0.18); background:var(--blue-soft);}
+  .empty-deck{font-size:0.8rem; color:var(--ink-soft); padding:20px 8px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:198px; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:8px 16px; border-radius:6px;
+    font-size:0.84rem; opacity:0; pointer-events:none; transition:opacity 0.25s; z-index:50; max-width:80vw; text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  @media (prefers-reduced-motion: reduce){ .slot.wrong{animation:none;} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap row">
+    <div>
+      <h1>Match the Motion</h1>
+      <p>Page through all six carts. Place a position graph and a velocity graph on each page — then unlock and place its description card.</p>
+    </div>
+    <div class="statline">
+      <span class="score-pill" id="scoreDisplay">0 / 6 pages solved</span>
+      <span class="name-field">Name: <input type="text" id="nameInput" placeholder="Type your name" autocomplete="off"></span>
+      <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+      <span id="resetConfirm" style="display:none; font-size:0.78rem; color:var(--ink-soft); align-items:center; gap:6px;">
+        Erase all progress?
+        <button type="button" id="resetYes" style="font-size:0.78rem; padding:3px 8px; border:1px solid var(--red); background:var(--red-soft); color:var(--red); border-radius:5px; cursor:pointer;">Yes, reset</button>
+        <button type="button" id="resetNo" style="font-size:0.78rem; padding:3px 8px; border:1px solid var(--rail); background:none; color:var(--ink-soft); border-radius:5px; cursor:pointer;">Cancel</button>
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="intro">
+    Each page only shows the cart's starting setup — no graphs given. Figure out which <b style="color:var(--green)">position graph</b>
+    and which <b style="color:var(--red)">velocity graph</b> belong to it using the deck below. Get both right and the acceleration
+    graph reveals itself. Then a <b style="color:var(--gold)">description card</b> unlocks — match that too, and the full motion map
+    appears. Watch out: a couple of setups look identical at a glance — the graphs and description will tell them apart.
+  </div>
+
+  <div class="banner" id="completeBanner">
+    <h2>🎉 All six pages complete!</h2>
+    <p>Nice work, <span id="bannerName">—</span>. Every page is fully matched and revealed.</p>
+    <p><strong>Take a screenshot of this page (with your name in the header above) and upload it to the Canvas assignment.</strong></p>
+  </div>
+
+  <div class="pagebar">
+    <button class="navbtn" id="prevBtn" type="button" aria-label="previous page">‹</button>
+    <div class="tabs" id="pageTabs"></div>
+    <button class="navbtn" id="nextBtn" type="button" aria-label="next page">›</button>
+  </div>
+
+  <div id="pageContainer"></div>
+
+</div>
+
+<footer class="tray-wrap">
+  <div class="tray-head">
+    <div class="decktabs">
+      <button class="decktab active" id="tabGraphs" type="button">Graphs</button>
+      <button class="decktab" id="tabDesc" type="button">Descriptions</button>
+    </div>
+    <p id="deckCount"></p>
+  </div>
+  <div class="tray-track" id="trayTrack"></div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const T = 6;
+  const V_SCALE = 2.4;
+  const STORAGE_KEY = "motion_matchup_state_v2";
+  const WRONG_THRESHOLD = 2;
+
+  const SCENARIOS = [
+    {
+      id:1, side:'left', arrow:null, x0:0, v0:0, a:0.2,
+      title:"Speeding Up — Moving Right",
+      posHint:"The cart starts at rest at 0 and speeds up moving right the whole time — position should start flat at 0 and curve upward more and more steeply, never turning back.",
+      velHint:"Velocity starts at 0 (matches V\u2080 = 0) and increases steadily in the + direction the whole time.",
+      descHint:"Look for the card whose velocity line starts at 0 and only ever goes positive — one direction, speeding up.",
+      descLines:[
+        "Position: starts at 0, ends greater than 0. Slope positive &amp; increasing.",
+        "Velocity: starts at 0, ends greater than 0. Traveling +, speeding up.",
+        "Acceleration: constant, positive (+)."
+      ]
+    },
+    {
+      id:2, side:'right', arrow:null, x0:3.6, v0:0, a:-0.2,
+      title:"Speeding Up — Moving Left",
+      posHint:"The cart starts at rest to the right of 0 and speeds up moving left the whole time — position should start high and curve down to 0, getting steeper as it falls, never turning back.",
+      velHint:"Velocity starts at 0 (matches V\u2080 = 0) and becomes more and more negative the whole time.",
+      descHint:"Look for the card whose velocity line starts at 0 and only ever goes negative — one direction, speeding up.",
+      descLines:[
+        "Position: starts greater than 0, ends at 0. Slope negative &amp; increasing (steeper).",
+        "Velocity: starts at 0, ends less than 0. Traveling \u2212, speeding up.",
+        "Acceleration: constant, negative (\u2212)."
+      ]
+    },
+    {
+      id:3, side:'left', arrow:'right', x0:0, v0:2.4, a:-0.4,
+      title:"Slowing Down — Moving Right",
+      posHint:"The cart starts moving right and slows the whole trip, but it never turns around — position should rise from 0 and flatten out (never come back down).",
+      velHint:"Velocity starts positive (matches V\u2080 &gt; 0) and shrinks steadily toward 0 \u2014 but never becomes negative, since the cart never reverses.",
+      descHint:"This description should say the cart slows to a stop \u2014 not that it reverses. Match that against the velocity graph you placed.",
+      descLines:[
+        "Position: starts at 0, ends greater than 0. Slope positive &amp; decreasing.",
+        "Velocity: starts greater than 0, ends at 0. Traveling +, slowing down.",
+        "Acceleration: constant, negative (\u2212)."
+      ]
+    },
+    {
+      id:4, side:'right', arrow:'left', x0:7.2, v0:-2.4, a:0.4,
+      title:"Slowing Down — Moving Left",
+      posHint:"The cart starts moving left and slows the whole trip, but it never turns around — position should fall from a positive value and flatten out at 0 (never dip below or bounce back up).",
+      velHint:"Velocity starts negative (matches V\u2080 &lt; 0) and rises steadily toward 0 \u2014 but never becomes positive, since the cart never reverses.",
+      descHint:"This description should say the cart slows to a stop \u2014 not that it reverses. Match that against the velocity graph you placed.",
+      descLines:[
+        "Position: starts greater than 0, ends at 0. Slope negative &amp; decreasing.",
+        "Velocity: starts less than 0, ends at 0. Traveling \u2212, slowing down.",
+        "Acceleration: constant, positive (+)."
+      ]
+    },
+    {
+      id:5, side:'left', arrow:'right', x0:0, v0:2.4, a:-0.8,
+      title:"Moving Right, Then Reverses Left",
+      posHint:"The cart starts moving right, slows, stops for an instant, then comes back \u2014 position should rise to a peak and then fall back down to 0.",
+      velHint:"Velocity starts positive (matches V\u2080 &gt; 0), crosses through 0 at the peak, and ends up negative.",
+      descHint:"This description should say the cart reverses direction \u2014 not that it just stops. Match that against the velocity graph you placed.",
+      descLines:[
+        "Position: starts at 0, rises, returns to 0. Slope + then \u2212, zero at the peak.",
+        "Velocity: starts greater than 0, crosses 0, ends less than 0. Reverses direction.",
+        "Acceleration: constant, negative (\u2212)."
+      ]
+    },
+    {
+      id:6, side:'right', arrow:'left', x0:3.6, v0:-2.4, a:0.8,
+      title:"Moving Left, Then Reverses Right",
+      posHint:"The cart starts moving left, slows, stops for an instant, then comes back \u2014 position should dip down to 0 and then rise back up.",
+      velHint:"Velocity starts negative (matches V\u2080 &lt; 0), crosses through 0 at the bottom, and ends up positive.",
+      descHint:"This description should say the cart reverses direction \u2014 not that it just stops. Match that against the velocity graph you placed.",
+      descLines:[
+        "Position: starts greater than 0, dips to 0, rises again. Slope \u2212 then +, zero at the bottom.",
+        "Velocity: starts less than 0, crosses 0, ends greater than 0. Reverses direction.",
+        "Acceleration: constant, positive (+)."
+      ]
+    }
+  ];
+
+  const GRAPH_DECK_ORDER = [
+    {type:'xt',id:4},{type:'vt',id:1},{type:'xt',id:6},{type:'vt',id:3},
+    {type:'xt',id:1},{type:'vt',id:5},{type:'xt',id:3},{type:'vt',id:6},
+    {type:'xt',id:5},{type:'vt',id:2},{type:'xt',id:2},{type:'vt',id:4}
+  ];
+  const DESC_DECK_ORDER = [3,6,1,4,2,5];
+
+  function computePoints(scn, steps){
+    steps = steps || 30;
+    const pts = [];
+    for(let i=0;i<=steps;i++){
+      const t = i*T/steps;
+      pts.push({ t:t, x: scn.x0 + scn.v0*t + 0.5*scn.a*t*t, v: scn.v0 + scn.a*t });
+    }
+    return pts;
+  }
+  SCENARIOS.forEach(function(scn){
+    scn.points = computePoints(scn);
+    const xs = scn.points.map(function(p){ return p.x; });
+    scn.xMax = Math.max.apply(null, xs.concat([0]));
+    scn.xMin = Math.min.apply(null, xs.concat([0]));
+  });
+  function byId(id){ for(let i=0;i<SCENARIOS.length;i++){ if(SCENARIOS[i].id===id) return SCENARIOS[i]; } return null; }
+
+  // ---------- SVG helpers ----------
+  function arrowMarkup(x1,y,len,dir,color,sw){
+    sw = sw||3;
+    const x2 = x1 + dir*len, head = 6, backX = x2 - dir*head;
+    return '<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+color+'" stroke-width="'+sw+'" stroke-linecap="round"/>'+
+      '<polygon points="'+x2+','+y+' '+backX+','+(y-head*0.65)+' '+backX+','+(y+head*0.65)+'" fill="'+color+'"/>';
+  }
+  const GL=44, GR=222, GTOP=20, GBASE=150;
+  function xPix(t){ return GL + (t/T)*(GR-GL); }
+  function yPixPos(scn,xval){ const range=(scn.xMax-scn.xMin)||1; return GBASE - ((xval-scn.xMin)/range)*(GBASE-GTOP); }
+  function yPixVel(v){ return 85 - (v/V_SCALE)*63; }
+
+  function axesXT(){
+    return '<line x1="'+GL+'" y1="12" x2="'+GL+'" y2="'+(GBASE+2)+'" stroke="var(--ink)" stroke-width="1.5"/>'+
+      '<polygon points="'+GL+',8 '+(GL-4)+',16 '+(GL+4)+',16" fill="var(--ink)"/>'+
+      '<line x1="'+(GL-2)+'" y1="'+GBASE+'" x2="230" y2="'+GBASE+'" stroke="var(--ink)" stroke-width="1.5"/>'+
+      '<polygon points="234,'+GBASE+' 226,'+(GBASE-4)+' 226,'+(GBASE+4)+'" fill="var(--ink)"/>'+
+      '<text x="'+(GL-8)+'" y="10" font-size="12" fill="var(--ink)" font-weight="700" text-anchor="middle">+</text>'+
+      '<text x="'+(GL-9)+'" y="'+(GBASE+5)+'" font-size="11" fill="var(--ink)" text-anchor="end">0</text>'+
+      '<text x="228" y="'+(GBASE+16)+'" font-size="11" fill="var(--ink-soft)" text-anchor="end">t</text>';
+  }
+  function axesVT(){
+    return '<line x1="'+GL+'" y1="14" x2="'+GL+'" y2="156" stroke="var(--ink)" stroke-width="1.5"/>'+
+      '<polygon points="'+GL+',10 '+(GL-4)+',18 '+(GL+4)+',18" fill="var(--ink)"/>'+
+      '<polygon points="'+GL+',160 '+(GL-4)+',152 '+(GL+4)+',152" fill="var(--ink)"/>'+
+      '<line x1="'+(GL-2)+'" y1="85" x2="230" y2="85" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="2 3"/>'+
+      '<polygon points="234,85 226,81 226,89" fill="var(--ink)"/>'+
+      '<text x="'+(GL-8)+'" y="10" font-size="12" fill="var(--ink)" font-weight="700" text-anchor="middle">+</text>'+
+      '<text x="'+(GL-8)+'" y="168" font-size="12" fill="var(--ink)" font-weight="700" text-anchor="middle">\u2212</text>'+
+      '<text x="'+(GL-9)+'" y="89" font-size="11" fill="var(--ink)" text-anchor="end">0</text>'+
+      '<text x="228" y="96" font-size="11" fill="var(--ink-soft)" text-anchor="end">t</text>';
+  }
+  function svgXT(scn){
+    const d = scn.points.map(function(p,i){ return (i===0?'M':'L') + xPix(p.t).toFixed(1) + ',' + yPixPos(scn,p.x).toFixed(1); }).join(' ');
+    return '<svg viewBox="0 0 240 175" role="img" aria-label="position versus time graph">' + axesXT() +
+      '<path d="'+d+'" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function svgVT(scn){
+    const p0 = scn.points[0], p1 = scn.points[scn.points.length-1];
+    const d = 'M '+xPix(p0.t).toFixed(1)+','+yPixVel(p0.v).toFixed(1)+' L '+xPix(p1.t).toFixed(1)+','+yPixVel(p1.v).toFixed(1);
+    return '<svg viewBox="0 0 240 175" role="img" aria-label="velocity versus time graph">' + axesVT() +
+      '<path d="'+d+'" fill="none" stroke="var(--red)" stroke-width="4" stroke-linecap="round"/></svg>';
+  }
+  function svgAccel(scn){
+    const y = scn.a>0 ? yPixVel(1.3) : yPixVel(-1.3);
+    return '<svg viewBox="0 0 240 175" role="img" aria-label="acceleration versus time graph">' + axesVT() +
+      '<line x1="'+GL+'" y1="'+y+'" x2="222" y2="'+y+'" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/></svg>';
+  }
+  function lerpY(x,x1,y1,x2,y2){ return y1 + (y2-y1)*((x-x1)/(x2-x1)); }
+
+  function svgSetup(scn){
+    // The raised end of the ramp is always the uphill end: the cart accelerates
+    // downhill, so the raised side is opposite the sign of the acceleration.
+    const elevated = scn.a > 0 ? 'left' : 'right';
+    const RX1=18, RX2=206;
+    let topY1, topY2, wedgePts, arrowTip, labelZero, labelPlus;
+
+    if(elevated === 'left'){
+      topY1 = 40; topY2 = 72; // top surface: high at left, low at right
+      wedgePts = RX1+','+topY1+' '+RX2+','+topY2+' '+RX2+','+(topY2+6)+' '+RX1+','+(topY1+28);
+      arrowTip = {x:RX2, y:topY2};
+      labelZero = {x:4, y:topY1+16};
+      labelPlus = {x:RX2-10, y:topY2-10};
+    } else {
+      topY1 = 72; topY2 = 40; // top surface: low at left, high at right
+      wedgePts = RX1+','+topY1+' '+RX2+','+topY2+' '+RX2+','+(topY2+28)+' '+RX1+','+(topY1+6);
+      arrowTip = {x:RX2, y:topY2};
+      labelZero = {x:4, y:topY1+10};
+      labelPlus = {x:RX2-10, y:topY2-8};
+    }
+
+    const dx = RX2-RX1, dy = topY2-topY1, len = Math.sqrt(dx*dx+dy*dy);
+    const ux = dx/len, uy = dy/len, px = -uy, py = ux, head=6;
+    const backX = arrowTip.x-ux*head, backY = arrowTip.y-uy*head;
+    const headL = (backX+px*head*0.7).toFixed(1)+','+(backY+py*head*0.7).toFixed(1);
+    const headR = (backX-px*head*0.7).toFixed(1)+','+(backY-py*head*0.7).toFixed(1);
+
+    const cartX = scn.side==='left' ? 30 : 168;
+    const cartTopY = lerpY(cartX, RX1, topY1, RX2, topY2);
+    const cartY = cartTopY - 15;
+    const arrowY = cartY - 7;
+    const labelY = cartY - 19;
+
+    let arrowHtml='', v0Label='V\u2080 = 0';
+    if(scn.arrow==='right'){ arrowHtml = arrowMarkup(cartX+4, arrowY, 30, 1, 'var(--red)'); v0Label='V\u2080 > 0'; }
+    else if(scn.arrow==='left'){ arrowHtml = arrowMarkup(cartX+28, arrowY, 30, -1, 'var(--red)'); v0Label='V\u2080 < 0'; }
+
+    return '<svg viewBox="0 0 240 100" role="img" aria-label="starting setup diagram: cart on an inclined ramp">' +
+      '<polygon points="'+wedgePts+'" fill="var(--rail)" stroke="var(--ink-soft)" stroke-width="1"/>' +
+      '<line x1="'+RX1+'" y1="'+topY1+'" x2="'+arrowTip.x+'" y2="'+arrowTip.y+'" stroke="var(--ink)" stroke-width="2.5"/>' +
+      '<polygon points="'+arrowTip.x+','+arrowTip.y+' '+headL+' '+headR+'" fill="var(--ink)"/>' +
+      '<text x="'+labelZero.x+'" y="'+labelZero.y+'" font-size="11" fill="var(--ink-soft)">0(m)</text>' +
+      '<text x="'+labelPlus.x+'" y="'+labelPlus.y+'" font-size="13" fill="var(--ink)" font-weight="700">+</text>' +
+      '<rect x="'+(cartX)+'" y="'+cartY+'" width="30" height="15" rx="3" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/>' +
+      '<circle cx="'+(cartX+7)+'" cy="'+(cartY+15)+'" r="3" fill="var(--ink)"/>' +
+      '<circle cx="'+(cartX+23)+'" cy="'+(cartY+15)+'" r="3" fill="var(--ink)"/>' +
+      '<text x="'+(cartX+15)+'" y="'+labelY+'" font-size="11" fill="var(--red)" font-weight="700" text-anchor="middle">'+v0Label+'</text>' +
+      arrowHtml + '</svg>';
+  }
+  function svgMotionMap(scn){
+    const times = [0, T*0.25, T*0.5, T*0.75, T];
+    const range = (scn.xMax-scn.xMin) || 1;
+    let dots = '';
+    times.forEach(function(t){
+      const x = scn.x0 + scn.v0*t + 0.5*scn.a*t*t;
+      const v = scn.v0 + scn.a*t;
+      const xp = 36 + ((x-scn.xMin)/range)*564;
+      dots += '<circle cx="'+xp.toFixed(1)+'" cy="70" r="6" fill="var(--red)"/>';
+      const vLen = Math.min(46, Math.max(0, Math.abs(v)*15));
+      if(vLen > 3){ const vDir = v>0?1:-1; dots += arrowMarkup(xp - vDir*4, 52, vLen, vDir, 'var(--red)', 2.6); }
+      const aDir = scn.a>0?1:-1;
+      dots += arrowMarkup(xp - aDir*10, 34, 20, aDir, 'var(--blue)', 2.6);
+    });
+    return '<svg viewBox="0 0 620 92" role="img" aria-label="motion map">' +
+      '<line x1="30" y1="70" x2="596" y2="70" stroke="var(--ink)" stroke-width="2"/>' +
+      '<polygon points="604,70 594,65 594,75" fill="var(--ink)"/>' +
+      '<text x="30" y="86" font-size="10" fill="var(--ink-soft)">0</text>' +
+      '<text x="600" y="86" font-size="11" fill="var(--ink)" font-weight="700" text-anchor="end">+</text>' +
+      '<circle cx="4" cy="12" r="4" fill="var(--red)"/><text x="12" y="16" font-size="10" fill="var(--ink-soft)">velocity</text>' +
+      '<circle cx="78" cy="12" r="4" fill="var(--blue)"/><text x="86" y="16" font-size="10" fill="var(--ink-soft)">acceleration</text>' +
+      dots + '</svg>';
+  }
+  function descHTML(scn){
+    return '<div class="desc-preview">' + scn.descLines.map(function(l){ return '<div>'+l+'</div>'; }).join('') + '</div>';
+  }
+
+  // ---------- State ----------
+  let STATE = { name:"", pos:{}, vel:{}, desc:{}, currentPage:1 };
+  SCENARIOS.forEach(function(s){
+    STATE.pos[s.id] = {correct:false, wrong:0};
+    STATE.vel[s.id] = {correct:false, wrong:0};
+    STATE.desc[s.id] = {correct:false, wrong:0};
+  });
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const p = JSON.parse(raw);
+        if(p && typeof p === "object"){
+          STATE.name = p.name || "";
+          STATE.currentPage = p.currentPage || 1;
+          ["pos","vel","desc"].forEach(function(k){
+            SCENARIOS.forEach(function(s){
+              if(p[k] && p[k][s.id]){
+                STATE[k][s.id].correct = !!p[k][s.id].correct;
+                STATE[k][s.id].wrong = p[k][s.id].wrong|0;
+              }
+            });
+          });
+        }
+      }
+    }catch(e){}
+  }
+  function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){} }
+
+  function pageUnlocked(id){ return STATE.pos[id].correct && STATE.vel[id].correct; }
+  function pageSolved(id){ return pageUnlocked(id) && STATE.desc[id].correct; }
+  function pageStatus(id){
+    if(pageSolved(id)) return 'solved';
+    if(STATE.pos[id].correct || STATE.vel[id].correct || STATE.desc[id].correct) return 'partial';
+    return 'none';
+  }
+
+  // ---------- UI refs ----------
+  let selectedCard = null; // {type:'xt'|'vt'|'desc', id}
+  let activeDeckTab = 'graphs';
+  const pageTabsEl = document.getElementById("pageTabs");
+  const pageContainer = document.getElementById("pageContainer");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const completeBanner = document.getElementById("completeBanner");
+  const bannerName = document.getElementById("bannerName");
+  const nameInput = document.getElementById("nameInput");
+  const trayTrack = document.getElementById("trayTrack");
+  const deckCount = document.getElementById("deckCount");
+  const toast = document.getElementById("toast");
+  let toastTimer = null;
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 1900);
+  }
+
+  function clearSelection(){
+    selectedCard = null;
+    document.querySelectorAll(".tray-card.selected").forEach(function(el){ el.classList.remove("selected"); });
+  }
+
+  // ---------- Deck rendering ----------
+  function renderDeck(){
+    trayTrack.innerHTML = "";
+    if(activeDeckTab === 'graphs'){
+      const remaining = GRAPH_DECK_ORDER.filter(function(c){
+        return c.type === 'xt' ? !STATE.pos[c.id].correct : !STATE.vel[c.id].correct;
+      });
+      deckCount.textContent = remaining.length + " graph card" + (remaining.length===1?"":"s") + " left";
+      if(remaining.length === 0){
+        trayTrack.innerHTML = '<div class="empty-deck">All graph cards placed. Switch to the Descriptions tab \u2192</div>';
+      }
+      remaining.forEach(function(c){
+        const scn = byId(c.id);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tray-card";
+        const key = c.type+"-"+c.id;
+        btn.dataset.key = key;
+        btn.innerHTML = c.type === 'xt' ? svgXT(scn) : svgVT(scn);
+        btn.setAttribute("aria-label", (c.type==='xt'?'position':'velocity') + " graph card");
+        if(selectedCard && selectedCard.type===c.type && selectedCard.id===c.id) btn.classList.add("selected");
+        btn.addEventListener("click", function(){ onDeckCardClick(c.type, c.id); });
+        trayTrack.appendChild(btn);
+      });
+    } else {
+      const remaining = DESC_DECK_ORDER.filter(function(id){ return !STATE.desc[id].correct; });
+      deckCount.textContent = remaining.length + " description card" + (remaining.length===1?"":"s") + " left";
+      if(remaining.length === 0){
+        trayTrack.innerHTML = '<div class="empty-deck">All description cards placed. Activity complete!</div>';
+      }
+      remaining.forEach(function(id){
+        const scn = byId(id);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tray-card desc-card";
+        const key = "desc-"+id;
+        btn.dataset.key = key;
+        btn.innerHTML = '<div class="desc-mini">'+scn.descLines.map(function(l){ return '<div>'+l+'</div>'; }).join('')+'</div>';
+        btn.setAttribute("aria-label","description card");
+        if(selectedCard && selectedCard.type==='desc' && selectedCard.id===id) btn.classList.add("selected");
+        btn.addEventListener("click", function(){ onDeckCardClick('desc', id); });
+        trayTrack.appendChild(btn);
+      });
+    }
+  }
+
+  function onDeckCardClick(type, id){
+    if(selectedCard && selectedCard.type===type && selectedCard.id===id){
+      clearSelection(); renderDeck(); return;
+    }
+    selectedCard = {type:type, id:id};
+    renderDeck();
+  }
+
+  document.getElementById("tabGraphs").addEventListener("click", function(){
+    activeDeckTab = 'graphs'; clearSelection();
+    document.getElementById("tabGraphs").classList.add("active");
+    document.getElementById("tabDesc").classList.remove("active");
+    renderDeck();
+  });
+  document.getElementById("tabDesc").addEventListener("click", function(){
+    activeDeckTab = 'desc'; clearSelection();
+    document.getElementById("tabDesc").classList.add("active");
+    document.getElementById("tabGraphs").classList.remove("active");
+    renderDeck();
+  });
+
+  // ---------- Page tabs ----------
+  function renderPageTabs(){
+    pageTabsEl.innerHTML = "";
+    SCENARIOS.forEach(function(scn){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pagetab " + pageStatus(scn.id) + (scn.id===STATE.currentPage ? " active" : "");
+      b.textContent = scn.id;
+      b.setAttribute("aria-label","go to page "+scn.id);
+      b.addEventListener("click", function(){ goToPage(scn.id); });
+      pageTabsEl.appendChild(b);
+    });
+    document.getElementById("prevBtn").disabled = STATE.currentPage <= 1;
+    document.getElementById("nextBtn").disabled = STATE.currentPage >= SCENARIOS.length;
+  }
+
+  function goToPage(id){
+    STATE.currentPage = id;
+    saveState();
+    renderPageTabs();
+    renderCurrentPage();
+  }
+
+  document.getElementById("prevBtn").addEventListener("click", function(){ if(STATE.currentPage>1) goToPage(STATE.currentPage-1); });
+  document.getElementById("nextBtn").addEventListener("click", function(){ if(STATE.currentPage<SCENARIOS.length) goToPage(STATE.currentPage+1); });
+
+  // ---------- Page rendering ----------
+  function renderCurrentPage(){
+    const scn = byId(STATE.currentPage);
+    const unlocked = pageUnlocked(scn.id);
+    const solved = pageSolved(scn.id);
+
+    const posState = STATE.pos[scn.id];
+    const velState = STATE.vel[scn.id];
+    const descState = STATE.desc[scn.id];
+
+    let posInner, posClass = "";
+    if(posState.correct){ posInner = svgXT(scn); posClass = "correct"; }
+    else { posInner = '<span>Tap here after selecting a position (green) graph below</span>'; }
+
+    let velInner, velClass = "";
+    if(velState.correct){ velInner = svgVT(scn); velClass = "correct"; }
+    else { velInner = '<span>Tap here after selecting a velocity (red) graph below</span>'; }
+
+    let descInner, descClass = "";
+    if(descState.correct){ descInner = descHTML(scn); descClass = "correct"; }
+    else if(!unlocked){ descInner = '<span>🔒 Match both graphs first</span>'; descClass = "locked"; }
+    else { descInner = '<span>Tap here after selecting a description card below</span>'; }
+
+    const accelHTML = unlocked
+      ? svgAccel(scn)
+      : 'Acceleration graph unlocks once position &amp; velocity are both correct';
+
+    const html =
+      '<div class="page">' +
+        '<div class="page-head">' +
+          '<span class="page-num">Card '+scn.id+' of '+SCENARIOS.length+'</span>' +
+          '<div class="setup-strip">'+svgSetup(scn)+'</div>' +
+        '</div>' +
+        '<div class="cols">' +
+          '<div class="graph-col">' +
+            '<p class="colhead">Kinematic Graphs</p>' +
+            '<div class="graph-row">' +
+              '<p class="lbl">Position vs. time</p>' +
+              '<button type="button" class="slot '+posClass+'" id="slot-pos">'+posInner+'</button>' +
+              '<div class="status-row"><span class="status-text" id="status-pos"></span>'+
+                '<button type="button" class="hint-btn" id="hint-pos-btn">Need a hint?</button></div>' +
+              '<div class="hint-text" id="hint-pos-text">'+scn.posHint+'</div>' +
+            '</div>' +
+            '<div class="graph-row">' +
+              '<p class="lbl">Velocity vs. time</p>' +
+              '<button type="button" class="slot '+velClass+'" id="slot-vel">'+velInner+'</button>' +
+              '<div class="status-row"><span class="status-text" id="status-vel"></span>'+
+                '<button type="button" class="hint-btn" id="hint-vel-btn">Need a hint?</button></div>' +
+              '<div class="hint-text" id="hint-vel-text">'+scn.velHint+'</div>' +
+            '</div>' +
+            '<div class="graph-row">' +
+              '<p class="lbl">Acceleration vs. time</p>' +
+              '<div class="accel-box" id="accelBox">'+accelHTML+'</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="desc-col">' +
+            '<p class="colhead">Written Description</p>' +
+            '<button type="button" class="slot '+descClass+'" id="slot-desc">'+descInner+'</button>' +
+            '<div class="status-row"><span class="status-text" id="status-desc"></span>'+
+              '<button type="button" class="hint-btn" id="hint-desc-btn">Need a hint?</button></div>' +
+            '<div class="hint-text" id="hint-desc-text">'+scn.descHint+'</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="reveal" id="reveal">' +
+          '<h3>'+scn.title+'</h3>' +
+          '<p class="colhead">Motion map</p>' +
+          '<div class="mm-box">'+svgMotionMap(scn)+'</div>' +
+        '</div>' +
+      '</div>';
+
+    pageContainer.innerHTML = html;
+
+    if(posState.wrong >= WRONG_THRESHOLD && !posState.correct) document.getElementById("hint-pos-btn").classList.add("show");
+    if(velState.wrong >= WRONG_THRESHOLD && !velState.correct) document.getElementById("hint-vel-btn").classList.add("show");
+    if(descState.wrong >= WRONG_THRESHOLD && !descState.correct) document.getElementById("hint-desc-btn").classList.add("show");
+    if(solved) document.getElementById("reveal").classList.add("show");
+
+    document.getElementById("slot-pos").addEventListener("click", function(){ onSlotClick(scn.id,'pos'); });
+    document.getElementById("slot-vel").addEventListener("click", function(){ onSlotClick(scn.id,'vel'); });
+    document.getElementById("slot-desc").addEventListener("click", function(){ onSlotClick(scn.id,'desc'); });
+    document.getElementById("hint-pos-btn").addEventListener("click", function(){ document.getElementById("hint-pos-text").classList.toggle("show"); });
+    document.getElementById("hint-vel-btn").addEventListener("click", function(){ document.getElementById("hint-vel-text").classList.toggle("show"); });
+    document.getElementById("hint-desc-btn").addEventListener("click", function(){ document.getElementById("hint-desc-text").classList.toggle("show"); });
+  }
+
+  function onSlotClick(pageId, slotType){
+    const scn = byId(pageId);
+    const slotEl = document.getElementById("slot-"+slotType);
+    const stateMap = slotType==='pos' ? STATE.pos : slotType==='vel' ? STATE.vel : STATE.desc;
+
+    if(stateMap[pageId].correct){
+      if(slotType==='desc') document.getElementById("reveal").classList.toggle("show");
+      return;
+    }
+    if(slotType==='desc' && !pageUnlocked(pageId)){
+      showToast("Match the position and velocity graphs on this page first");
+      return;
+    }
+    if(!selectedCard){
+      showToast("Select a card from the deck below first");
+      return;
+    }
+    const expectedType = slotType==='pos' ? 'xt' : slotType==='vel' ? 'vt' : 'desc';
+    if(selectedCard.type !== expectedType){
+      const guide = expectedType==='xt' ? "Try the Position box instead."
+                   : expectedType==='vt' ? "Try the Velocity box instead."
+                   : "That box needs a description card.";
+      showToast("Wrong kind of card. " + guide);
+      return;
+    }
+
+    const chosen = selectedCard;
+    clearSelection();
+    const isCorrect = (chosen.id === pageId);
+    const statusEl = document.getElementById("status-"+slotType);
+
+    if(isCorrect){
+      stateMap[pageId].correct = true;
+      statusEl.textContent = "\u2713 Correct!";
+      statusEl.className = "status-text correct";
+      saveState();
+      renderPageTabs();
+      renderDeck();
+      renderCurrentPage();
+      updateScore();
+    } else {
+      stateMap[pageId].wrong = (stateMap[pageId].wrong||0) + 1;
+      slotEl.classList.add("wrong");
+      statusEl.textContent = "Not quite \u2014 try again";
+      statusEl.className = "status-text wrong";
+      if(stateMap[pageId].wrong >= WRONG_THRESHOLD) document.getElementById("hint-"+slotType+"-btn").classList.add("show");
+      saveState();
+      setTimeout(function(){
+        slotEl.classList.remove("wrong");
+        statusEl.textContent = "";
+      }, 750);
+    }
+  }
+
+  function updateScore(){
+    const solvedCount = SCENARIOS.filter(function(s){ return pageSolved(s.id); }).length;
+    scoreDisplay.textContent = solvedCount + " / 6 pages solved";
+    if(solvedCount === SCENARIOS.length){
+      bannerName.textContent = STATE.name && STATE.name.trim() ? STATE.name.trim() : "there";
+      completeBanner.classList.add("show");
+    }
+  }
+
+  nameInput.addEventListener("input", function(){
+    STATE.name = nameInput.value;
+    saveState();
+    if(completeBanner.classList.contains("show")) bannerName.textContent = STATE.name.trim() ? STATE.name.trim() : "there";
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    document.getElementById("resetBtn").style.display = "none";
+    document.getElementById("resetConfirm").style.display = "inline-flex";
+  });
+  document.getElementById("resetNo").addEventListener("click", function(){
+    document.getElementById("resetConfirm").style.display = "none";
+    document.getElementById("resetBtn").style.display = "inline-block";
+  });
+  document.getElementById("resetYes").addEventListener("click", function(){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    location.reload();
+  });
+
+  // ---------- init ----------
+  loadState();
+  nameInput.value = STATE.name || "";
+  if(STATE.currentPage < 1 || STATE.currentPage > SCENARIOS.length) STATE.currentPage = 1;
+  renderPageTabs();
+  renderCurrentPage();
+  renderDeck();
+  updateScore();
+})();
+</script>
+</body>
+</html>

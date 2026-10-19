@@ -1,0 +1,1741 @@
+--- original/nplot.js
++++ ipad/nplot.js
+@@ -1,6 +1,9 @@
+ "use strict";
+ // nPlot graphing program
+-var version = "6.20";
++var version = "6.20i";
++// iPad edition (6.20i): touch/pointer input, no-keyboard alternatives for ctrl/shift actions, Safari clipboard fix,
++//   export/import of graphs as files, Copy Slopes for the tangent finder, and error bars / uncertainties hidden by default.
++//   Adapted by Alan Calac (St. Ignatius College Prep) with permission of Geoff Nunes.  Look for "iPad edition" comments.
+ document.getElementById("version").innerHTML = 'nPlot v'  + version;
+ // TO DO LIST
+ //
+@@ -73,9 +76,17 @@
+ var includeFormulas = true;
+ var requireOrigin = true;
+ var profMode = true;
+-var noUncertainty = false;
++var noUncertainty = true;       // iPad edition: uncertainties suppressed by default (setting is now saved)
++var showErrorBars = false;      // iPad edition: error bars from the ±x/±y columns hidden by default (setting is saved)
+ var autoZoom = true;
+ 
++// iPad edition: device detection and touch bookkeeping
++var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
++    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS reports itself as a Mac
++var longPressFired = false;     // set when a long press opened a menu, so the click that follows is ignored
++var pendingImport = null;       // graph read from a file, waiting for the "erase current graph?" confirmation
++var lastFits = [null, null, null, null, null];   // most recent good fit on each sheet (used by Copy Slopes)
++
+ // Position of the cursor in the canvas and flags related to user interactions
+ var mouseX = 0;
+ var mouseY = 0;
+@@ -830,6 +841,10 @@
+     toggleShowUncertainty();
+ });
+ 
++document.getElementById("showErrorBars").addEventListener("click", function (e) {
++    toggleShowErrorBars();
++});
++
+ document.getElementById("autoZoom").addEventListener("click", function (e) {
+     toggleAutoZoom();
+ });
+@@ -894,14 +909,43 @@
+ // Event listeners for modal elements
+ //
+ document.getElementById("savedGraphList").addEventListener("click", function(e) {
+-    var graphListName = e.target.innerHTML;
+-    if (e.shiftKey) {
++    // iPad edition: each list item now carries its name in a data attribute and has its own delete (×) control,
++    //   so deleting no longer requires a shift-click.  Shift-click still works for keyboard users.
++    var item = e.target.closest('li');
++    if (!item || item.dataset.name === undefined) {
++	return;
++    }
++    var graphListName = item.dataset.name;
++    if (e.target.classList.contains('delGraph')) {
++	if (window.confirm('Delete the saved graph "' + graphListName + '"?  This cannot be undone.')) {
++	    removeGraph(graphListName);
++	}
++    } else if (e.shiftKey) {
+ 	removeGraph(graphListName);
+     } else {
+ 	showDialog(graphListName);
+     }
+ });
+ 
++document.getElementById("exportGraphButton").addEventListener("click", function(e) {
++    exportGraphFile();
++});
++
++document.getElementById("importGraphButton").addEventListener("click", function(e) {
++    document.getElementById("importFileInput").value = "";
++    document.getElementById("importFileInput").click();
++});
++
++document.getElementById("importFileInput").addEventListener("change", function(e) {
++    if (e.target.files && e.target.files.length > 0) {
++	readGraphFile(e.target.files[0]);
++    }
++});
++
++document.getElementById("copySlopesButton").addEventListener("click", function(e) {
++    copySlopes();
++});
++
+ document.getElementById("recallProceedButton").addEventListener("click", function(e) {
+     proceedWithRecall();
+ });
+@@ -968,6 +1012,10 @@
+ document.getElementById('annotationList').addEventListener("click", function(e) {
+     var hiliteWhich = e.target.id;
+     var idx = Number(hiliteWhich.replace(/\D/g, ''));
++    if (annotation.color[idx] !== undefined) {      // iPad edition: a tap never sends mouseout, so un-highlight here
++	annotation.color[idx] = "black";
++    }
++    hiLitePoints = -1;
+     modifyOneNote(idx);
+ });
+ 
+@@ -989,6 +1037,7 @@
+ document.getElementById('fitList').addEventListener("click", function(e) {
+     var hiliteWhich = e.target.id;
+     var idx = Number(hiliteWhich.replace(/\D/g, ''));
++    hiLitePoints = -1;                              // iPad edition: a tap never sends mouseout, so un-highlight here
+     hideFitList(1);
+     addFitText(idx);
+ });
+@@ -1004,13 +1053,56 @@
+     computeAll();
+ });
+ 
+-document.getElementById("canvas1").addEventListener("mousemove", function(e) {
+-    getMouse(e);
+-});
++// iPad edition: the graph now listens for pointer events, which cover mouse, finger, and Apple Pencil.
++//   Mouse:  unchanged -- move to position, click to drop.
++//   Touch/pen:  there is no hover, so put a finger down and drag to position, then lift to drop.  An arrow or IB line
++//   takes two touches (lift once at the start point, then drag to the end point and lift again).  The tangent finder
++//   follows your finger as you drag along the curve.
++function canvasIsBusy() {
++    return tangentChecked || haveText || addingArrow || addingLine;
++}
+ 
+-document.getElementById("canvas1").addEventListener("mousedown", function(e) {
+-    dropText(e);
+-});
++if (window.PointerEvent) {
++    canvas1.addEventListener("pointermove", function(e) {
++	getMouse(e);
++    });
++    canvas1.addEventListener("pointerdown", function(e) {
++	if (e.pointerType == 'mouse') {
++	    getMouse(e);
++	    dropText(e);
++	} else {
++	    if (canvasIsBusy()) {
++		try { canvas1.setPointerCapture(e.pointerId); } catch(err) {}
++	    }
++	    getMouse(e);
++	}
++    });
++    canvas1.addEventListener("pointerup", function(e) {
++	if (e.pointerType != 'mouse') {
++	    getMouse(e);
++	    dropText(e);
++	}
++    });
++    // While the graph is being worked on, keep a finger drag from scrolling or zooming the page
++    // (and suppress the emulated mouse events Safari sends after a touch, which would drop things twice).
++    canvas1.addEventListener("touchstart", function(e) {
++	if (canvasIsBusy()) {
++	    e.preventDefault();
++	}
++    }, {passive: false});
++    canvas1.addEventListener("touchmove", function(e) {
++	if (canvasIsBusy()) {
++	    e.preventDefault();
++	}
++    }, {passive: false});
++} else {
++    canvas1.addEventListener("mousemove", function(e) {
++	getMouse(e);
++    });
++    canvas1.addEventListener("mousedown", function(e) {
++	dropText(e);
++    });
++}
+ 
+ // Section: Compute All ********************************************************************************************************
+ // The Main Event!!    This function is called pretty much every time the user does anything.  It does the plotting, the
+@@ -1042,6 +1134,10 @@
+ 	    ydata[jj] = data.y;
+ 	    xerrs[jj] = data.xe;                              // and x and y error bars
+ 	    yerrs[jj] = data.ye;
++	    if (!showErrorBars) {                             // iPad edition: error bars hidden unless turned on in Preferences
++		xerrs[jj] = xerrs[jj].map(function() { return 0; });
++		yerrs[jj] = yerrs[jj].map(function() { return 0; });
++	    }
+ 	    if (dataLinearized) {
+ 		for (let k = 0; k < npts[jj]; k++) {
+ 		    switch (xform) {
+@@ -1130,7 +1226,12 @@
+ 	    var degFree = selectedFitInfo.DOF;
+ 	    if (chosenFit != 'none') {                         // we will perform a fit
+ 		var results = doTheFit(chosenFit, xdata[jj], ydata[jj], npts[jj], ia);
++		lastFits[jj] = null;
+ 		if (results.good) {
++		    // iPad edition: remember this fit so Copy Slopes can evaluate the slope at every data point
++		    lastFits[jj] = {fit: chosenFit, a: results.a.slice(), afin: results.afin ? results.afin.slice() : [],
++				    x: xdata[jj].slice(0, npts[jj]), xScale: xScale, yScale: yScale,
++				    xmin: xmin, xmax: xmax, guessing: justGuessing};
+ 		    drawTheFit(chosenFit,xmin,xmax,ymin,ymax,results.a,results.afin,jj);
+ 		    if (jj == getSheetNumber(activeSheet)) {
+ 			if (tangentChecked) {
+@@ -1747,7 +1848,7 @@
+ 		    break;
+ 		default:
+ 		    // do nothing
+-s		}
++		}
+  		document.getElementById("xlabel").value = ltext;
+  		document.getElementById("xunit").value = utext;
+ 		labelsLinearized = true;
+@@ -2893,6 +2994,24 @@
+ }
+ 
+ function setScreenZoom(started) {
++    // iPad edition: on iPads (and iPhones) the CSS transform is never used.  Instead the viewport meta tag tells
++    //   Safari how wide the page is, and Safari scales it natively.  This keeps pop-ups, taps, and the side panel
++    //   lined up, which the transform does not do on Safari.  Auto Zoom off = 1:1 size, pinch to zoom.
++    if (isIOS) {
++	var vp = document.getElementById('viewportMeta');
++	if (!vp) {                                   // in case the page was served without the meta tag
++	    vp = document.createElement('meta');
++	    vp.id = 'viewportMeta';
++	    vp.name = 'viewport';
++	    document.head.appendChild(vp);
++	}
++	vp.setAttribute('content', autoZoom ? 'width=1370' : 'width=device-width, initial-scale=1');
++	document.body.style.transform = '';
++	if (started) {
++	    computeAll();
++	}
++	return;
++    }
+     if(autoZoom) {
+ 	var appWidth = 1370;
+ 	var screenWidth = window.innerWidth;
+@@ -3021,11 +3140,25 @@
+     if (noUncertainty) {
+ 	noUncertainty = false;
+ 	document.getElementById("noUncertainty").checked = false;
+-//	localStorage.setItem('nPlotNoUncertainty', 'false');
++	localStorage.setItem('nPlotNoUncertainty', 'false');     // iPad edition: this setting is now remembered
+     } else {
+ 	noUncertainty = true;
+ 	document.getElementById("noUncertainty").checked = true;
+-//	localStorage.setItem('nPlotNoUncertainty', 'true');
++	localStorage.setItem('nPlotNoUncertainty', 'true');
++    }
++    computeAll();
++}
++
++function toggleShowErrorBars() {
++    // iPad edition: show or hide the error bars entered in the ±x and ±y columns (remembered; default is hidden)
++    if (showErrorBars) {
++	showErrorBars = false;
++	document.getElementById("showErrorBars").checked = false;
++	localStorage.setItem('nPlotShowBars', 'false');
++    } else {
++	showErrorBars = true;
++	document.getElementById("showErrorBars").checked = true;
++	localStorage.setItem('nPlotShowBars', 'true');
+     }
+     computeAll();
+ }
+@@ -3046,9 +3179,18 @@
+ }
+ 
+ function getMouse(event) {
+-    // triggered by mouse movement over the canvas
+-    mouseX = event.offsetX;
+-    mouseY = event.offsetY;
++    // triggered by mouse (or finger, or pencil) movement over the canvas
++    // iPad edition: compute the position from the canvas's on-screen rectangle instead of offsetX/offsetY, so the
++    //   result is in canvas pixels no matter how the page is zoomed or scaled (offsetX is unreliable under
++    //   CSS transforms on Safari, and is undefined for some touch events).
++    var rect = canvas1.getBoundingClientRect();
++    if (rect.width > 0 && rect.height > 0 && event.clientX !== undefined) {
++	mouseX = (event.clientX - rect.left) * canvas1.width / rect.width;
++	mouseY = (event.clientY - rect.top) * canvas1.height / rect.height;
++    } else {
++	mouseX = event.offsetX;
++	mouseY = event.offsetY;
++    }
+     if (tangentChecked || haveText || addingArrow || addingLine || debug) {
+ 	computeAll();
+     }
+@@ -3059,7 +3201,7 @@
+     var selectorContent = selector + 'SelectorContent';
+     if (action == 'show') {
+ 	if (selector != 'dash') {
+-	    document.getElementById("settingsModalContent").style.height = "660px";;
++	    document.getElementById("settingsModalContent").style.height = "690px";
+ 	    document.getElementById("settingsDone").style.marginTop = "70px";
+ 	}
+ 	document.getElementById(selectorButton).style.display = "none";
+@@ -3067,7 +3209,7 @@
+     } else {
+ 	document.getElementById(selectorButton).style.display = "inline";
+ 	document.getElementById(selectorContent).style.display = "none";
+-	document.getElementById("settingsModalContent").style.height = "610px";;
++	document.getElementById("settingsModalContent").style.height = "640px";
+ 	document.getElementById("settingsDone").style.marginTop = "20px";
+     }
+ }
+@@ -4540,19 +4682,33 @@
+ }
+ 
+ function showSavedGraphs() {
++    // iPad edition: the side panel now always opens (it also holds the Save to File / Open File buttons), and each
++    //   saved graph has its own delete control so a shift key is not needed.
+     nGraphs = getGraphs();
+-    if (nGraphs < 0) {
+-	return 0;
+-    }
+     var list = document.getElementById("savedGraphList");
+     while (list.firstChild) {
+ 	list.removeChild(list.firstChild);
+     }
++    if (nGraphs <= 0) {
++	nGraphs = 0;
++	var empty = document.createElement("P");
++	empty.className = 'noSavedGraphs';
++	empty.textContent = 'No graphs saved in this browser yet.';
++	list.appendChild(empty);
++    }
+     for (var i=0; i<nGraphs; i++) {
+ 	var node = document.createElement("LI");
+-	var textnode = document.createTextNode(graphs[i]);
+-	node.appendChild(textnode);
+-	document.getElementById("savedGraphList").appendChild(node);
++	node.dataset.name = graphs[i];
++	var nameSpan = document.createElement("SPAN");
++	nameSpan.className = 'savedGraphName';
++	nameSpan.textContent = graphs[i];
++	node.appendChild(nameSpan);
++	var delSpan = document.createElement("SPAN");
++	delSpan.className = 'delGraph';
++	delSpan.title = 'Delete this saved graph';
++	delSpan.innerHTML = '&times;';
++	node.appendChild(delSpan);
++	list.appendChild(node);
+     }
+     document.getElementById("recallSavedGraphModal").style.width = "250px";
+     document.getElementById("mainContainer").style.marginLeft = "250px";
+@@ -4571,12 +4727,21 @@
+ function proceedWithRecall() {
+     var gName = savedName;
+     document.getElementById("recallDialog").style.display = "none";
++    if (pendingImport) {                  // iPad edition: the dialog is also used when opening a graph file
++	var graphData = pendingImport;
++	pendingImport = null;
++	applyImportedGraph(graphData);
++	return;
++    }
+     showGraph(gName);
+ }
+ 
+ function cancelRecall() {
+     savedName = '';
+-    document.getElementById("recallConfirm").style.display = "none";
++    pendingImport = null;
++    // iPad edition bug fix: this used to refer to a non-existent element "recallConfirm", which threw an error
++    //   and left the dialog stuck on screen.
++    document.getElementById("recallDialog").style.display = "none";
+ }
+ 
+ function showGraph(gName) {
+@@ -5003,18 +5168,34 @@
+ 		downloadFit();
+ 	    }
+ 	} else {
+-	    canvas1.toBlob((blob) => {                                  // graph is copied to clipboard
+-		let data = [new ClipboardItem({ [blob.type]: blob })];
+-		navigator.clipboard.write(data).then(() => {
+-		    document.getElementById("clipConfirm").style.display = "block";
+-		    setTimeout(closeClipConfirm, 2000);
+-		    function closeClipConfirm() {
++	    // iPad edition: Safari only allows a clipboard write that starts *during* the tap/click.  The old code
++	    //   waited for toBlob() to finish first, so Safari refused it.  Now the ClipboardItem is created right away
++	    //   and handed a promise for the image.  If the clipboard still refuses, the graph is shown in a pop-up
++	    //   where it can be pressed-and-held to copy or save it.
++	    const graphURL = canvas1.toDataURL('image/png');
++	    const blobPromise = new Promise((resolve) => canvas1.toBlob(resolve, 'image/png'));
++	    const showClipConfirm = () => {
++		document.getElementById("clipConfirm").style.display = "block";
++		setTimeout(function() {
+ 		    document.getElementById("clipConfirm").style.display = "none";
+-		    }
+-		}, (err) => {
+-		    console.log('error writing to clipboard');
+-		})
+-	    });
++		}, 2000);
++	    };
++	    const clipFallback = (err) => {
++		console.log('error writing to clipboard', err);
++		showGraphImage(graphURL);
++	    };
++	    try {
++		if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
++		    throw new Error('clipboard not available');
++		}
++		navigator.clipboard.write([new ClipboardItem({'image/png': blobPromise})]).then(showClipConfirm, () => {
++		    // some browsers do not accept a promise inside ClipboardItem: retry with the finished blob
++		    blobPromise.then((blob) => navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]))
++			.then(showClipConfirm, clipFallback);
++		});
++	    } catch (err) {
++		clipFallback(err);
++	    }
+ 	}
+     }
+     downloading = false;
+@@ -6000,6 +6181,527 @@
+     }
+ }
+ 
++// Section:  iPad edition **************************************************************************************************
++// Everything in this section was added for the iPad edition (6.20i).  It covers:
++//   - small helpers for messages, copying text, and showing the graph as an image
++//   - Copy Slopes (tangent finder values for every data point)
++//   - Save to File / Open File (export and import a whole graph)
++//   - press-and-hold menus that replace the ctrl-click and shift-click shortcuts on devices without a keyboard
++//
++
++// Subsection:  Messages and clipboard helpers ******************************************************************************
++//
++var toastTimer = null;
++function showToast(message, ms) {
++    // brief message at the bottom of the screen; disappears by itself
++    var toast = document.getElementById('toastMessage');
++    toast.innerHTML = message;
++    toast.style.display = 'block';
++    if (toastTimer) {
++	clearTimeout(toastTimer);
++    }
++    toastTimer = setTimeout(function() {
++	toast.style.display = 'none';
++	toastTimer = null;
++    }, ms || 3500);
++}
++
++function copyTextToClipboard(text, successMessage) {
++    // copy plain text; if the browser refuses, show the text in a box so it can be copied by hand
++    try {
++	if (navigator.clipboard && navigator.clipboard.writeText) {
++	    navigator.clipboard.writeText(text).then(function() {
++		showToast(successMessage);
++	    }, function() {
++		showCopyText(text);
++	    });
++	    return;
++	}
++    } catch (err) {}
++    showCopyText(text);
++}
++
++function showCopyText(text) {
++    var box = document.getElementById('copyTextArea');
++    box.value = text;
++    document.getElementById('copyTextModal').style.display = 'block';
++    box.focus();
++    box.select();
++    try { box.setSelectionRange(0, text.length); } catch (err) {}
++}
++
++function showGraphImage(dataURL) {
++    // used when the clipboard is not available: press-and-hold the image to copy it or save it to Photos
++    document.getElementById('graphImage').src = dataURL;
++    document.getElementById('graphImageModal').style.display = 'block';
++}
++
++function formatNumber(value) {
++    // six significant figures, without trailing zeros, in a form nPlot's data cells will accept
++    if (!isFinite(value)) {
++	return '';
++    }
++    return String(Number(value.toPrecision(6)));
++}
++
++// Subsection:  Copy Slopes **************************************************************************************************
++//
++function copySlopes() {
++    // Copy the slope of the fit at every data point on the current sheet, as two tab-separated columns (x, slope).
++    // Paste into a spreadsheet, or into an empty nPlot graph to plot slope vs. x (for example v vs. t from x vs. t).
++    // Values are in real data units (the axis scale factor, if any, is removed).
++    var tangentModels = ['squareLaw', 'quadratic', 'inverse', 'inverseSquare', 'powerLaw', 'expDecay', 'root', 'inverseRoot'];
++    var sheetNum = getSheetNumber(activeSheet);
++    var fitInfo = lastFits[sheetNum];
++    if (!fitInfo || sheetFitTypes[sheetNum] == 'none') {
++	showToast('<b>Copy Slopes</b> needs a fit on the current sheet. Choose a model first.', 4500);
++	return;
++    }
++    if (tangentModels.indexOf(fitInfo.fit) < 0) {
++	showToast('<b>Copy Slopes</b> works with the curved models (Square Law, Quadratic, Inverse, Square Root, ' +
++		  'Power Law, Exponential...). For a straight-line fit, the slope is the same everywhere: it is <i>A</i>.', 6000);
++	return;
++    }
++    var xFactor = Math.pow(10, fitInfo.xScale);
++    var slopeFactor = Math.pow(10, fitInfo.yScale - fitInfo.xScale);
++    var lines = [];
++    for (var i = 0; i < fitInfo.x.length; i++) {
++	var xValue = fitInfo.x[i];
++	var slope = calcSlope(fitInfo.fit, xValue / xFactor, fitInfo.a, fitInfo.afin) * slopeFactor;
++	if (isFinite(slope)) {
++	    lines.push(formatNumber(xValue) + '\t' + formatNumber(slope));
++	}
++    }
++    if (lines.length == 0) {
++	showToast('There were no slopes to copy.');
++	return;
++    }
++    copyTextToClipboard(lines.join('\n') + '\n',
++			'Copied ' + lines.length + ' (<i>x</i>, slope) pairs. Paste them into a spreadsheet, or into an empty ' +
++			'nPlot graph to plot slope vs. <i>x</i>.');
++}
++
++function copySheetData() {
++    // keyboard-free replacement for drag-selecting cells and pressing ctrl-c: copies the whole current sheet
++    var lines = [];
++    var lastRow = 0;
++    for (var i = 1; i <= nRows; i++) {
++	var row = [];
++	var any = false;
++	for (var c = 0; c < 4; c++) {
++	    var id = String.fromCharCode(65 + c) + activeSheet + i;
++	    var raw = sessionStorage[id] || '';
++	    var value = raw === '' ? '' : DATA[id.toLowerCase()];
++	    if (raw !== '') {
++		any = true;
++	    }
++	    row.push(value === undefined ? '' : String(value));
++	}
++	lines.push(row.join('\t'));
++	if (any) {
++	    lastRow = i;
++	}
++    }
++    if (lastRow == 0) {
++	showToast('This sheet is empty, so there is nothing to copy.');
++	return;
++    }
++    copyTextToClipboard(lines.slice(0, lastRow).join('\n') + '\n',
++			'Copied ' + lastRow + ' rows from Sheet ' + (getSheetNumber(activeSheet) + 1) + '.');
++}
++
++// Subsection:  Save to File / Open File *************************************************************************************
++//
++var importableFits = ['none', 'noRelation', 'exactProportion', 'proportional', 'linear', 'squareLaw', 'quadratic', 'inverse',
++		      'inverseSquare', 'root', 'inverseRoot', 'powerLaw', 'expDecay', 'log',
++		      'cosine', 'dampedCosine', 'relaxation', 'gaussian'];
++
++function panelForFit(fitType) {
++    if (['powerLaw', 'expDecay', 'log'].indexOf(fitType) >= 0) {
++	return 'advanced';
++    } else if (['cosine', 'dampedCosine', 'relaxation', 'gaussian'].indexOf(fitType) >= 0) {
++	return 'expert';
++    }
++    return 'basic';
++}
++
++function buildGraphObject() {
++    // Collect everything about the current graph.  Unlike Save Graph, this keeps exactly what was typed in each cell
++    //   (including formulas and skip boxes), every model (including Advanced and Expert), and any linearization.
++    var sheets = [];
++    for (var k = 0; k < nSheets; k++) {
++	var letter = getSheetLetter(k);
++	var rows = [];
++	var lastRow = 0;
++	for (var i = 1; i <= nRows; i++) {
++	    var row = [];
++	    for (var c = 0; c < 4; c++) {
++		var value = sessionStorage[String.fromCharCode(65 + c) + letter + i];
++		row.push(value === undefined || value === null ? '' : String(value));
++	    }
++	    if (document.getElementById('E' + letter + i).checked) {
++		row.push('skip');
++	    }
++	    rows.push(row);
++	    if (row.some(function(v) { return v !== ''; })) {
++		lastRow = i;
++	    }
++	}
++	if (lastRow > 0) {
++	    sheets.push({sheet: letter, fit: sheetFitTypes[k], rows: rows.slice(0, lastRow)});
++	}
++    }
++    return {
++	format: 'nPlot graph',
++	formatVersion: 1,
++	nPlotVersion: version,
++	saved: new Date().toISOString(),
++	name: document.getElementById('saveName').value,
++	labels: {
++	    xLabel: document.getElementById('xlabel').value,
++	    xUnits: document.getElementById('xunit').value,
++	    yLabel: document.getElementById('ylabel').value,
++	    yUnits: document.getElementById('yunit').value,
++	    title: document.getElementById('plotTitle').value
++	},
++	activeSheet: activeSheet,
++	sheets: sheets,
++	linearization: {
++	    dataLinearized: dataLinearized,
++	    xform: xform,
++	    transformationString: transformationString,
++	    originalXLabel: savedXTitle,
++	    originalXUnits: savedXUnit
++	},
++	annotation: {
++	    text: annotation.text.slice(0, annotation.index),
++	    x: annotation.x.slice(0, annotation.index),
++	    y: annotation.y.slice(0, annotation.index),
++	    kind: annotation.isFit.slice(0, annotation.index),
++	    tWidth: annotation.tWidth.slice(0, annotation.index),
++	    tHeight: annotation.tHeight.slice(0, annotation.index),
++	    sheetNum: annotation.activeSheetNum.slice(0, annotation.index),
++	    fitType: annotation.fitType.slice(0, annotation.index)
++	}
++    };
++}
++
++function exportGraphFile() {
++    var graph = buildGraphObject();
++    if (graph.sheets.length == 0) {
++	showToast('There is no data to save yet.');
++	return;
++    }
++    var baseName = graph.name.trim();
++    if (baseName == '') {
++	baseName = buildName(document.getElementById('xlabel').value, document.getElementById('ylabel').value);
++    }
++    if (baseName == '' || baseName == '_vs_') {
++	baseName = 'nPlot graph';
++    }
++    baseName = baseName.replace(/[\\\/:*?"<>|^]+/g, '').trim() || 'nPlot graph';
++    var fileName = baseName + '.nplot.json';
++    var text = JSON.stringify(graph, null, 1);
++    var blob = new Blob([text], {type: 'application/json'});
++
++    // On iPads, offer the share sheet (Save to Files, Google Drive, AirDrop, ...).  Elsewhere, an ordinary download.
++    if (isIOS && navigator.canShare && typeof File !== 'undefined') {
++	try {
++	    var file = new File([blob], fileName, {type: 'application/json'});
++	    if (navigator.canShare({files: [file]})) {
++		navigator.share({files: [file], title: fileName}).then(function() {
++		    showToast('Graph saved as <b>' + fileName + '</b>');
++		}, function(err) {
++		    if (!err || err.name != 'AbortError') {
++			downloadBlob(blob, fileName);
++		    }
++		});
++		return;
++	    }
++	} catch (err) {}
++    }
++    downloadBlob(blob, fileName);
++}
++
++function downloadBlob(blob, fileName) {
++    var url = URL.createObjectURL(blob);
++    var anchor = document.createElement('a');
++    anchor.href = url;
++    anchor.download = fileName;
++    document.body.appendChild(anchor);
++    anchor.click();
++    document.body.removeChild(anchor);
++    setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
++    showToast('Graph saved as <b>' + fileName + '</b> (look in your Downloads).', 4500);
++}
++
++function readGraphFile(file) {
++    var reader = new FileReader();
++    reader.onload = function() {
++	var graph;
++	try {
++	    graph = JSON.parse(reader.result);
++	} catch (err) {
++	    graph = null;
++	}
++	if (!graph || graph.format != 'nPlot graph' || !Array.isArray(graph.sheets)) {
++	    showToast('<b>' + file.name.replace(/</g, '&lt;') + '</b> is not an nPlot graph file.', 5000);
++	    return;
++	}
++	var npts = countPoints("A") + countPoints("B") + countPoints("C") + countPoints("D") + countPoints("E");
++	if (npts == 0 || thereIsNoGraph) {
++	    applyImportedGraph(graph);
++	} else {
++	    pendingImport = graph;              // same "this will erase your graph" question as Recall Graph
++	    document.getElementById("recallDialog").style.display = "block";
++	}
++    };
++    reader.onerror = function() {
++	showToast('That file could not be read.');
++    };
++    reader.readAsText(file);
++}
++
++function applyImportedGraph(graph) {
++    clearAllData();
++    dataLinearized = false;
++    labelsLinearized = false;
++    xform = 'none';
++    transformationString = '';
++
++    var labels = graph.labels || {};
++    document.getElementById('xlabel').value = labels.xLabel || '';
++    document.getElementById('xunit').value = labels.xUnits || '';
++    document.getElementById('ylabel').value = labels.yLabel || '';
++    document.getElementById('yunit').value = labels.yUnits || '';
++    document.getElementById('plotTitle').value = labels.title || '';
++
++    var firstSheet = '';
++    graph.sheets.forEach(function(sheet) {
++	var letter = String(sheet.sheet);
++	if (!/^[A-E]$/.test(letter) || !Array.isArray(sheet.rows)) {
++	    return;
++	}
++	var k = getSheetNumber(letter);
++	for (var i = 0; i < Math.min(sheet.rows.length, nRows); i++) {
++	    var row = Array.isArray(sheet.rows[i]) ? sheet.rows[i] : [];
++	    for (var c = 0; c < 4; c++) {
++		var value = row[c];
++		sessionStorage[String.fromCharCode(65 + c) + letter + (i + 1)] =
++		    (value === undefined || value === null) ? '' : String(value);
++	    }
++	    document.getElementById('E' + letter + (i + 1)).checked = (row[4] === 'skip');
++	}
++	sheetFitTypes[k] = importableFits.indexOf(sheet.fit) >= 0 ? sheet.fit : 'none';
++	if (firstSheet == '') {
++	    firstSheet = letter;
++	}
++    });
++
++    var lin = graph.linearization || {};
++    if (lin.dataLinearized && ['sqr', 'sqrRoot', 'inv', 'invSqr', 'invSqrRoot'].indexOf(lin.xform) >= 0) {
++	dataLinearized = true;
++	labelsLinearized = true;            // the saved labels already show the transformation
++	xform = lin.xform;
++	transformationString = lin.transformationString || '';
++	savedXTitle = lin.originalXLabel || '';
++	savedXUnit = lin.originalXUnits || '';
++    }
++
++    var ann = graph.annotation || {};
++    if (Array.isArray(ann.text) && ann.text.length > 0) {
++	var n = ann.text.length;
++	var numbers = function(list) {
++	    return Array.from({length: n}, function(v, i) { return Number((list || [])[i]) || 0; });
++	};
++	annotation.text = ann.text.map(String);
++	annotation.x = numbers(ann.x);
++	annotation.y = numbers(ann.y);
++	annotation.isFit = Array.from({length: n}, function(v, i) { return String((ann.kind || [])[i] || 'note'); });
++	annotation.tWidth = numbers(ann.tWidth);
++	annotation.tHeight = numbers(ann.tHeight);
++	annotation.activeSheetNum = numbers(ann.sheetNum);
++	annotation.fitType = Array.from({length: n}, function(v, i) { return String((ann.fitType || [])[i] || ' '); });
++	annotation.color = Array.from({length: n}, function() { return 'black'; });
++	annotation.index = n;
++    }
++
++    document.getElementById('saveName').value = '';
++    if (firstSheet != '') {
++	var wanted = /^[A-E]$/.test(graph.activeSheet) ? graph.activeSheet : firstSheet;
++	var importedFits = sheetFitTypes.slice();
++	activePanel = setModelsPanel(panelForFit(importedFits[getSheetNumber(wanted)]));   // (this resets one sheet's model...)
++	sheetFitTypes = importedFits;                                                     // (...so put them all back)
++	setSheet(wanted);
++    }
++    document.getElementById('saveName').value = graph.name || '';
++    computeAll();
++    var message = 'Opened <b>' + String(graph.name || 'graph').replace(/</g, '&lt;') + '</b>';
++    if (panelForFit(sheetFitTypes[getSheetNumber(activeSheet)]) == 'expert') {
++	message = message + '. Press <b>Go</b> to redo the Expert fit.';
++    }
++    showToast(message, 4500);
++}
++
++// Subsection:  Press-and-hold menus ****************************************************************************************
++// Keyboard-free versions of the ctrl-click / shift-click shortcuts.  Press and hold (or right-click) a button to get a
++//   small menu.  The ctrl and shift shortcuts still work exactly as before when there is a keyboard.
++//
++function attachLongPress(buttonId, buildItems) {
++    var button = document.getElementById(buttonId);
++    var timer = null;
++    var startX = 0;
++    var startY = 0;
++    button.classList.add('hasMenu');
++    button.title = 'Press and hold for more options';
++    var cancel = function() {
++	if (timer) {
++	    clearTimeout(timer);
++	    timer = null;
++	}
++    };
++    button.addEventListener('pointerdown', function(e) {
++	if (e.pointerType == 'mouse' && e.button != 0) {
++	    return;
++	}
++	startX = e.clientX;
++	startY = e.clientY;
++	cancel();
++	timer = setTimeout(function() {
++	    timer = null;
++	    longPressFired = true;
++	    showActionMenu(button, buildItems());
++	}, 550);
++    });
++    button.addEventListener('pointermove', function(e) {
++	if (timer && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 12) {
++	    cancel();
++	}
++    });
++    button.addEventListener('pointerup', function() {
++	cancel();
++	if (longPressFired) {
++	    // the click that follows a long press must not also run the button's normal action
++	    setTimeout(function() { longPressFired = false; }, 400);
++	}
++    });
++    button.addEventListener('pointercancel', cancel);
++    button.addEventListener('pointerleave', cancel);
++    button.addEventListener('contextmenu', function(e) {
++	e.preventDefault();
++	cancel();
++	if (document.getElementById('actionMenu').dataset.owner != buttonId) {
++	    showActionMenu(button, buildItems());
++	}
++    });
++}
++
++document.addEventListener('click', function(e) {
++    // swallow the click that ends a long press, before the button's own listener sees it
++    if (longPressFired && e.target.closest && e.target.closest('.hasMenu')) {
++	e.stopImmediatePropagation();
++	e.preventDefault();
++	longPressFired = false;
++    }
++}, true);
++
++function showActionMenu(button, items) {
++    var menu = document.getElementById('actionMenu');
++    menu.innerHTML = '';
++    items.forEach(function(item) {
++	var entry = document.createElement('button');
++	entry.className = 'actionMenuItem';
++	entry.innerHTML = item.label;
++	entry.addEventListener('click', function(e) {
++	    e.stopPropagation();
++	    hideActionMenu();
++	    item.action();
++	});
++	menu.appendChild(entry);
++    });
++    // place the menu just below its button (inside the same panel, so it works at any zoom level)
++    button.parentNode.appendChild(menu);
++    menu.style.left = Math.max(0, Math.min(button.offsetLeft, button.parentNode.clientWidth - 230)) + 'px';
++    menu.style.top = (button.offsetTop + button.offsetHeight + 4) + 'px';
++    menu.dataset.owner = button.id;
++    menu.style.display = 'block';
++}
++
++function hideActionMenu() {
++    var menu = document.getElementById('actionMenu');
++    menu.style.display = 'none';
++    menu.dataset.owner = '';
++}
++
++document.addEventListener('pointerdown', function(e) {
++    var menu = document.getElementById('actionMenu');
++    if (menu.style.display == 'block' && !menu.contains(e.target)) {
++	hideActionMenu();
++    }
++});
++
++function withDownloadSetting(downloadFlag, fn) {
++    // run fn as if the Preferences "Download" setting were downloadFlag, without changing the saved preference
++    var saved = yesDownload;
++    var savedFit = includeFit;
++    yesDownload = downloadFlag;
++    includeFit = false;
++    try {
++	fn();
++    } finally {
++	yesDownload = saved;
++	includeFit = savedFit;
++    }
++}
++
++if (window.PointerEvent) {
++    attachLongPress('clearDataButton', function() {
++	return [
++	    {label: 'Clear this sheet', action: function() { clearData(activeSheet, false); }},
++	    {label: 'Clear <b>all</b> sheets, labels &amp; notes', action: function() {
++		if (window.confirm('Clear all five sheets, the axis labels, and all annotation?')) {
++		    clearAllData();
++		}
++	    }},
++	    {label: 'Copy this sheet&rsquo;s data', action: copySheetData}
++	];
++    });
++    attachLongPress('tradeButton', function() {
++	return [
++	    {label: 'Swap <i>x</i> &amp; <i>y</i> data', action: function() { tradeData(false); }},
++	    {label: 'Swap <i>x</i> &amp; <i>y</i> data <b>and</b> labels', action: function() { tradeData(true); }}
++	];
++    });
++    attachLongPress('downloadImageButton', function() {
++	return [
++	    {label: 'Copy graph to clipboard', action: function() {
++		withDownloadSetting(false, function() { downloadGraph(false); });
++	    }},
++	    {label: 'Download graph as a PNG file', action: function() {
++		withDownloadSetting(true, function() { downloadGraph(false); });
++	    }},
++	    {label: 'Open graph in a new tab', action: function() { downloadGraph(true); }},
++	    {label: 'Show graph to save to Photos', action: function() {
++		if (thereIsNoGraph) {
++		    return;
++		}
++		downloading = true;
++		computeAll();
++		var url = canvas1.toDataURL('image/png');
++		downloading = false;
++		computeAll();
++		showGraphImage(url);
++	    }}
++	];
++    });
++    attachLongPress('saveGraphButton', function() {
++	return [
++	    {label: 'Save in this browser', action: saveGraph},
++	    {label: 'Save to a file&hellip;', action: exportGraphFile}
++	];
++    });
++}
++
+ // Section:  Maintenance & Utilities *******************************************************************************************
+ //
+ function delay(ms) {
+@@ -6074,14 +6776,24 @@
+ 	profMode = false;
+ 	document.getElementById("professionalMode").checked = false;
+     }
+-    // var noUncertaintySetting = localStorage.getItem('nPlotNoUncertainty');
+-    // if (noUncertaintySetting == 'true' || noUncertaintySetting == null) {
+-    // 	noUncertainty = true;
+-    // 	document.getElementById("noUncertainty").checked = true;
+-    // } else {
+-    // 	noUncertainty = false;
+-    // 	document.getElementById("noUncertainty").checked = false;
+-    // }
++    // iPad edition: Suppress Uncertainties is now saved, and defaults to ON
++    var noUncertaintySetting = localStorage.getItem('nPlotNoUncertainty');
++    if (noUncertaintySetting == 'true' || noUncertaintySetting == null) {
++	noUncertainty = true;
++	document.getElementById("noUncertainty").checked = true;
++    } else {
++	noUncertainty = false;
++	document.getElementById("noUncertainty").checked = false;
++    }
++    // iPad edition: new Show Error Bars setting, saved, defaults to OFF
++    var showBarsSetting = localStorage.getItem('nPlotShowBars');
++    if (showBarsSetting == 'true') {
++	showErrorBars = true;
++	document.getElementById("showErrorBars").checked = true;
++    } else {
++	showErrorBars = false;
++	document.getElementById("showErrorBars").checked = false;
++    }
+     var autoZoomSetting = localStorage.getItem('nPlotAutoZoom');
+     if (autoZoomSetting == 'false') {
+ 	autoZoom = false;
+@@ -6109,7 +6821,14 @@
+ }
+ 
+ async function checkVersion() {
+-    var updateBody ='<p class="upara"><b>New Features:</b></p>' +
++    var updateBody ='<p class="upara"><b>New in the iPad edition (6.20i):</b></p>' +
++	'<p class="upara">Works with touch: drag a finger on the graph to place notes and arrows or move the tangent finder.</p>' +
++	'<p class="upara">No keyboard? Press and hold Clear Data, Swap x &amp; y, Save Graph, or Graph to Clipboard for more options.</p>' +
++	'<p class="upara">Save a graph to a file, and open it again later, from the Recall Graph panel.</p>' +
++	'<p class="upara">Copy Slopes copies the tangent slope at every data point (e.g. velocities from a position graph).</p>' +
++	'<p class="upara">Error bars and fit uncertainties are hidden unless you turn them on in Preferences.</p>' +
++	'<br>' +
++	'<p class="upara"><b>New in version 6.20:</b></p>' +
+ 	'<p class="upara">New controls to linearize you data within nPlot.</p>' +
+ 	'<p class="upara">New Advanced Model: fit to a logarithmic function.</p>' +
+ 	'<p class="upara">New controls in Preferences to hide the data points on each sheet.</p>' +
+--- original/index.html
++++ ipad/index.html
+@@ -2,6 +2,8 @@
+ <html>
+     <head>
+ 	<meta charset = "utf-8">
++	<!-- iPad edition: lets Safari scale the fixed-width layout natively (nplot.js switches this when Auto Zoom is off) -->
++	<meta name="viewport" id="viewportMeta" content="width=1370">
+ 	<title>nPlot</title>
+ 	<meta name="description" content="Browser based graphing and data analysis for science students">
+ 	<meta name="keywords" content="graphing, plotting, data, data analysis, curve fitting, physics, chemistry, high school, 
+@@ -12,16 +14,15 @@
+ 	<!-- HEY!!!!  UPDATE THE CSS VERSION NUMBER EVERY TIME YOU MAKE A CHANGE -->
+ 	<link rel = "stylesheet"
+ 	      type = "text/css"
+-	      href = "nPlot.css?version=6.20" />
++	      href = "nPlot.css?version=6.20i" />
+     </head>
+     <body>
+ 	<div id="mainContainer">
+ 	    <div id="leftPanel">
+ 		<div id="logoPanel">
+ 		    <img src="images/nPlotOnly.png">
+-		    <a href="../index.html" target="_blank">
+-			<img src="images/noragulfaLogo.png">
+-		    </a>
++		    <!-- iPad edition: noragulfa.com logo replaced by a link to CalacAttack.com; Geoff's credit and link are in the About box -->
++		    <a id="homeLink" href="https://calacattack.com" target="_blank">CalacAttack.com</a>
+ 		</div>
+ 		<div id="miniSheetPanel">
+ 		    <div id="sheetButtons">
+@@ -240,6 +241,9 @@
+ 				<span class="radioMark"></span>
+ 			    </label>
+ 			</div>
++			<div>
++			    <button id="copySlopesButton" class="npButton" title="Copy the slope at every data point">Copy Slopes</button>
++			</div>
+ 		    </div>
+ 		    <div id="slopeResults">
+ 			<span id="xValue" class="mathClass"><i>x</i> value = 0.123456</span>
+@@ -263,6 +267,12 @@
+ 		<div id="whyThisDiv">
+ 		    <span id="closeSideModal">&times</span>
+ 		</div>
++		<div id="fileButtons">
++		    <button id="exportGraphButton" class="npButton fileButton">Save to File&hellip;</button>
++		    <button id="importGraphButton" class="npButton fileButton">Open File&hellip;</button>
++		    <input type="file" id="importFileInput" style="display: none">
++		</div>
++		<p id="savedGraphsHeading">Saved in this browser:</p>
+ 		<ul id="savedGraphList">
+ 		    <li>a graph with a long name</li>
+ 		    <li>another graph</li>
+@@ -366,6 +376,17 @@
+ 		    </tr>
+ 		    <tr>
+ 			<td>
++			    <label class="radioButton"> Show Error Bars
++				<input type="radio" id="showErrorBars">
++				<span class="radioMark" style="bottom: 5px"></span>
++			    </label>
++			    <td>
++				Draw the &plusmn;<i>x</i> and &plusmn;<i>y</i> values as error bars.
++			    </td>
++			</td>
++		    </tr>
++		    <tr>
++			<td>
+ 			    <label class="radioButton"> Scale w&sol; Error Bars
+ 				<input type="radio" id="includeBars" checked>
+ 				<span class="radioMark" style="bottom: 5px"></span>
+@@ -540,7 +561,7 @@
+ 		    <div id="settingsBlather">
+ 			Most settings are saved in the browser cache.  They will
+ 			revert to their default values if the browser cache is cleared. 
+-			Require (0,0), Suppress Uncertainties, and the point visibility toggles are never saved.
++			Require (0,0) and the point visibility toggles are never saved.
+ 		    </div>
+ 		</div>
+ 		<div id="settingsDone">
+@@ -591,9 +612,9 @@
+ 	<div id="annotateModal" class="modalNoClose">
+ 	    <div id="annotateModalContent" class="modal-content">
+ 		<div>
+-		    <p>Position the text with the mouse, then click to drop it.</p>
++		    <p>Position the text with the mouse, then click to drop it. (Touchscreen: drag with your finger, then lift.)</p>
+ 		    <p>Changing the model removes the fit results from the graph, but not your notes and arrows.</p>
+-		    <p>To draw an arrow, click first where it starts and then where it points to.</p>
++		    <p>To draw an arrow, click (or tap) first where it starts and then where it points to.</p>
+ 		    <p id="messageLine">This is the message line.&nbsp;</p>
+ 		</div>
+ 		<div>
+@@ -705,7 +726,8 @@
+ 		<p><b>Swapping Columns - </b>If you discover that you have accidentally typed your <i>y</i> data into the <i>x</i>
+ 		    column, just click the &quot;Swap x &amp; y&quot; button.  If you have any entries in the
+ 		    uncertainty columns, they will be swapped too.  Holding down the control key while you press the swap button
+-		    causes the axis labels to also be swapped.</p>
++		    causes the axis labels to also be swapped.  <b>No keyboard?</b> Press and hold the swap button
++		    and choose &quot;Swap x &amp; y data and labels.&quot;</p>
+ 		<p><b>Using Formulas - </b>The indvidual cells understand math. If you enter 2+2, or 2*2, or 2**2, or 2&Hat;2,
+ 		    or 24/6, or 6-2, or 16&Hat;.5 the cell contents will be displayed as the number 4.  The value is computed
+ 		    using the standard conventions for the order of operations.  Placing the cursor in a cell recovers the
+@@ -716,11 +738,13 @@
+ 		<p><b>Clearing Your Data - </b>Clicking the Clear Data button will clear the contents of the currently displayed
+ 		    spreadsheet.  Holding down the control key while clicking it will clear all the sheets at once, as well as
+ 		    all the axis labeling and annotation.  If you have selected a portion of your data, hitting the delete key
+-		    will clear just that selected portion.</p>
++		    will clear just that selected portion.  <b>No keyboard?</b> Press and hold the Clear Data button
++		    and choose &quot;Clear all sheets, labels &amp; notes.&quot;</p>
+ 		<p><b>Copying Your Data - </b>nPlot makes a terrible lab notebook.  If you typed your data into nPlot first, but now
+ 		    want it somewhere else, you can highlight the cells you want to copy (click-and-drag, just as you would in a
+ 		    spreadsheet), and use ctrl-c to copy the data to the clipboard.  The highlighting disappears as confirmation
+-		    that it has been copied.  From the clipboard, you can paste the data somewhere more permanent.</p>
++		    that it has been copied.  From the clipboard, you can paste the data somewhere more permanent.  <b>No keyboard?</b> Press and
++		    hold the Clear Data button and choose &quot;Copy this sheet&rsquo;s data&quot; to copy the whole sheet at once.</p>
+ 		<div class ="userManualHeading">
+ 		    <div id="scaling" class="userManualSection">
+ 			Labeling and Scaling the Axes
+@@ -802,6 +826,8 @@
+ 		    sheets.  The data is still there, and you can even fit a model to it, but the data points don't appear on
+ 		    the plot. For why you might want to do this, see the <a href="#philosophy" class="inHelpLink">Philosophy</a>
+ 		    section.</p>
++		<p><b>Show Error Bars - </b>Numbers typed in the &quot;&plusmn;x&quot; and &quot;&plusmn;y&quot; columns are
++		    drawn as error bars only when this is checked.  It is off by default, and the setting is saved.</p>
+ 		<p><b>Scale With Error Bars - </b>If you have error bars on your data points, the graph will be scaled so those bars
+ 		    are fully shown.  If you de-select this option, then the scaling will be calculated using only your data points,
+ 		    and the error bars may be clipped.</p>
+@@ -821,10 +847,12 @@
+ 		    significant figures.</p>
+ 		<p><b>Suppress Uncertainties - </b>If selected, this control will cause fitting parameters to be shown without
+ 		    their uncertainties.  This may be less confusing for some students, but it also robs them of key information
+-		    about how well their model agrees with their data.  Use with caution.</p>
++		    about how well their model agrees with their data.  Use with caution.  In the iPad edition this is on by
++		    default, and the setting is saved.</p>
+ 		<p><b>Auto Zoom - </b>nPlot will try to adjust itself to fill your computer screen.  Because web browsers
+ 		    operate in a kind of &quot;sandbox&quot; to protect your computer from malicious web sites and blah, blah,
+-		    this may not work well on your device.  If this feaure is giving you trouble, turn it off.</p>
++		    this may not work well on your device.  If this feaure is giving you trouble, turn it off.  On an iPad, Auto Zoom
++		    lets Safari fit the whole page to the screen; with it off, nPlot is shown at full size and you can pinch to zoom.</p>
+ 		<p><b>Symbols, Colors, and Lines - </b>Pressing each of the five radio buttons in turn will show you the
+ 		    default symbol, line color, and line type for each of the five data sheets.  Below the radio buttons is a
+ 		    set of dropdown menus that will allow you to make different choices for each sheet.  Go wild.</p>
+@@ -842,6 +870,13 @@
+ 		    appear just below the tangent finder controls.  The finder operates on whichever of the five sheets has been
+ 		    selected.  If you want to include a tangent in your downloaded graph, slide the mouse off the top or bottom
+ 		    edge of the graph at the desired x-value.</p>
++		<p><b>Touchscreens - </b>Put a finger (or Apple Pencil) on the graph and drag along the curve.  The tangent follows,
++		    and stays where you lift your finger.</p>
++		<p><b>Copy Slopes - </b>Click the Copy Slopes button to copy the slope of the fit at <i>every</i> data point on
++		    the current sheet, as two columns: the <i>x</i> value and the slope there.  Paste them into a spreadsheet, or
++		    into an empty nPlot graph to plot slope vs. <i>x</i>.  For example, fit a position vs. time graph, copy the
++		    slopes, and paste them in to get a velocity vs. time graph.  Copy Slopes works with the same curved models as
++		    the tangent finder.  (For a straight line the slope is the same everywhere, so just use <i>A</i>.)</p>
+ 		<div class ="userManualHeading">
+ 		    <div id="annote" class="userManualSection">
+ 			Annotating Your Graph
+@@ -900,11 +935,19 @@
+ 		    your browser.  Click on a name in that list and the graph and data will be restored exactly as they were
+ 		    when you saved them.  If nPlot detects that there is already data in the spreadsheet, it will ask before
+ 		    replacing your current graph with the recalled one.</p>
+-		<p><b>Deleting - </b>If you hold down the shift key while clicking on a saved graph name, that graph will be
++		<p><b>Deleting - </b>Click the &times; next to a saved graph's name to delete it (you will be asked to confirm).
++		    If you hold down the shift key while clicking on a saved graph name, that graph will be
+ 		    deleted instead of recalled.  You will not be asked if you are sure.</p>
+ 		<p><b>Impermanence - </b>Your graphs are stored in the browser cache.  If the cache is cleared for any reason
+ 		    you will lose all your saved graphs.  Think of this graph saving feature as a convenience and not an
+-		    archival record.  Keep a copy of your data in e.g., a Google Sheet.</p>
++		    archival record.  Keep a copy of your data in e.g., a Google Sheet.  (Safari on iPads may also clear it if you
++		    have not visited nPlot for a week or so.)</p>
++		<p><b>Saving to a File - </b>For a copy that lasts, open the Recall Graph panel and click &quot;Save to
++		    File&hellip;&quot; (or press and hold the Save Graph button).  This creates a small file ending in
++		    &quot;.nplot.json&quot; that holds everything: what you typed in every cell (including formulas and skipped
++		    points), the models on every sheet, the labels, any linearization, and all annotation.  On an iPad you can save
++		    it to Files or Google Drive, or AirDrop it.  You can also hand it in.  To get the graph back, click &quot;Open
++		    File&hellip;&quot; in the same panel and choose the file.  The file only makes sense to nPlot.</p>
+ 		<div class ="userManualHeading">
+ 		    <div id="download" class="userManualSection">
+ 			Pasting or Printing Your Graph
+@@ -921,7 +964,9 @@
+ 		<p><b>Open in a Tab - </b>This option is designed for making a quick hard copy that you can tape into a real (made
+ 		    from paper!) lab notebook.  Hold down the control key and the &quot;Graph to Clipboard&quot; button changes to
+ 		    the &quot;Graph in New Tab&quot; button.  Click this button and your graph will appear by itself in a new tab.
+-		    Print that tab to get a graph suitable for taping into a notebook.</p>
++		    Print that tab to get a graph suitable for taping into a notebook.  <b>No keyboard?</b> Press and hold the
++		    Graph to Clipboard button for a menu that also offers &quot;Open graph in a new tab,&quot; &quot;Download
++		    graph as a PNG file,&quot; and &quot;Show graph to save to Photos.&quot;</p>
+ 		<p><b>Download an Image - </b>If you check the &quot;Yes, download&quot; radio button in the Preferences menu, then
+ 		    the &quot;Graph to Clipboard&quot; button changes to the &quot;Download Graph&quot; button.  Clicking it will
+ 		    download your graph as a graphics file (named using your axis labels as
+@@ -1043,6 +1088,25 @@
+ 	    </div>
+ 	</div>
+ 
++	<!-- iPad edition: pop-ups used by the clipboard fallback, Copy Slopes, and the press-and-hold menus -->
++	<div id="graphImageModal" class="modal">
++	    <div id="graphImageContent" class="modal-content">
++		<span class="close">&times;</span>
++		<p>Touch and hold the graph, then choose <b>Copy</b> or <b>Save to Photos</b>.
++		    (On a computer, right-click it and choose Copy Image.)</p>
++		<img id="graphImage" alt="Your graph">
++	    </div>
++	</div>
++	<div id="copyTextModal" class="modal">
++	    <div id="copyTextContent" class="modal-content">
++		<span class="close">&times;</span>
++		<p>Your browser would not let nPlot copy this automatically. Select all of the text below and copy it.</p>
++		<textarea id="copyTextArea" rows="12" readonly></textarea>
++	    </div>
++	</div>
++	<div id="toastMessage"></div>
++	<div id="actionMenu"></div>
++
+ 	<div id="aboutModal" class="modal">
+ 	    <div id="aboutContent" class="modal-content">
+ 		<span id="aboutClose" class="close">&times;</span>
+@@ -1054,7 +1118,22 @@
+ 		<p>The fitting routines are adapted from Press, Teukolsky, et al., <i>Numerical Recipes.</i>
+ 		    The data grid was adapted from
+ 		    <a href="http://jsfiddle.net/ondras/hYfN3/" target="_blank" class="linked">code by Ondřej Žára.</a>  Everything else is my fault.</p>
++		<p>iPad edition (6.20i) adapted by Alan Calac (<a href="https://calacattack.com" target="_blank" class="linked">CalacAttack.com</a>), St. Ignatius College Prep, San Francisco, with the author's
++		    permission. The original nPlot is at <a href="https://noragulfa.com/nPlot/" target="_blank" class="linked">noragulfa.com/nPlot</a>.</p>
+ 		<p id="changeLogTitle">Change Log</p>
++		<p class="verNumber">v6.20i (iPad edition)</p>
++		<p class="change"><b>New Feature: </b>Touch and Apple Pencil support on the graph: drag to place notes, fits, and arrows, and to move the tangent finder; lift to drop.</p>
++		<p class="change"><b>New Feature: </b>Press and hold Clear Data, Swap x &amp; y, Save Graph, or Graph to Clipboard for the options that used to need the ctrl key.</p>
++		<p class="change"><b>New Feature: </b>Saved graphs can be deleted with the &times; next to their name (no shift key needed).</p>
++		<p class="change"><b>New Feature: </b>Save to File and Open File (in the Recall Graph panel) keep a graph permanently, including formulas, skipped points, all models, linearization, and annotation.</p>
++		<p class="change"><b>New Feature: </b>Copy Slopes copies the tangent slope at every data point as two columns, ready to paste.</p>
++		<p class="change"><b>New Feature: </b>Show Error Bars setting. Error bars are now hidden unless it is turned on.</p>
++		<p class="change"><b>Change: </b>Suppress Uncertainties is now on by default, and the setting is remembered.</p>
++		<p class="change"><b>Change: </b>On iPads, Auto Zoom uses Safari's own page scaling instead of a CSS transform.</p>
++		<p class="change"><b>Bug Fix: </b>Graph to Clipboard now works in Safari. If the clipboard is blocked, the graph is shown so it can be copied or saved by hand.</p>
++		<p class="change"><b>Bug Fix: </b>The X/Y label rows no longer wrap the closing parenthesis on iPads.</p>
++		<p class="change"><b>Bug Fix: </b>The Cancel button in the Recall Graph confirmation now closes the dialog.</p>
++		<p class="change"><b>Change: </b>noragulfa.com logo on the front panel replaced by a link to CalacAttack.com (Geoff's credit is here in About).</p>
+ 		<p class="verNumber">v6.20</p>
+ 		<p class="change"><b>New Feature: </b>Button and pop-up dialog to allow linearization of data.</p>
+ 		<p class="change"><b>New Feature: </b>Fit to a logarithmic function has been added to the Advanced Models.</p>
+--- original/nPlot.css
++++ ipad/nPlot.css
+@@ -1,8 +1,9 @@
+ /* REMEMBER TO UPDATE THE VERSION NUMBER IN THE HTML FILE!!!  */
++/* iPad edition (6.20i) changes are marked "iPad edition" and collected at the end of this file. */
+ 
+ @font-face {
+-   font-family: bahnschrift;
+-   src: url(../fonts/bahnschrift.ttf);
++   font-family: bahnschrift, 'DIN Alternate', sans-serif;
++   src: local('Bahnschrift'), url(fonts/bahnschrift.ttf), url(../fonts/bahnschrift.ttf);   /* iPad edition: also look next to nPlot */
+ }
+ 
+ :root {
+@@ -32,7 +33,7 @@
+ }
+ 
+ html {
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 100%;
+     color: var(--fontColor);
+     background-color: var(--backgroundColor);
+@@ -115,7 +116,7 @@
+ .sheetButton {
+     width: 64px;
+     height: 20px;
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 14px;
+     font-weight: 450;
+     color: var(--fontColor);
+@@ -132,10 +133,12 @@
+     background-color: var(--sheetTabColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .sheetButton:hover {
+     background-color: var(--hoverColor) !important;
+     cursor: pointer;   
+ }
++}
+ 
+ .sheetButton:focus {
+     outline: none;
+@@ -148,7 +151,7 @@
+ .miniSheet {
+     width: var(--leftPanelWidth);
+     height: 280px;
+-/*     font-family: bahnschrift, sans-serif;
++/*     font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 12px;
+     font-weight: 450;
+     color: var(--fontColor); */
+@@ -211,7 +214,7 @@
+ .npButton {
+     background-color: var(--backgroundColor);
+     color: var(--fontColor);
+-    font-family: bahnschrift;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 14px;
+     border-radius: 6px;
+     padding-left: 3px;
+@@ -225,10 +228,12 @@
+     outline: 0;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .npButton:hover {
+     cursor: pointer;
+     background-color: #d0d0d0;
+ }
++}
+ 
+ #settingsButton {
+     width: 92px;
+@@ -347,7 +352,7 @@
+ .modelButton {
+     width: 104px;
+     height: 30px;
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 16px;
+     font-weight: 450;
+     color: var(--fontColor);
+@@ -365,10 +370,12 @@
+     outline: 0;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .modelButton:hover {
+     cursor: pointer;
+     background-color: var(--hoverColor) !important;
+ }
++}
+ 
+ #basicModelsTab {
+     background-color: var(--selectedColor);
+@@ -430,10 +437,12 @@
+   border: 1px solid var(--fontColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ /* On mouse-over, add a grey background color */
+ .radioButton:hover input ~ .radioMark {
+   background-color: var(--fontColor);
+ }
++}
+ 
+ /* When the radio button is checked, add a background */
+ .radioButton input:checked ~ .radioMark {
+@@ -628,10 +637,12 @@
+     padding-right: 20px;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ #closeSideModal:hover {
+     color: #F1F1F1;
+     cursor: pointer;
+ }
++}
+ 
+ #recallSavedGraphContent ul {
+     list-style: none;
+@@ -651,10 +662,12 @@
+     transition: 0.3s;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ #recallSavedGraphContent li:hover{
+     color: var(--annoteSelectColor);
+     text-shadow: 0 0 5px var(--alertColor);
+     cursor: pointer;
++}
+ }    
+     
+ #noNameContent, #saveConfirmContent {
+@@ -724,7 +737,7 @@
+ 
+ #settingsModalContent {
+     width: 85%;
+-    height: 610px;
++    height: 640px;
+     padding-top: 10px;;
+     padding-bottom: 20px;
+     font-size: 100%;
+@@ -833,10 +846,12 @@
+     background-color: var(--backgroundColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .selectorItem:hover {
+     background-color: var(--selectedColor);
+     cursor: pointer;
+ }
++}
+ 
+ #settingsBlather {
+     margin-top: 20px;
+@@ -914,7 +929,7 @@
+ 
+ #annotateModalContent {
+     width: 85%;
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 120%;
+     font-weight: 450;
+     padding: 20px;
+@@ -942,7 +957,7 @@
+     margin-bottom: 0;
+     margin-left: 60px;
+     margin-right: 40px;
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 80%;
+     font-weight: 400;
+ }
+@@ -1002,9 +1017,11 @@
+     cursor: pointer;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ #fitList li:hover, #annotationList li:hover {
+     color: var(--annoteSelectColor);
+ }
++}
+ 
+ #addFitDoneButton, #editDoneButton {
+     width: 80px;
+@@ -1038,10 +1055,12 @@
+     margin-top: -7px;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .delAnnote:hover, focus {
+     color: var(--alertColor);
+     cursor: pointer;
+ }
++}
+ 
+ #updateContent {
+     margin-top: -40px;
+@@ -1096,17 +1115,21 @@
+     color: var(--fontColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .helpLink:hover {
+     color: var(--visitedLinkColor);
+ }
++}
+ .TOC:link, .TOC:visited {
+     color: var(--fontColor);
+     text-decoration: none;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .TOC:hover {
+     color: var(--visitedLinkColor);
+ }
++}
+ 
+ .inHelpLink:link {
+     color: var(--visitedLinkColor);
+@@ -1117,12 +1140,14 @@
+     color: var(--visitedLinkColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .inHelpLink:hover {
+     color: var(--fontColor);
+ }
++}
+ 
+ #changeLogTitle {
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 120%;
+     font-weight: 100%;
+     color: var(--fontColor);
+@@ -1138,7 +1163,7 @@
+ }
+ 
+ .verNumber {
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 100%;
+     font-weight: 600;
+     color: var(--fontColor);
+@@ -1147,7 +1172,7 @@
+ }
+ 
+ .change {
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 100%;
+     font-weight: 350;
+     color: var(--fontColor);
+@@ -1185,7 +1210,7 @@
+     border: 4px solid var(--modalBorderColor);
+     border-radius: 12px;
+     width: 30%;
+-    font-family: bahnschrift, sans-serif;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+     font-size: 20px;
+     font-weight: 450;
+     color: var(--fontColor);
+@@ -1198,12 +1223,14 @@
+     font-weight: bold;
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .close:hover,
+ .close:focus {
+     color: var(--closeHoverColor);
+     text-decoration: none;
+     cursor: pointer;
+ }
++}
+ 
+ .linked:link {
+     color: var(--visitedLinkColor);
+@@ -1214,9 +1241,11 @@
+     color: var(--visitedLinkColor);
+ }
+ 
++@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+ .linked:hover {
+     color: var(--fontColor);
+ }
++}
+ 
+ /* ************************************************************************ */
+ 
+@@ -1233,3 +1262,224 @@
+ 
+ 
+ 
++
++/* ************************************************************************ */
++/* iPad edition (6.20i) additions                                           */
++/* ************************************************************************ */
++
++/* Safari on iPads gives text inputs its own padding, border, rounded corners and font.  That made the X/Y label rows
++   a few pixels too wide, so the closing parenthesis wrapped to its own line.  Normalize the inputs and keep each
++   label row on one line, letting the text boxes shrink slightly if they have to. */
++input[type="text"], input[type="number"], input:not([type]), textarea {
++    -webkit-appearance: none;
++    appearance: none;
++    border-radius: 0;
++    -webkit-user-select: text;
++    user-select: text;
++}
++
++.labelRow {
++    white-space: nowrap;
++    flex-wrap: nowrap;
++    align-items: baseline;
++}
++
++.labelClass {
++    box-sizing: content-box;
++    font-family: Arial, Helvetica, sans-serif;
++    font-size: 13.33px;
++    padding: 0 2px 1px 2px;
++    margin: 0;
++    border-top: 0;
++    border-left: 0;
++    border-right: 0;
++    flex: 0 1 auto;
++    min-width: 20px;
++}
++
++.cellClass, .guess {
++    font-family: Arial, Helvetica, sans-serif;
++    margin: 0;
++}
++
++/* buttons: no iOS long-press callout or text-selection loupe, and no double-tap-to-zoom delay */
++button, .npButton, .sheetButton, .modelButton, .radioButton, #canvas1 {
++    -webkit-touch-callout: none;
++    -webkit-user-select: none;
++    user-select: none;
++    touch-action: manipulation;
++    -webkit-tap-highlight-color: transparent;
++}
++
++/* tangent finder: Copy Slopes button, and readout text that can be selected */
++#tangentControls {
++    align-items: center;
++}
++
++#copySlopesButton {
++    font-size: 12px;
++    padding: 3px 6px;
++    border-width: 1px;
++}
++
++#slopeResults {
++    -webkit-user-select: text;
++    user-select: text;
++}
++
++/* recall panel: Save to File / Open File, and a delete control on each saved graph */
++#fileButtons {
++    display: flex;
++    flex-direction: column;
++    gap: 10px;
++    padding: 0 20px 10px 28px;
++}
++
++.fileButton {
++    width: 190px;
++}
++
++#savedGraphsHeading, .noSavedGraphs {
++    font-family: sans-serif;
++    font-size: 14px;
++    color: var(--hoverColor);
++    margin: 10px 20px 8px 28px;
++    white-space: nowrap;
++}
++
++#recallSavedGraphContent li {
++    display: flex;
++    flex-direction: row;
++    justify-content: space-between;
++    align-items: center;
++    padding-right: 10px;
++}
++
++.savedGraphName {
++    overflow: hidden;
++    text-overflow: ellipsis;
++    white-space: nowrap;
++    max-width: 170px;
++}
++
++.delGraph {
++    color: #818181;
++    font-size: 26px;
++    line-height: 20px;
++    padding: 4px 6px;
++    margin-left: 6px;
++}
++
++@media (hover: hover) {
++    .delGraph:hover {
++	color: var(--alertColor);
++    }
++}
++
++/* press-and-hold menus */
++#leftButtonsTopRow, #leftButtonsBottomRow {
++    position: relative;
++}
++
++#actionMenu {
++    display: none;
++    position: absolute;
++    z-index: 5;
++    min-width: 220px;
++    background-color: var(--modalColor);
++    border: 2px solid var(--fontColor);
++    border-radius: 8px;
++    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
++    padding: 4px 0;
++}
++
++.actionMenuItem {
++    display: block;
++    width: 100%;
++    text-align: left;
++    background: none;
++    border: 0;
++    padding: 10px 14px;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
++    font-size: 15px;
++    color: var(--fontColor);
++    cursor: pointer;
++    white-space: nowrap;
++}
++
++.actionMenuItem:active {
++    background-color: var(--selectedColor);
++}
++
++@media (hover: hover) {
++    .actionMenuItem:hover {
++	background-color: var(--selectedColor);
++    }
++}
++
++/* short messages */
++#toastMessage {
++    display: none;
++    position: fixed;
++    z-index: 10;
++    left: 50%;
++    bottom: 40px;
++    transform: translateX(-50%);
++    max-width: 640px;
++    padding: 12px 18px;
++    background-color: var(--fontColor);
++    color: #FFFFFF;
++    border-radius: 10px;
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
++    font-size: 16px;
++    text-align: center;
++    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
++}
++
++/* graph-as-image and copy-by-hand pop-ups */
++#graphImageContent {
++    width: 520px;
++    text-align: center;
++}
++
++#graphImage {
++    width: 480px;
++    height: auto;
++    border: 1px solid var(--cellBorderColor);
++    -webkit-touch-callout: default;
++    -webkit-user-select: auto;
++    user-select: auto;
++}
++
++#copyTextContent {
++    width: 420px;
++}
++
++#copyTextArea {
++    width: 100%;
++    box-sizing: border-box;
++    font-family: Menlo, Consolas, monospace;
++    font-size: 15px;
++    border: 2px solid var(--fontColor);
++    padding: 6px;
++}
++
++/* front-panel link to CalacAttack.com (replaces the noragulfa.com logo) */
++#logoPanel {
++    align-items: flex-end;
++}
++
++#homeLink {
++    font-family: bahnschrift, 'DIN Alternate', sans-serif;
++    font-size: 15px;
++    font-weight: 600;
++    color: var(--fontColor);
++    text-decoration: none;
++    padding-bottom: 4px;
++}
++
++@media (hover: hover) {
++    #homeLink:hover {
++	text-decoration: underline;
++    }
++}

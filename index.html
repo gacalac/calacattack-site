@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CalacAttack — Interactive Simulators</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Mono:wght@400;500&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f1a;
+      --card: #1a1f35;
+      --border: #252c4a;
+      --accent1: #ffde59;
+      --accent2: #ff5e7a;
+      --accent3: #3de8c8;
+      --accent4: #7b6fff;
+      --text: #e8ecff;
+      --muted: #6b7299;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(123,111,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(123,111,255,0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(13,15,26,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .nav-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 100px 24px 64px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      color: var(--accent3);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.1s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(4rem, 12vw, 9rem);
+      line-height: 0.9;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .hero-title span.yellow { color: var(--accent1); }
+    .hero-title span.pink   { color: var(--accent2); }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.35s forwards;
+    }
+
+    .hero-sub strong { color: var(--text); }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border: 1px solid var(--accent3);
+      border-radius: 100px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.45s forwards;
+    }
+
+    .section {
+      position: relative; z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .section-header {
+      display: flex; align-items: baseline; gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .section-label {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.8rem;
+      color: var(--text);
+    }
+
+    .section-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .sim-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      opacity: 0;
+      animation: fadeUp 0.5s forwards;
+    }
+
+    .sim-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.25s;
+      border-radius: inherit;
+      background: radial-gradient(circle at top left, color-mix(in srgb, var(--c) 8%, transparent), transparent 60%);
+    }
+
+    .sim-card[data-color="yellow"] { --c: var(--accent1); }
+    .sim-card[data-color="pink"]   { --c: var(--accent2); }
+    .sim-card[data-color="teal"]   { --c: var(--accent3); }
+    .sim-card[data-color="purple"] { --c: var(--accent4); }
+
+    a.sim-card:hover { transform: translateY(-4px); border-color: var(--c); box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--c); }
+    a.sim-card:hover::before { opacity: 1; }
+
+    .card-icon { font-size: 2.2rem; line-height: 1; }
+
+    .card-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      color: var(--c);
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .card-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: color-mix(in srgb, var(--c) 15%, transparent);
+      color: var(--c);
+      align-self: flex-start;
+    }
+
+    .card-arrow {
+      font-size: 1.1rem;
+      color: var(--muted);
+      align-self: flex-end;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    a.sim-card:hover .card-arrow { transform: translate(4px, -4px); color: var(--c); }
+
+    .sim-card.placeholder {
+      border-style: dashed;
+      opacity: 0.4 !important;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    footer span { color: var(--accent1); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .hero { padding: 72px 20px 48px; }
+      .section { padding: 32px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-logo" href="#">CalacAttack</a>
+    <span class="nav-tag">Educational Interactives</span>
+  </nav>
+
+  <section class="hero">
+    <p class="hero-eyebrow">// learn by doing</p>
+    <h1 class="hero-title">
+      <span class="yellow">Calac</span><span class="pink">Attack</span>
+    </h1>
+    <p class="hero-sub">
+      A collection of <strong>interactive simulations & educational tools</strong>
+      — built to make hard concepts click.
+    </p>
+    <span class="hero-badge">↓ pick a simulation</span>
+  </section>
+
+  <main class="section">
+    <div class="section-header">
+      <h2 class="section-label">Simulations</h2>
+      <span class="section-count" id="simCount"></span>
+    </div>
+    <div class="sim-grid" id="simGrid"></div>
+  </main>
+
+  <footer>
+    <span>CalacAttack</span> &nbsp;·&nbsp; educational interactives &nbsp;·&nbsp; built with Claude
+  </footer>
+
+  <script>
+
+    // ================================================================
+    //  ✏️  YOUR SIMULATIONS LIST — EDIT THIS TO ADD / UPDATE SIMS
+    // ================================================================
+    //
+    //  HOW TO GET A LINK FROM CLAUDE:
+    //    1. Open your simulation/artifact in Claude.ai
+    //    2. Click the share icon (↗) in the top-right of the artifact
+    //    3. Click "Publish" (if not already published), then "Copy link"
+    //    4. Paste that URL into the "url" field below
+    //
+    //  FIELDS:
+    //    title  — name shown on the card
+    //    desc   — 1-2 sentence description
+    //    icon   — any emoji
+    //    tag    — subject label e.g. "Math", "Physics", "Biology"
+    //    color  — "yellow", "pink", "teal", or "purple"
+    //    url    — your Claude artifact share link
+    //             Leave as "" to show the card as "Coming Soon"
+    //
+    //  TO ADD A SIM:  copy one { block }, paste it, fill in your info
+    //  TO REMOVE:     delete the whole { block } for that sim
+    //  TO REORDER:    drag the { blocks } into the order you want
+    //
+    // ================================================================
+
+    const simulations = [
+
+      {
+        title: "Standing Waves on a String",
+        desc:  "Experiment with standing waves by changing tension, mass density, length, and even harmonic pattern.",
+        icon:  "",
+        tag:   "waves, sound, string, standing waves, harmonics",
+        color: "yellow",
+        url:   "https://strong-frangollo-591d81.netlify.app/"   // ← paste your Claude share link here
+      },
+
+      {
+        title: "Guitar String Resonance",
+        desc:  "Learn about how tension, mass density, and fretting location affects the sound of a guitar.",
+        icon:  "⚗️",
+        tag:   "waves/sound",
+        color: "teal",
+        url:   "https://claude.ai/public/artifacts/fb30d18f-8fef-419e-aa63-852481d3a98e"   // ← paste your Claude share link here
+      },
+
+      {
+        title: "Two-Source Sound Wave Interference",
+        desc:  "Learn about how two sound sources interfere depending on location, distance apart, and frequency.",
+        icon:  "📊",
+        tag:   "waves/sound/interference",
+        color: "pink",
+        url:   "https://eclectic-rolypoly-f064b1.netlify.app/"   // ← paste your Claude share link here
+      },
+
+      {
+        title: "Match the Motion",
+        desc:  "A kinematics card deck — match position, velocity, and acceleration graphs to written motion descriptions across six scenarios.",
+        icon:  "🃏",
+        tag:   "kinematics, motion graphs",
+        color: "purple",
+        url:   "match-the-motion.html"   // ← same-site file, no external link needed
+      },
+
+      {
+        title: "Constant-Acceleration Lab",
+        desc:  "Choose a setup, set the starting values, and press Play — watch position, velocity, and acceleration graphs fill in as the object moves.",
+        icon:  "🚀",
+        tag:   "kinematics, constant acceleration",
+        color: "teal",
+        url:   "constant-acceleration-lab.html"   // ← same-site file, no external link needed
+      },
+
+    ];
+
+    // ================================================================
+    //  🚫  DO NOT EDIT BELOW THIS LINE
+    // ================================================================
+
+    const colors = ["yellow", "pink", "teal", "purple"];
+    const grid   = document.getElementById("simGrid");
+    const count  = document.getElementById("simCount");
+
+    simulations.forEach((sim, i) => {
+      const color       = sim.color || colors[i % colors.length];
+      const hasLink     = sim.url && sim.url.trim() !== "";
+      const tag         = hasLink ? "a" : "div";
+      const card        = document.createElement(tag);
+
+      card.className = "sim-card" + (hasLink ? "" : " placeholder");
+      card.setAttribute("data-color", color);
+      card.style.animationDelay = `${0.05 + i * 0.07}s`;
+
+      if (hasLink) {
+        card.href   = sim.url;
+        card.target = "_blank";
+        card.rel    = "noopener";
+      }
+
+      card.innerHTML = `
+        <div class="card-icon">${sim.icon || "🔬"}</div>
+        <div class="card-title">${hasLink ? sim.title : "Coming Soon"}</div>
+        <p class="card-desc">${hasLink ? sim.desc : "Another interactive is on its way."}</p>
+        <span class="card-tag">${sim.tag}</span>
+        ${hasLink ? '<span class="card-arrow">↗</span>' : ""}
+      `;
+
+      grid.appendChild(card);
+    });
+
+    const liveCount = simulations.filter(s => s.url && s.url.trim() !== "").length;
+    count.textContent = `// ${liveCount} of ${simulations.length} live`;
+
+  </script>
+
+</body>
+</html>

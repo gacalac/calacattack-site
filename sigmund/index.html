@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="format-detection" content="telephone=no">
+    <title>Sigmund</title>
+    <meta name="description" content="Video analysis tool for physics labs">
+    <meta name="keywords" content="video, video analysis, measurement, physics, introductory, online lab, remote learning, lecture demonstration, physical science, school, student, ap physics, modeling instruction">
+    <link rel="stylesheet" href="css/sigmund.css">
+</head>
+    <body>
+<div id="stage">
+	<div id="mainContainer">
+	    <div id="leftPanel">
+		<div id="leftScrim">
+		    &nbsp;
+		</div>
+		<div id="skipMessageBox">
+		    <div id="skipMessageText">
+			To skip a step, shift-click the button or tap below.
+			<button id="skipStepButton" class="dxButton" type="button">Skip step</button>
+		    </div>
+		</div>
+		<div id="titleBlock">
+		    <div id="title">
+			Sigmund
+		    </div>
+		    <div id="subTitle">
+			Video Analysis
+		    </div>
+		</div>
+		<div id="calibrateButton" class="tooltip">
+		    <button class="dxButton" id="calButton">Calibrate</button>
+		    <span class="tooltiptext" id="calTip" style="width:320px">Click to draw a line whose length you know.</span>
+		</div>
+		<div id="setTZeroButton" class="tooltip">
+		    <button class="dxButton" id="setTZero">Set <i>t</i> = 0</button>
+		    <span class="tooltiptext" id="t0Tip" style="width:275px">Click to set <i>t</i> = 0 at the current frame.</span>
+		</div>
+		<div id="setXZeroButton" class="tooltip">
+		    <button class="dxButton" id="setXZero">Set <i>x</i> = 0</button>
+		    <span class="tooltiptext" id="x0Tip" style="width:220px">Click to choose the <i>x</i> = 0 axis.</span>
+		</div>
+		<div id="setYZeroButton" class="tooltip">
+		    <button class="dxButton" id="setYZero">Set <i>y</i> = 0</button>
+		    <span class="tooltiptext" id="y0Tip" style="width:220px">Click to choose the <i>y</i> = 0 axis.</span>
+		</div>
+		<div id="getButton" class="tooltip" style="display: flex">
+		    <button class="dxButton" id="getDataButton">Get data points</button>
+		    <span class="tooltiptext" id="getTip" style="width:240px">Click to start tracking an object.</span>
+		</div>
+		<div id="whileCollectingButtons" style="display: none">
+		    <button class="dxButton" id="doneCollecting">Done</button>
+		    <button class="dxButton" id="cancelCollecting">Cancel</button>
+		</div>
+		<div id="measureButton" class="tooltip">
+		    <button class="dxButton" id="measureDistance">Measure</button>
+		    <span class="tooltiptext fatToolTipText" id="measTip" style="width:400px">Use the calibration to measure a distance in the
+			video. Shift-click (or press and hold) this button to clear all measurements.</span>
+		</div>
+		<div class="tooltip">
+		    <button class="dxButton" id="hidePoints">Hide points</button>
+		    <span class="tooltiptext" id="hideTip" style="width:280px">Toggle display of the tracking points.</span>
+		</div>
+		<div class="tooltip">
+		    <button class="dxButton" id="showOrigin">Show origin</button>
+		    <span class="tooltiptext" id="origTip" style="width:235px">Toggle display of the <i>x-y</i> axes.</span>
+		</div>
+		<div class="tooltip">
+		    <button class="dxButton" id="showScale">Show scale</button>
+		    <span class="tooltiptext" id="scalTip" style="width:290px">Toggle display of the video calibration.</span>
+		</div>
+		<div id="newVideoButton" class="tooltip">
+		    <button class="dxButton" id="newVideo">New video</button>
+		    <span class="tooltiptext" id="newTip" style="width:235px">Reset for loading a new video.</span>
+		</div>
+		<div id="getHelpButton" class="tooltip">
+		    <button class="dxButton" id="getHelp">Instructions</button>
+		    <span class="tooltiptext" style="width:200px">Read these if you dare!</span>
+		</div>
+		<div class="tooltip" id="aboutWrap">
+		    <button class="dxButton" id="aboutButton">About</button>
+		    <span class="tooltiptext" style="width:200px">Version history, etc.</span>
+		</div>
+	    </div>
+	    <div id="vidContainer">
+		<div id="videoWrapper">
+		    <div id="dropBox">
+			<video id="theVideo" playsinline webkit-playsinline muted preload="auto" disablepictureinpicture></video>
+			<div id="loaderDiv">
+			    <div id="qStart">
+				<div id="qiHead">
+				    Quick Start Instructions
+				</div>
+				<div id="quickInstructions">
+				    <ol>
+					<li>Load a video</li>
+					<li>Calibrate the video</li>
+					<li>Advance the video until the object is touching nothing but air</li>
+					<li>Click the <i>t</i> = 0 button</li>
+					<li>Set <i>x</i> and <i>y</i> zero position using the buttons</li>
+					<li>Start collecting data</li>
+					<li>Copy your data using the buttons in the lower right</li>
+				    </ol>
+				</div>
+			    </div>
+			    <div id="loadInstr">Drag and drop a video here or...</div>
+			    <label class="loadButton">
+				<input type="file" id="file-selector" accept="video/*,.mp4,.mov,.m4v" style="display: none">
+				Choose a file
+			    </label>
+			    <div id="readInstr">(Don't know what to do?  Try reading the instructions!)</div>
+			</div>
+		    </div>
+		    <canvas id="calibrate" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 2">
+		    </canvas>
+		    <canvas id="origin" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 3">
+		    </canvas>
+		    <canvas id="measure" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 4">
+		    </canvas>
+		    <canvas id="points" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 5">
+		    </canvas>
+		    <canvas id="time" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 6">
+		    </canvas>
+		    <canvas id="cursor" width="960" height="540" style="position:absolute; top: 0px; left: 0px; z-index: 7">
+		    </canvas>
+		</div>
+		<div id="controlWrapper">
+		    <div id="videoControls">
+			<button class="vcButton" id="replay"><i class="material-icons">replay</i></button>
+			<button class="vcButton" id="play"><i class="material-icons">play_arrow</i></button>
+			<span id="sp1" class="vcSpacer">&nbsp;</span>
+			<button class="vcButton" id="stepBack"><i class="material-icons">skip_previous</i></button>
+			<button class="vcButton" id="stepForward"><i class="material-icons">skip_next</i></button>
+			<span class="vcSpacer">&nbsp;</span>
+			<div id="vcProgressBar">
+			    <div id="videoProgress"></div>
+			</div>
+			<div id="frameCounter">
+			    0000/0000
+			</div>
+		    </div>
+		    <div id="skipContainer">
+			<div id="skipText">
+			    Frame advance after data point:
+			</div>
+			<div>
+			    <input id="skipInput" type="text" value="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+			</div>
+		    </div>
+		</div>
+		<div id="bottomRow">
+		    <div id="leftStuffContainer">
+			<div id="skipFrameWrap">
+			    <button id="skipFrameButton">Skip This Frame</button>
+			</div>
+			<div id="fpsDisplay">
+			    --- fps
+			</div>
+		    </div>
+		    <div id="fileNameContainer">
+			<b>File:</b>
+		    </div>
+		    <div id="muteContainer">
+			<div id="muteTextBox">
+			    Click to unmute: 
+			</div>
+			<div id="muteButtonDiv">
+			    <button class="muteButton" id="muted" style="display: block"><i class="material-icons">volume_off</i></button>
+			    <button class="muteButton" id="unmuted" style="display: none"><i class="material-icons">volume_up</i></button>
+			</div>
+		    </div>
+		    <div id="manualFPScontainer">
+			<label class="checkBoxes" id="useManualFPS">Use manual frame rate of: 
+			    <input type="checkbox" id="selectManual">
+			    <span class="checkmark"></span>
+			</label>
+			<div id="manualFPSwrapper">
+			    <input id="manualFrameRate" type="text" readonly inputmode="none" aria-label="Manual frame rate">
+			    <div id="frameRateSelector">
+				<div class="frameRateValue" data-value="240">240</div>
+				<div class="frameRateValue" data-value="120">120</div>
+				<div class="frameRateValue" data-value="60">60</div>
+				<div class="frameRateValue" data-value="30">30</div>
+				<div class="frameRateValue" data-value="24">24</div>
+			    </div>
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div id="tableContainer">
+		<div id="logoDiv">
+		    <a href="https://noragulfa.com/sigmund/" target="_blank" rel="noopener" id="creditLink">Based on Sigmund<br>by Geoff Nunes</a>
+		</div>
+		<div id="tableWrapper">
+		    <table id="theTable">
+			<tbody><tr>
+			    <td id="h0" class="edgeClass">&nbsp;</td>
+			    <td id="tHead" class="headClass">t (s)</td>
+			    <td id="xHead" class="headClass">x (?)</td>
+			    <td id="yHead" class="headClass">y (?)</td>
+			</tr>
+		    </tbody></table>
+		</div>
+		<div id="copyButtonWrapper">
+		    <div id="copyInstructions">
+			Copy data to clipboard
+		    </div>
+		    <div id="topRowButtons">
+			<div class="tooltip">
+			    <button class="dxButton" id="copyXData"><i>x</i> vs. <i>t</i></button>
+			    <span class="tooltiptextR fatToolTipText" style="width:210px">Copy horizontal positon vs. time to clipboard.</span>
+			</div>
+			<div class="tooltip">
+			    <button class="dxButton" id="copyYData"><i>y</i> vs. <i>t</i></button>
+			    <span class="tooltiptextR fatToolTipText" style="width:200px">Copy vertical positon vs. time to clipboard.</span>
+			</div>
+		    </div>
+		    <div class="tooltip">
+			<button class="dxButton" id="copyBothXandY">Both <i>x</i> and <i>y</i></button>
+			<span class="tooltiptextR fatToolTipText" style="width:260px">Copy both vertical and horizontal positons vs. time to clipboard.</span>
+		    </div>
+		</div>
+		<div id="extraCopyOptions">
+		    <label id="includeHeadingsLabel"><input type="checkbox" id="includeHeadings"> Include headings</label>
+		    <button class="dxButton" id="downloadCSV" type="button">Download CSV</button>
+		</div>
+		<div id="nPlotWrapper">
+		    <a href="/nplot/" target="_blank" rel="noopener">
+			<button class="dxButton" id="nPlotLauncher">Launch nPlot</button>
+		    </a>
+		</div>
+	    </div>
+	</div>
+	<div id="dialogContainer">
+	    <div id="calDialogPane">
+		<div id="calDialogContainer">
+		    <div id="calDialog">
+			<div id="calInstructions">
+			    <div>Enter the length</div>
+			    <div>for the line</div>
+			    <div>and its units.</div>
+			</div>
+			<div id="calFields">
+			    <div id="lengthContainer" class="inputBox">
+				Length: <input id="length" class="calInput" autocomplete="off" inputmode="decimal" enterkeyhint="next">
+			    </div>
+			    <div id="unitContainer" class="inputBox">
+				Unit: <input id="unit" class="calInput" onkeydown="handleCalibrationDone(event)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
+			    </div>
+			</div>
+			<div id="calButtons">
+			    <button class="dxButton" id="calDone">Done</button>
+			    <button class="dxButton" id="calCancel">Cancel</button>
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div id="messagePane">
+		<div id="updateMessageContainer">
+		    <div id="updateMessageDiv">
+			<div id="updateMessage">
+			    <div id="updateVersion">dummy text</div>
+			    <div id="updateText" style="margin-top: 15px">dummy text</div>
+			    <button id="updateMessageButton" class="dxButton" style="width: 100px">OK</button>
+			</div>
+		    </div>
+		</div>
+		<div id="confirmTZeroContainer">
+		    <div id="confirmTZeroDiv">
+			<div id="confirmTZeroMessage">
+			    Current frame set as <i>t</i> = 0.
+			</div>
+		    </div>
+		</div>
+		<div id="confirmCopyContainer">
+		    <div id="confirmCopyDiv">
+			<div id="confirmCopyMessage">
+			    Data table copied to clipboard.
+			</div>
+		    </div>
+		</div>
+		<div id="dataWarnContainer">
+		    <div id="dataWarnDiv">
+			<div id="dataWarnMessage">
+			    <div>This action will erase the current data set.</div>
+			    <div id="dwLine2" style="margin-top: 15px"> Is that what you want to to?</div>
+			    <div id="dataWarnButtons">
+				<button id="doIt" class="dxButton">Yes, it is.</button>
+				<button id="nope" class="dxButton">No, it is not.</button>
+			    </div>
+			</div>
+		    </div>
+		</div>
+		<div id="noVideoContainer">
+		    <div id="noVideoDiv">
+			<div id="noVideoMessage">
+			    <div>You should load a video first.</div>
+			    <button id="noVideoOKButton" class="dxButton">Well, OK then.</button>
+			</div>
+		    </div>
+		</div>
+		<div id="badVideoContainer">
+		    <div id="badVideoDiv">
+			<div id="badVideoMessage">
+			    <div>This video failed to load properly.</div>
+			    <div id="badVideoText" style="margin-top: 15px">Sigmund should be able to handle videos from
+				either iPhone or Android.  If you continue to
+				have problems, try converting your video
+				to MP4 using Freeconvert.com or another free converter service.</div>
+			    <button id="badVideoOKButton" class="dxButton">Fiddlesticks!</button>
+			</div>
+		    </div>
+		</div>
+	    </div>
+	    <div id="largeVideoContainer">
+		<div id="largeVideoDiv">
+		    <div id="largeVideoMessage">
+			<div><b>This video is larger than 300 megabytes!</b></div>
+			<div style="margin-top: 15px">Sigmund cannot handle a video that large.</div>
+			<div>If you keep each video to under 2 minutes</div>
+			<div> in length you should be fine.</div>
+			<button id="largeVideoOKButton" class="dxButton">I will be briefer in the future</button>
+		    </div>
+		</div>
+	    </div>
+	    <div id="helpPane">
+		<div id="helpContainer">
+		    <span id="helpTop"></span>
+		    <span id="helpClose">×</span>
+		    <h2>TLDR</h2>
+		    <p>Load a video, and then work your way down the left-side buttons from Calibrate down to Get Data Points.  Use
+			the single step buttons to position the video to the frame you want to set as <i>t</i> = 0. The
+			zero positions for <i>x</i> and <i>y</i> are not critical.  Set them wherever you like. When you are done
+			tracking the object, use the buttons at the lower right to copy the data into the clipboard for pasting into
+			a spreadsheet or nPlot. If all else fails, try reading the longer instructions below. </p>
+		    <h2>Sigmund Video Analysis Program</h2>
+		    <p>This browser-based app is designed to allow the video tracking of a moving object, like a tossed ball.  The
+			basic idea is simple: load a movie, use an object in the video to set the scale, and then click on the
+			moving object in successive video frames to get position vs. time data. It works on iPads, Chromebooks, Macs and other
+			laptops. A phone screen is too small to use it comfortably.</p>
+		    <ul id="helpList"> 
+			<li><a href="#video" class="TOC">Videos &amp; Video Format</a></li>
+			<li><a href="#player" class="TOC">The Video Player</a></li>
+			<li><a href="#cal" class="TOC">Calibration</a></li>
+			<li><a href="#orig" class="TOC">Setting the Origin</a></li>
+			<li><a href="#Data" class="TOC">Taking Data</a></li>
+			<li><a href="#upld" class="TOC">Uploading Data</a></li>
+			<li><a href="#meas" class="TOC">Measurements</a></li>
+			<li><a href="#sloMo" class="TOC">Slow Motion</a></li>
+			<li><a href="#movies" class="TOC">Movie Clips</a></li>
+		    </ul>
+		    <h4 id="video">Videos &amp; Video Format</h4>
+		    <p>This program works with the mp4 format videos produced by Android and Apple smartphones, <b><i> but you may
+			need to change the settings on your phone!</i></b> See <b>Problem videos</b> below. iPhone video files
+			have a different extension (.mov instead of .mp4) but work just fine with Sigmund.  This program will
+			work best if you keep it simple: take short videos with no slow motion.</p>
+		    <p><b>Do not edit the video on your phone.</b>  This scrambles the location of key information in the video file.
+			If you want a short video, take a short video.</p>
+		    <p><b>Slow motion videos are tricky!</b> Slow motion is not generally needed for videos of dropped or gently
+			tossed balls.  If you need slow motion to record your video of, for example, a fastball, please see the
+			<b><a href="#sloMo" class="TOC">Slow Motion</a></b> section below.</p>
+		    <p><b>Problem videos</b> Unless you have a very old smartphone, it will probably default to storing your video
+			in a "high efficiency" format known as H.265/HEVC. Probably these will work just fine. But if you
+			get a pop-up message telling you that the video can't be played, change the settings on your phone so that
+			the videos are stored in the "more compatible" H.264/AVC format.</p>
+		    <h4 id="player">The Video Player<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>This should feel more or less like every other video playing app you've used.  There's a play/pause button and a
+			button to reset the video to the start. There are a pair of buttons to step one frame forward or one frame
+			backward (you can also use the left and right arrow keys on the keyboard for this).</p>
+		    <p>The progress bar can be used to jump to any point in the video, or can be dragged to move through it.  If you drag
+			the bar too fast, you may have to reload your video.  To the right of the progress bar is a display to show you
+			which frame you're looking at, and the total number of frames in the video.</p>
+		    <p>By default, videos are muted when they first load.  The control to unmute or re-mute the video is under the
+			progress bar.</p>
+		    <p>A time stamp giving the time of the
+			current frame is shown in the lower right corner of the video area.  The zero of time is either the first frame, or the
+			frame you set it to (see <b><a href="#orig" class="TOC">Setting the Origin</a></b> below).</p>
+		    <p>The Skip This Frame button is
+			explained in the <b><a href="#Data" class="TOC">Taking Data</a></b> section below.</p>
+		    <h4 id="cal">Calibration<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>If you were planning ahead, there is something like a meter stick in your video.  Press the Calibration button
+			to start.  Click on the video where you want to start defining a line of known length, then click again where
+			you want that line to end.  Enter the actual length of this line and the units for that length in the popup
+			window.  The units in the data table headings will be updated to reflect your input. The calibration line will remain
+			on the screen.  You can toggle the display of the length value with the Show Scale button.  You can re-do the
+			calibration if you think you messed up, but you will lose any collected data. </p>
+		    <h4 id="orig">Setting the Origin<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>There are three buttons.  The <i>t</i> = 0 button sets the zero of time at whatever
+			frame is currently displayed.  You set the positions for the zeroes of <i>x</i> and <i>y</i> with the cursor.
+			You can re-do any or all of these steps, but if you have collected any data, you will lose it.  The Show Origin will toggle
+			the display of the <i>x</i> and <i>y</i> axes you just set up.  It will also scroll the video to show the frame you set as
+			<i>t</i> = 0.  This can be useful for quickly resetting the video to the point where you started taking data.</p>
+		    <p>If you do not set an origin, the point (0,0) will be in the upper left corner of the video, and <i>t</i> = 0
+			occurs at the first frame.</p>
+		    <h4 id="Data">Taking Data<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>Click the Get Data Points button to start.  Each time you click on the image (on a touch screen: touch the image, slide to the exact spot, and lift your finger or pen), you will get a red dot, and the
+			position of the dot will be loaded into the data table.  When you click, the movie will automatically be moved
+			ahead by the Frame Advance number in the lower left. For a regular speed video of a dropped object a Frame
+			Advance of 2 works well.</p>
+		    <p>If the movement of the object is small, the red dots can make it difficult to see things.  You can hide the points
+			(with the Hide Points button) while taking data. Everything will work the same, you just won't get that red dot
+			when you click. </p>
+		    <p>Click the Done button when you have finished, or Cancel to erase all your data and start over.  (This does
+			not affect the calibration or zero point.)</p>
+		    <p>Acquiring a new set of data (by clicking Get Position Data again) means erasing the old set.  Be sure you have
+			copied that data to the clipboard (and pasted it into a spreadsheet!) before proceeding.  If, for some reason,
+			you don't want to save the old data, just lie and say that you have.</p>
+		    <p>While you are tracking an object, the video controls remain active, so you can use them to move forward or
+			backward before clicking the next point.  The player always knows what frame it is showing, so the time
+			information will always be correct for videos you took yourself...<b>BUT</b> read the
+			<b><a href="#sloMo" class="TOC">Slow Motion</a></b> section below if you are analyzing a movie clip you got from
+			YouTube or you took your video using the slow motion setting on your camera.</p>
+		    <h4 id="upld">Uploading Data<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>You can upload the horizontal and vertical postions (vs. time) separately.  Pressing either the "<i>x</i> vs. <i>t</i> "
+			or "<i>y</i> vs. <i>t</i> " buttons will copy two columns of data to the clipboard so that
+			you can paste them directly into nPlot or some other graphing program. (But why would you want to use any
+			other program?)  If you want column headers with the data (for pasting into an electronic lab notebook) hold
+			down the shift key while pressing the button, or tick the Include headings box (handy on an iPad, which has no shift key).  If copying is blocked by
+			your browser, the Download CSV button saves the data as a file that opens in Numbers, Excel or Google Sheets.  For your convenience, there is a Launch nPlot button right below the copy data
+			buttons.</p> 
+		    <h4 id="meas">Measurements<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>Use this tool to measure distances in the video.  If there is no calibration set, the distance will be reported
+			in screen pixels.  The interface works just like the calibration: click at one end of the distance you want to
+			measure, then click again at the other. Hold down the shift-key while clicking the Measure button, or press and hold the
+			button for a second, to clear all the previous measurements.</p>
+		    <h4 id="sloMo">Slow Motion<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>Slow motion is tricky.  Different phone brands handle the time information differently.  For some brands, this information 
+			depends on which version of iOS they are running.  If you took your video in slow motion, and the frames per second
+			display (next to the Skip This Frame button) matches how you took the video, things should be fine.  If the fps display doesn't
+			match what you did, then you will have to set the frame rate manually.  Use the input in the bottom right corner (below the Frame
+			Advance control) to select your actual frame rate. (The available frame rates are limited to what is availble on common smartphones.)
+			You can revert to the video's native frame rate by un-checking the Use manual frame rate checkbox.</p>
+		    <h4 id="movies">Movie Clips<span class="helpLink" style="float:right"><a href="#helpTop" class="helpLink">Back to top</a></span></h4>
+		    <p>Movie cameras run at 24 frames per second.  Movie clips obtained from YouTube (and likely other internet sources) run at 30
+			frames per second.  A clip taken from a movie will have duplicate frames.  If you single-step through the clip, you will see that sometimes
+			what you are looking at does not change even though you have stepped to the next frame.  This is a duplicate frame.  To analyze
+			a movie clip, use a manual frame rate of 24 frames per second.  Then, when you get a duplicate frame, click the Skip This Frame
+			button.  (Sometimes you get two duplicate frames in a row.  If the frame does not change when you click the button, click it again.)</p>
+		    <span style="margin-top: 20px">&nbsp;</span>
+		</div>
+	    </div>
+	    <div id="aboutPane">
+		<div id="aboutContainer">
+		    <span id="aboutClose">×</span>
+		    <p class="aboutPara" id="version">Sigmund Video Analyzer 2.16</p>
+		    <p class="aboutPara">© 2022-2026, Geoff Nunes</p>
+		    <p class="aboutPara"><b>This is a modified version</b> of <a href="https://noragulfa.com/sigmund/" target="_blank" rel="noopener">Sigmund</a>, changed in 2026 to work more reliably on iPads and in Safari, Chrome and Firefox. The changes are listed below and in the file CHANGES.md. The original author is not responsible for them.</p>
+		    <p class="aboutPara">This program is free software: you can redistribute it and/or
+			modify it under the terms of the <a href="https://www.gnu.org/licenses/" target="_blank">GNU General Public License Version 3</a>
+			as published by the Free Software Foundation.</p>
+		    <p class="aboutPara">This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+			without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+			General Public License for more details.</p>
+		    <p class="aboutPara">Please do not send questions about this modified version to the original author.</p>
+		    <p id="changeLogTitle">Change Log</p>
+		    <p class="verNumber">v2.16.1 (modified version, 2026)</p>
+		    <p class="change"><b>New Feature:</b> Touch and Apple Pencil support: touch the video, slide to the exact spot, lift to place the point.</p>
+		    <p class="change"><b>New Feature:</b> Download CSV button, an Include headings checkbox, a Skip step button, and press-and-hold on Measure to clear measurements (replacing shift-click on devices without a shift key).</p>
+		    <p class="change"><b>Change:</b> The layout now scales to fit the screen, width and height, with no CSS zoom.</p>
+		    <p class="change"><b>Change:</b> Videos are played from the file instead of being copied into memory, and only the file header is read for frame timing. Files whose header cannot be read get an estimated frame rate.</p>
+		    <p class="change"><b>Bug Fix:</b> Time labels now use the moment each frame starts, so they stay correct when the frame rate changes inside a video (variable-speed slow motion).</p>
+		    <p class="change"><b>Bug Fix:</b> Frame stepping no longer runs past the last frame; the Frame Advance box is checked.</p>
+		    <p class="change"><b>Bug Fix:</b> Filling all 100 rows of the table now stops cleanly.</p>
+		    <p class="change"><b>Bug Fix:</b> Calibration lengths with a decimal comma (0,5) are read correctly; a missing length is refused.</p>
+		    <p class="change"><b>Bug Fix:</b> Arrow keys no longer step the video while typing in a box.</p>
+		    <p class="change"><b>Bug Fix:</b> Copying falls back to another method, and says so, if the browser blocks the clipboard.</p>
+		    <p class="change"><b>Change:</b> Icons are built in; system fonts are used; no web fonts are downloaded.</p>
+		    <p class="change"><b>Bug Fix:</b> Labels no longer overflow their boxes when the browser's font size setting is larger than Medium (Chrome: Settings &gt; Appearance &gt; Font size).</p>
+		    <p class="verNumber">v2.16</p>
+		    <p class="change"><b>Change:</b>  Manual frame rate input changed to a pop-up selector.</p>
+		    <p class="change"><b>Aesthetics:</b>  Frame advance and manual frame rate font changed to match the rest of the app.</p>
+		    <p class="verNumber">v2.15</p>
+		    <p class="change"><b>Aesthetics:</b>  Cursor now changes to pointer when hovering over video player controls.</p>
+		    <p class="verNumber">v2.14</p>
+		    <p class="change"><b>New Feature:</b>  Pressing the shift key while clicking enables calibration and origin setting steps to be skipped.</p>
+		    <p class="change"><b>Bug Fix:</b>  Loading of videos larger than 300 MB is now prevented.</p>
+		    <p class="change"><b>Bug Fix:</b>  Auto-zooming of the app was causing issues with the progress bar.</p>
+		    <p class="change"><b>Bug Fix:</b>  Some tool tips were hidden after the calibration process was completed.</p>
+		    <p class="verNumber">v2.13</p>
+		    <p class="change"><b>New Feature:</b>  Video file name is now displayed below the progress bar.</p>
+		    <p class="verNumber">v2.12</p>
+		    <p class="change"><b>New Feature:</b>  New control to unmute or mute the video.</p>
+		    <p class="verNumber">v2.11</p>
+		    <p class="change"><b>New Feature:</b>  A frame time stamp is now included in the lower right corner of the video area.</p>
+		    <p class="change"><b>New Feature:</b>  The keyboard left and right arrow keys now duplicate the on-screen single step buttons.</p>
+		    <p class="verNumber">v2.10</p>
+		    <p class="change"><b>New Feature:</b>  Added the ability to directly set the video frame rate.</p>
+		    <p class="change"><b>Aesthetics:</b>  Changed the look of the buttons for a less busy interface.</p>
+		    <p class="change"><b>Change:</b>  On video load, user is now directed step-by-step through calibration and setting the origin.</p>
+		    <p class="change"><b>Change:</b>  Updated instructions with the goal of shorter and clearer.</p>
+		    <p class="verNumber">v2.03</p>
+		    <p class="change"><b>Front panel update:</b>  Adjusted margin to prevent scroll bars.</p>
+		    <p class="change"><b>Documentation update:</b>  Added advice to not edit videos on the phone before download.</p>
+		    <p class="verNumber">v2.02</p>
+		    <p class="change"><b>Minor Change:</b> Updates to Instructions.</p>
+		    <p class="verNumber">v2.01</p>
+		    <p class="change"><b>Bug Fix:</b> Single step buttons were glitchy immediately after pressing the Show Origin button.</p>
+		    <p class="change"><b>Minor Change:</b> Corrected typos and added clarifications to the Instructions.</p>
+		    <p class="verNumber">v2.00</p>
+		    <p class="change"><b>Change:</b> Frame rate now obtained by reading video movie data.</p>
+		    <p class="change"><b>Change:</b> Quicktime format from iPhone (.mov extension) can be read without modifying the file name.</p>
+		    <p class="change"><b>Change:</b> Warning message if user changes the time base for an iPhone slo-mo video.</p>
+		    <p class="change"><b>Change:</b> User gets confirmation message when setting the <i>t</i> = 0 frame.</p>
+		    <p class="change"><b>Change:</b> Video player now uses native video engine to eliminate laggy playback.</p>
+		    <p class="change"><b>Minor Change:</b> Tooltips now show up a bit sooner.</p>
+		    <p class="change"><b>Minor Change:</b> Instructions start with TLDR version for the impatient.</p>
+		    <p class="change"><b>Minor Change:</b> Added tool tips to the copy data buttons.</p>
+		    <p class="verNumber">v1.08a</p>
+		    <p class="change"><b>Minor Change:</b> Version update text now handled in the script.  Different message for first time use.</p>
+		    <p class="verNumber">v1.08</p>
+		    <p class="change"><b>Change:</b> Video frame rate display added to the front panel.</p>
+		    <p class="change"><b>Minor Change:</b>  Typos fixed.</p>
+		    <p class="verNumber">v1.07</p>
+		    <p class="change"><b>New Feature:</b> Pop-up message the first time Sigmund is run after an update.</p>
+		    <p class="change"><b>Documentation:</b> More details on video formats and files from iPhones added to the instructions.</p>
+		    <p class="verNumber">v1.06</p>
+		    <p class="change"><b>New Feature:</b> Skip This Frame button to skip over duplicated frames.</p>
+		    <p class="change"><b>New Feature:</b> Launch nPlot button opens nPlot in a new tab.</p>
+		    <p class="change"><b>Cleanup:</b>  Repair lack of adequate proof reading of the instructions.</p>
+		    <p class="verNumber">v1.05</p>
+		    <p class="change"><b>New Feature:</b>  Settings for analyzing videos up to 240 fps (1/8x).</p>
+		    <p class="change"><b>Change:</b>  Clicking on the noragulfa.com logo now opens the home page in a new tab.</p>
+		    <p class="verNumber">v1.04</p>
+		    <p class="change"><b>Tweak:</b> Improvements to frame rate determination.</p>
+		    <p class="verNumber">v1.03</p>
+		    <p class="change"><b>Change:</b> Data upload is now accomplished with 3 separate buttons to make subsequent analysis easier.</p>
+		    <p class="verNumber">v1.02</p>
+		    <p class="change"><b>Bug fix:</b> Issues related to using the app with a screen larger than a standard Chromebook.</p>
+		    <p class="verNumber">v1.01</p>
+		    <p class="change"><b>Change:</b>  Number of allowed data points increased to 100, because some people just want more.</p>
+		    <p class="change"><b>Improvement:</b> Warning message displayed for videos above 32 fps.</p>
+		    <p class="verNumber">v1.00</p>
+		    <p class="change"><b>Initial release:</b>  Aug. 16, 2022</p>
+		    <p style="margin:0; padding: 0; margin-bottom: 20px">&nbsp;</p>
+		</div>
+	    </div>
+	</div>
+</div>
+<div id="fitTip" role="status"><span id="fitTipText"></span><button id="fitTipClose" aria-label="Dismiss">&times;</button></div>
+<script src="js/sigmund.js"></script>
+</body>
+</html>

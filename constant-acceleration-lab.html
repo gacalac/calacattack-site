@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Constant-acceleration lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #eaf1ee;
+  --grid: #d3e0da;
+  --panel: #ffffff;
+  --ink: #15232b;
+  --muted: #56666e;
+  --line: #c4d3cc;
+  --pos: #23913a;
+  --vel: #d22b2b;
+  --acc: #1f6fb4;
+  --turn: #d9800f;
+  --track: #8a4b1c;
+  --fill: #e8dcc8;
+  --cart: #5b6166;
+  --air: #27a7c4;
+  --btn: #15232b;
+  --btn-ink: #ffffff;
+  --focus: #1f6fb4;
+  font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171b; --grid: #1c292f; --panel: #162126; --ink: #e5eef0; --muted: #9aaab1;
+    --line: #2b3b42; --pos: #4cc76a; --vel: #ff6b6b; --acc: #5aa9ff; --turn: #f2a446;
+    --track: #c98a55; --fill: #2f2a22; --cart: #9aa3a9; --air: #5fd3ef;
+    --btn: #e5eef0; --btn-ink: #0f171b; --focus: #5aa9ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171b; --grid: #1c292f; --panel: #162126; --ink: #e5eef0; --muted: #9aaab1;
+  --line: #2b3b42; --pos: #4cc76a; --vel: #ff6b6b; --acc: #5aa9ff; --turn: #f2a446;
+  --track: #c98a55; --fill: #2f2a22; --cart: #9aa3a9; --air: #5fd3ef;
+  --btn: #e5eef0; --btn-ink: #0f171b; --focus: #5aa9ff;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0; color: var(--ink); background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  line-height: 1.45;
+}
+header { max-width: 1240px; margin: 0 auto; padding: 28px 20px 8px; }
+h1 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+.layout {
+  max-width: 1240px; margin: 0 auto; padding: 16px 20px 40px;
+  display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 20px; align-items: start;
+}
+@media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.controls { padding: 18px; position: sticky; top: 12px; }
+@media (max-width: 880px) { .controls { position: static; } }
+.controls h2 { font-size: 1rem; margin: 0 0 8px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { text-align: center; padding: 8px 4px; cursor: pointer; font-weight: 700; font-size: 0.92rem; }
+.seg label + input + label, .seg input + label ~ label { border-left: 2px solid var(--ink); }
+.seg input:checked + label { background: var(--ink); color: var(--panel); }
+.seg input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: -5px; }
+.field { margin: 0 0 14px; }
+.field .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field label { font-weight: 700; font-size: 0.95rem; }
+.field .unit { color: var(--muted); font-size: 0.9rem; }
+.field input[type=number] {
+  width: 70px; font: inherit; padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink); text-align: right;
+}
+.field input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--ink); }
+.field.pos label { color: var(--pos); } .field.vel label { color: var(--vel); } .field.acc label { color: var(--acc); }
+.field.acc input[type=range] { accent-color: var(--acc); }
+.field.vel input[type=range] { accent-color: var(--vel); }
+.field.pos input[type=range] { accent-color: var(--pos); }
+.note { font-size: 0.92rem; color: var(--muted); border-left: 3px solid var(--acc); padding: 2px 0 2px 10px; margin: 0 0 14px; }
+select { font: inherit; width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); margin-bottom: 16px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 0.95rem; }
+.stage { display: grid; gap: 14px; min-width: 0; }
+.motion { padding: 12px; }
+canvas { display: block; width: 100%; }
+#motion { height: 310px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+button {
+  font: inherit; font-weight: 700; border: 2px solid var(--btn); background: var(--btn); color: var(--btn-ink);
+  border-radius: 8px; padding: 6px 14px; cursor: pointer; min-width: 84px;
+}
+button.ghost { background: transparent; color: var(--ink); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.scrub { flex: 1 1 200px; display: flex; align-items: center; gap: 8px; }
+.scrub input { flex: 1; accent-color: var(--ink); }
+.readouts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 8px; font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.readouts .p { color: var(--pos); } .readouts .v { color: var(--vel); } .readouts .a { color: var(--acc); }
+.graph { padding: 10px 12px 8px; }
+.graph .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; align-items: flex-start; }
+.graph h3 { margin: 0; font-size: 1rem; }
+.eq { text-align: right; font-size: 0.98rem; line-height: 1.35; font-variant-numeric: tabular-nums; }
+.eq .gen { opacity: 0.8; }
+.graph.p h3, .graph.p .eq { color: var(--pos); }
+.graph.v h3, .graph.v .eq { color: var(--vel); }
+.graph.a h3, .graph.a .eq { color: var(--acc); }
+.graph canvas { height: 170px; margin-top: 4px; }
+@media (max-width: 560px) { .eq { text-align: left; } #motion { height: 280px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Constant-acceleration lab</h1>
+  <p>Choose a setup, set the starting values, then press Play. The position, velocity and acceleration graphs fill in while the object moves.</p>
+</header>
+
+<main class="layout">
+  <aside class="panel controls" aria-label="Settings">
+    <h2>Setup</h2>
+    <div class="seg" role="radiogroup" aria-label="Setup">
+      <input type="radio" name="scn" id="s-ramp" value="ramp" checked><label for="s-ramp">Ramp</label>
+      <input type="radio" name="scn" id="s-fan" value="fan"><label for="s-fan">Fan cart</label>
+      <input type="radio" name="scn" id="s-free" value="free"><label for="s-free">Free fall</label>
+    </div>
+
+    <label for="examples" style="font-weight:700;display:block;margin-bottom:4px">Load an example</label>
+    <select id="examples">
+      <option value="">Choose…</option>
+      <option value="ramp-right">Cart up a ramp, starting to the right</option>
+      <option value="ramp-left">Cart up a ramp, starting to the left</option>
+      <option value="fan-right">Fan cart, thrust to the right</option>
+      <option value="fan-left">Fan cart, thrust to the left</option>
+      <option value="toss">Ball tossed straight up</option>
+      <option value="drop">Ball dropped from 10 m</option>
+    </select>
+
+    <div class="field pos">
+      <div class="top"><label for="x0r" id="x0lab">Initial position x₀</label>
+        <span><input type="number" id="x0n" aria-labelledby="x0lab"> <span class="unit">m</span></span></div>
+      <input type="range" id="x0r" aria-labelledby="x0lab">
+    </div>
+    <div class="field vel">
+      <div class="top"><label for="v0r" id="v0lab">Initial velocity v₀ₓ</label>
+        <span><input type="number" id="v0n" aria-labelledby="v0lab"> <span class="unit">m/s</span></span></div>
+      <input type="range" id="v0r" aria-labelledby="v0lab">
+    </div>
+    <div class="field acc">
+      <div class="top"><label for="ar" id="alab">Acceleration aₓ</label>
+        <span><input type="number" id="an" aria-labelledby="alab"> <span class="unit">m/s²</span></span></div>
+      <input type="range" id="ar" aria-labelledby="alab">
+    </div>
+    <p class="note" id="note"></p>
+    <div class="field">
+      <div class="top"><label for="Tr" id="Tlab">Run time</label>
+        <span><input type="number" id="Tn" aria-labelledby="Tlab"> <span class="unit">s</span></span></div>
+      <input type="range" id="Tr" aria-labelledby="Tlab" min="0.5" max="10" step="0.1">
+    </div>
+    <label class="check"><input type="checkbox" id="ghost"> Show the full graphs faintly (for checking predictions)</label>
+  </aside>
+
+  <section class="stage">
+    <div class="panel motion">
+      <canvas id="motion" aria-label="Animation of the moving object"></canvas>
+      <div class="toolbar">
+        <button id="play">Play</button>
+        <button id="restart" class="ghost">Restart</button>
+        <select id="speed" aria-label="Playback speed" style="width:auto;margin:0">
+          <option value="1">1× speed</option>
+          <option value="0.5">½× speed</option>
+          <option value="0.25">¼× speed</option>
+        </select>
+        <div class="scrub"><label for="scrub" class="unit">time</label><input type="range" id="scrub" min="0" max="1" step="0.001" value="0"></div>
+      </div>
+      <div class="readouts" aria-live="off">
+        <span>t = <b id="rt">0.00</b> s</span>
+        <span class="p" id="rpLab">x = <b id="rp">0.00</b> m</span>
+        <span class="v" id="rvLab">vₓ = <b id="rv">0.00</b> m/s</span>
+        <span class="a" id="raLab">aₓ = <b id="ra">0.00</b> m/s²</span>
+      </div>
+    </div>
+
+    <div class="panel graph p"><div class="head"><h3>Position vs. time</h3><div class="eq" id="eqP"></div></div><canvas id="gP"></canvas></div>
+    <div class="panel graph v"><div class="head"><h3>Velocity vs. time</h3><div class="eq" id="eqV"></div></div><canvas id="gV"></canvas></div>
+    <div class="panel graph a"><div class="head"><h3>Acceleration vs. time</h3><div class="eq" id="eqA"></div></div><canvas id="gA"></canvas></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const G = 9.81;
+  const $ = id => document.getElementById(id);
+  const LIM = {
+    ramp: { x0: [-2, 2, 0.1], v0: [-3, 3, 0.1], a: [-3, 3, 0.05] },
+    fan:  { x0: [-2, 2, 0.1], v0: [-3, 3, 0.1], a: [-3, 3, 0.05] },
+    free: { x0: [0, 30, 0.5], v0: [-20, 25, 0.5], a: [-G, -G, 0.01] }
+  };
+  const DEFAULTS = {
+    ramp: { x0: 0, v0: 1.2, a: -0.6 },
+    fan:  { x0: 1.5, v0: -1.2, a: 0.6 },
+    free: { x0: 0, v0: 15, a: -G }
+  };
+  const EXAMPLES = {
+    "ramp-right": ["ramp", 0, 1.2, -0.6],
+    "ramp-left":  ["ramp", 1.5, -1.2, 0.6],
+    "fan-right":  ["fan", 1.5, -1.2, 0.6],
+    "fan-left":   ["fan", 0, 1.2, -0.6],
+    "toss":       ["free", 0, 15, -G],
+    "drop":       ["free", 10, 0, -G]
+  };
+  const S = { scn: "ramp", x0: 0, v0: 1.2, a: -0.6, T: 4, t: 0, playing: false, speed: 1, ghost: false };
+
+  const pos = t => S.x0 + S.v0 * t + 0.5 * S.a * t * t;
+  const vel = t => S.v0 + S.a * t;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const r2 = n => { const v = Math.round(n * 100) / 100; return Object.is(v, -0) ? 0 : v; };
+  const fmt = n => { const v = r2(n); return (v < 0 ? "−" : "") + Math.abs(v).toString(); };
+  const fixed = (n, d = 2) => { const v = Number(n.toFixed(d)); return (v < 0 ? "−" : "") + Math.abs(v).toFixed(d); };
+
+  // ---------- run time ----------
+  function groundTime() {
+    const a = S.a, b = S.v0, c = S.x0;              // c + b t + a/2 t^2 = 0
+    const A = 0.5 * a, disc = b * b - 4 * A * c;
+    if (disc < 0) return Infinity;
+    const r1 = (-b - Math.sqrt(disc)) / (2 * A), r2_ = (-b + Math.sqrt(disc)) / (2 * A);
+    const roots = [r1, r2_].filter(r => r > 1e-6).sort((p, q) => p - q);
+    return roots.length ? roots[0] : Infinity;
+  }
+  function autoT() {
+    let T;
+    if (S.scn === "free") {
+      const tg = groundTime();
+      T = (tg > 0.3 && isFinite(tg)) ? tg : 2;
+    } else if (S.a !== 0 && S.v0 * S.a < 0) {
+      T = 2 * Math.abs(S.v0 / S.a);
+    } else T = 3;
+    return Math.min(10, Math.max(0.5, T));
+  }
+  function maxT() {
+    if (S.scn === "free") { const tg = groundTime(); if (tg > 0.3 && isFinite(tg)) return Math.min(10, tg); }
+    return 10;
+  }
+
+  // ---------- controls ----------
+  const pairs = { x0: ["x0r", "x0n"], v0: ["v0r", "v0n"], a: ["ar", "an"] };
+  function applyLimits() {
+    const L = LIM[S.scn];
+    for (const k in pairs) {
+      const [lo, hi, st] = L[k];
+      for (const id of pairs[k]) {
+        const el = $(id); el.min = lo; el.max = hi; el.step = st;
+        el.disabled = (k === "a" && S.scn === "free");
+      }
+    }
+    const free = S.scn === "free";
+    $("x0lab").textContent = free ? "Initial height y₀" : "Initial position x₀";
+    $("v0lab").textContent = free ? "Initial velocity v₀ᵧ" : "Initial velocity v₀ₓ";
+    $("alab").textContent = free ? "Acceleration aᵧ" : "Acceleration aₓ";
+  }
+  function syncInputs() {
+    for (const k in pairs) for (const id of pairs[k]) $(id).value = r2(S[k]);
+    $("Tr").max = maxT(); $("Tr").value = S.T; $("Tn").value = S.T;
+  }
+  function onParamChange(keepT) {
+    if (!keepT) S.T = autoT();
+    S.T = Math.floor(Math.min(S.T, maxT()) * 100 + 1e-6) / 100;
+    S.t = 0; S.playing = false;
+    syncInputs(); updateText(); draw();
+  }
+  for (const k in pairs) {
+    const [rId, nId] = pairs[k];
+    const handler = e => {
+      let v = parseFloat(e.target.value); if (isNaN(v)) return;
+      const [lo, hi] = LIM[S.scn][k]; v = Math.min(hi, Math.max(lo, v));
+      S[k] = v; onParamChange(false);
+    };
+    $(rId).addEventListener("input", handler);
+    $(nId).addEventListener("change", handler);
+  }
+  const tHandler = e => {
+    let v = parseFloat(e.target.value); if (isNaN(v)) return;
+    S.T = Math.min(maxT(), Math.max(0.5, v)); onParamChange(true);
+  };
+  $("Tr").addEventListener("input", tHandler);
+  $("Tn").addEventListener("change", tHandler);
+
+  function setScenario(scn, vals) {
+    S.scn = scn;
+    document.querySelector(`input[name=scn][value=${scn}]`).checked = true;
+    Object.assign(S, vals || DEFAULTS[scn]);
+    applyLimits(); onParamChange(false);
+  }
+  document.querySelectorAll("input[name=scn]").forEach(r =>
+    r.addEventListener("change", e => { $("examples").value = ""; setScenario(e.target.value); }));
+  $("examples").addEventListener("change", e => {
+    const ex = EXAMPLES[e.target.value]; if (!ex) return;
+    setScenario(ex[0], { x0: ex[1], v0: ex[2], a: ex[3] });
+  });
+  $("ghost").addEventListener("change", e => { S.ghost = e.target.checked; draw(); });
+  $("speed").addEventListener("change", e => { S.speed = parseFloat(e.target.value); });
+  $("play").addEventListener("click", () => {
+    if (S.t >= S.T - 1e-9) S.t = 0;
+    S.playing = !S.playing; updatePlay();
+    if (S.playing) { last = performance.now(); requestAnimationFrame(loop); }
+  });
+  $("restart").addEventListener("click", () => { S.t = 0; draw(); });
+  $("scrub").addEventListener("input", e => { S.playing = false; updatePlay(); S.t = parseFloat(e.target.value) * S.T; draw(); });
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space" && !/INPUT|SELECT|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); $("play").click(); }
+  });
+  function updatePlay() { $("play").textContent = S.playing ? "Pause" : (S.t >= S.T - 1e-9 && S.t > 0 ? "Replay" : "Play"); }
+
+  // ---------- text ----------
+  const paren = (n, u) => `(${fmt(n)} ${u})`;
+  const constTerm = (n, u) => n < 0 ? `(${fmt(n)} ${u})` : `${fmt(n)} ${u}`;
+  function updateText() {
+    const free = S.scn === "free", q = free ? "y" : "x", sub = free ? "y" : "x";
+    $("eqP").innerHTML =
+      `<div class="gen">${q} = ½a<sub>${sub}</sub>t² + v<sub>0${sub}</sub>t + ${q}<sub>0</sub></div>` +
+      `<div>${q} = ½${paren(S.a, "m/s²")}t² + ${paren(S.v0, "m/s")}t + ${constTerm(S.x0, "m")}</div>`;
+    $("eqV").innerHTML =
+      `<div class="gen">v<sub>${sub}</sub> = a<sub>${sub}</sub>t + v<sub>0${sub}</sub></div>` +
+      `<div>v<sub>${sub}</sub> = ${paren(S.a, "m/s²")}t + ${constTerm(S.v0, "m/s")}</div>`;
+    $("eqA").innerHTML =
+      `<div class="gen">a<sub>${sub}</sub> = constant</div>` +
+      `<div>a<sub>${sub}</sub> = ${fmt(S.a)} m/s²</div>`;
+    $("rpLab").firstChild.nodeValue = `${q} = `;
+    $("rvLab").firstChild.nodeValue = free ? "vᵧ = " : "vₓ = ";
+    $("raLab").firstChild.nodeValue = free ? "aᵧ = " : "aₓ = ";
+    let note;
+    if (S.scn === "ramp") {
+      if (S.a === 0) note = "Level track: with no tilt, a = 0 and the cart keeps a constant velocity.";
+      else {
+        const th = Math.asin(Math.min(1, Math.abs(S.a) / G)) * 180 / Math.PI;
+        note = `Frictionless ramp tilted θ ≈ ${th.toFixed(1)}°, since |a| = g sin θ. ` +
+          (S.a < 0 ? "It rises to the right, so down the ramp is the −x direction."
+                   : "It rises to the left, so down the ramp is the +x direction.");
+      }
+    } else if (S.scn === "fan") {
+      note = S.a === 0 ? "Fan off: no thrust, so a = 0 and the cart keeps a constant velocity."
+        : S.a > 0 ? "The fan blows air to the left, so the thrust pushes the cart to the right (+x)."
+                  : "The fan blows air to the right, so the thrust pushes the cart to the left (−x).";
+    } else {
+      note = "Vertical motion (a 90° “ramp”): aᵧ = −9.81 m/s² on Earth. The run ends when the ball reaches the ground.";
+    }
+    $("note").textContent = note;
+  }
+
+  // ---------- canvas helpers ----------
+  function fit(cv) {
+    const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d));
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const ctx = cv.getContext("2d"); ctx.setTransform(d, 0, 0, d, 0, 0);
+    ctx.clearRect(0, 0, r.width, r.height);
+    return { ctx, w: r.width, h: r.height };
+  }
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+  function ticks(lo, hi, n) {
+    const st = niceStep((hi - lo) / n), out = [];
+    for (let v = Math.ceil(lo / st - 1e-9) * st; v <= hi + 1e-9; v += st) out.push(Math.round(v / st) * st);
+    return out;
+  }
+  const tickLabel = v => fmt(Math.abs(v) < 1e-9 ? 0 : v);
+  function arrow(ctx, x1, y1, x2, y2, color, lw = 3) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+    if (L < 2) return;
+    const ux = dx / L, uy = dy / L, hs = Math.min(12, L * 0.6);
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * hs * 0.8, y2 - uy * hs * 0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ux * hs - uy * hs * 0.5, y2 - uy * hs + ux * hs * 0.5);
+    ctx.lineTo(x2 - ux * hs + uy * hs * 0.5, y2 - uy * hs - ux * hs * 0.5);
+    ctx.closePath(); ctx.fill();
+  }
+  function runStats() {
+    let xmin = Infinity, xmax = -Infinity, vmax = 0;
+    for (let i = 0; i <= 200; i++) {
+      const t = S.T * i / 200, x = pos(t), v = Math.abs(vel(t));
+      xmin = Math.min(xmin, x); xmax = Math.max(xmax, x); vmax = Math.max(vmax, v);
+    }
+    return { xmin, xmax, vmax: Math.max(vmax, 0.1) };
+  }
+  function dotTimes() {
+    const st = [0.05, 0.1, 0.2, 0.25, 0.5, 1].find(s => S.T / s <= 26) || 1;
+    const out = [];
+    for (let t = 0; t <= S.t + 1e-9; t += st) out.push(t);
+    return { times: out, step: st };
+  }
+  const dirOf = t => { const v = vel(t); return Math.abs(v) < 1e-9 ? Math.sign(S.v0) || 1 : Math.sign(v); };
+  const turnTime = () => (S.a !== 0 && S.v0 * S.a < 0) ? -S.v0 / S.a : null;
+
+  // ---------- motion panel ----------
+  function drawMotion() {
+    const { ctx, w, h } = fit($("motion"));
+    const C = { ink: css("--ink"), muted: css("--muted"), pos: css("--pos"), vel: css("--vel"), acc: css("--acc"),
+                track: css("--track"), fill: css("--fill"), cart: css("--cart"), air: css("--air"), panel: css("--panel") };
+    ctx.font = "12px 'Atkinson Hyperlegible', system-ui, sans-serif";
+    const st = runStats();
+    if (S.scn === "free") drawVertical(ctx, w, h, C, st); else drawTrack(ctx, w, h, C, st);
+    // legend
+    ctx.textAlign = "right"; ctx.font = "bold 13px 'Atkinson Hyperlegible', system-ui, sans-serif";
+    const vs = S.scn === "free" ? "v_y" : "v_x", as = S.scn === "free" ? "a_y" : "a_x";
+    arrow(ctx, w - 70, 18, w - 46, 18, C.vel, 2.5); ctx.fillStyle = C.vel; ctx.fillText(vs.replace("_", ""), w - 10, 22);
+    arrow(ctx, w - 70, 38, w - 46, 38, C.acc, 2.5); ctx.fillStyle = C.acc; ctx.fillText(as.replace("_", ""), w - 10, 42);
+    ctx.textAlign = "left"; ctx.fillStyle = C.ink; ctx.font = "bold 14px 'Atkinson Hyperlegible', system-ui, sans-serif";
+    ctx.fillText(`t = ${S.t.toFixed(2)} s`, 10, 20);
+  }
+
+  function drawTrack(ctx, w, h, C, st) {
+    const ramp = S.scn === "ramp";
+    const th = ramp ? Math.asin(Math.min(1, Math.abs(S.a) / G)) : 0;
+    const phi = ramp ? (S.a < 0 ? th : S.a > 0 ? -th : 0) : 0;   // + : rises to the right
+    let lo = Math.min(st.xmin, 0), hi = Math.max(st.xmax, 0);
+    const pad = Math.max(0.15, 0.08 * (hi - lo)); lo -= pad; hi += pad;
+    const span = hi - lo;
+    const padL = 116, padR = 24, top = 18, head = 145, foot = 64;
+    const Wd = w - padL - padR, Hd = Math.max(20, h - top - head - foot);
+    const c = Math.cos(phi), s = Math.abs(Math.sin(phi));
+    let k = Wd / (span * c); if (s > 1e-6) k = Math.min(k, Hd / (span * s));
+    const ext = span * k * c, rise = span * k * s;
+    const ox = padL + (Wd - ext) / 2;
+    const bottom = top + head + (Hd + rise) / 2;
+    const y0 = phi >= 0 ? bottom : bottom - rise;
+    const P = sv => [ox + (sv - lo) * k * Math.cos(phi), y0 - (sv - lo) * k * Math.sin(phi)];
+    const Q = (sv, hp) => { const p = P(sv); return [p[0] - hp * Math.sin(phi), p[1] - hp * Math.cos(phi)]; };
+    const groundY = bottom + 54;
+    const A = P(lo), B = P(hi);
+    ctx.fillStyle = C.fill;
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(B[0], groundY); ctx.lineTo(A[0], groundY); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+    ctx.strokeStyle = C.track; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+    // ticks
+    const step = niceStep(span / 7);
+    ctx.lineWidth = 1.2; ctx.fillStyle = C.track; ctx.textAlign = "center";
+    for (let sv = Math.ceil(lo / step) * step; sv <= hi + 1e-9; sv += step) {
+      const a1 = Q(sv, 0), a2 = Q(sv, -7), lp = Q(sv, -44);
+      ctx.beginPath(); ctx.moveTo(a1[0], a1[1]); ctx.lineTo(a2[0], a2[1]); ctx.stroke();
+      ctx.save(); ctx.translate(lp[0], lp[1]); ctx.rotate(-phi); ctx.fillText(tickLabel(sv), 0, 0); ctx.restore();
+    }
+    ctx.save(); const lb = Q((lo + hi) / 2, -44); ctx.translate(lb[0], lb[1] + 18); ctx.rotate(-phi);
+    ctx.fillStyle = C.muted; ctx.fillText("x (m)", 0, 0); ctx.restore();
+    // dots
+    const { times } = dotTimes();
+    const rowR = -15, rowL = -28;
+    ctx.fillStyle = C.pos; ctx.globalAlpha = 0.55;
+    for (const t of times) {
+      const p = Q(pos(t), dirOf(t) > 0 ? rowR : rowL);
+      ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1; ctx.textAlign = "right"; ctx.font = "12px 'Atkinson Hyperlegible', system-ui, sans-serif";
+    const r1 = Q(lo, rowR), r2p = Q(lo, rowL);
+    ctx.fillText("moving right →", r1[0] - 6, r1[1] + 4);
+    ctx.fillText("moving left ←", r2p[0] - 6, r2p[1] + 4);
+    // cart
+    const sx = pos(S.t), cp = P(sx);
+    ctx.save(); ctx.translate(cp[0], cp[1]); ctx.rotate(-phi);
+    ctx.fillStyle = C.cart; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2;
+    ctx.fillRect(-32, -38, 64, 24); ctx.strokeRect(-32, -38, 64, 24);
+    ctx.fillStyle = C.ink;
+    for (const wx of [-20, 20]) { ctx.beginPath(); ctx.arc(wx, -7, 7, 0, 7); ctx.fill(); }
+    if (S.scn === "fan") {
+      const d = Math.sign(S.a);           // thrust direction; air goes to -d
+      const face = d === 0 ? -1 : -d;
+      ctx.fillStyle = C.cart; ctx.fillRect(-4, -48, 8, 10);
+      ctx.fillStyle = C.panel; ctx.strokeStyle = C.ink;
+      ctx.fillRect(-12, -84, 24, 36); ctx.strokeRect(-12, -84, 24, 36);
+      ctx.fillStyle = C.ink; ctx.beginPath(); ctx.ellipse(face * 12, -66, 4, 17, 0, 0, 7); ctx.fill();
+      if (d !== 0) {
+        ctx.strokeStyle = C.air; ctx.lineWidth = 2; ctx.globalAlpha = 0.85;
+        const ph = (performance.now() / 18) % 26;
+        for (let row = -1; row <= 1; row++) for (let j = 0; j < 2; j++) {
+          const x1 = face * (18 + ((ph + j * 13) % 26)), yy = -66 + row * 10;
+          ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x1 + face * 14, yy); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.restore();
+    // arrows along the track
+    const ux = Math.cos(phi), uy = -Math.sin(phi);
+    const kv = 95 / st.vmax, alen = S.a === 0 ? 0 : Math.max(12, Math.min(95, 40 * Math.abs(S.a)));
+    const bv = Q(sx, 108), ba = Q(sx, 134), v = vel(S.t);
+    arrow(ctx, bv[0], bv[1], bv[0] + ux * v * kv, bv[1] + uy * v * kv, C.vel);
+    const sa = Math.sign(S.a);
+    arrow(ctx, ba[0], ba[1], ba[0] + ux * sa * alen, ba[1] + uy * sa * alen, C.acc);
+  }
+
+  function drawVertical(ctx, w, h, C, st) {
+    let lo = Math.min(st.xmin, 0), hi = Math.max(st.xmax, 1);
+    const pad = 0.06 * (hi - lo); lo -= pad * 0.4; hi += pad;
+    const top = 28, bot = 26, k = (h - top - bot) / (hi - lo);
+    const Y = y => h - bot - (y - lo) * k;
+    const cx = Math.min(w * 0.55, w / 2 + 60);
+    const axisX = cx - 170;
+    // ground
+    const gy = Y(0);
+    if (st.xmin >= -1e-6) {
+      ctx.fillStyle = C.fill; ctx.fillRect(0, gy, w, h - gy);
+      ctx.strokeStyle = C.track; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+    }
+    // axis
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.fillStyle = C.muted; ctx.textAlign = "right";
+    ctx.beginPath(); ctx.moveTo(axisX, Y(lo)); ctx.lineTo(axisX, Y(hi)); ctx.stroke();
+    for (const tv of ticks(lo, hi, 6)) {
+      const yy = Y(tv); ctx.beginPath(); ctx.moveTo(axisX - 5, yy); ctx.lineTo(axisX, yy); ctx.stroke();
+      ctx.fillText(tickLabel(tv), axisX - 8, yy + 4);
+    }
+    ctx.save(); ctx.translate(axisX - 44, (Y(lo) + Y(hi)) / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center"; ctx.fillText("height y (m)", 0, 0); ctx.restore();
+    // dots
+    const colUp = cx - 90, colDn = cx - 60;
+    const { times } = dotTimes();
+    ctx.fillStyle = C.pos; ctx.globalAlpha = 0.55;
+    for (const t of times) {
+      ctx.beginPath(); ctx.arc(dirOf(t) > 0 ? colUp : colDn, Y(pos(t)), 4, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1; ctx.textAlign = "center";
+    ctx.fillText("up", colUp, h - 6); ctx.fillText("down", colDn, h - 6);
+    // ball
+    const by = Y(pos(S.t)) - 12;          // ball rests on its bottom point
+    ctx.fillStyle = C.cart; ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(cx, by, 12, 0, 7); ctx.fill(); ctx.stroke();
+    // arrows
+    const kv = 95 / st.vmax, v = vel(S.t);
+    arrow(ctx, cx + 45, by, cx + 45, by - v * kv, C.vel);
+    arrow(ctx, cx + 80, by, cx + 80, by + 70, C.acc);
+  }
+
+  // ---------- graphs ----------
+  function drawGraph(id, fn, color, ylabel, kind) {
+    const { ctx, w, h } = fit($(id));
+    const muted = css("--muted"), line = css("--line"), ink = css("--ink"), turn = css("--turn");
+    const L = 56, R = 14, Tp = 10, B = 26, pw = w - L - R, ph = h - Tp - B;
+    let lo, hi;
+    if (kind === "a") { const m = Math.max(Math.abs(S.a), 1) * 1.35; lo = -m; hi = m * 0.6; if (S.a > 0) { lo = -m * 0.6; hi = m; } }
+    else {
+      let mn = Infinity, mx = -Infinity;
+      for (let i = 0; i <= 200; i++) { const v = fn(S.T * i / 200); mn = Math.min(mn, v); mx = Math.max(mx, v); }
+      mn = Math.min(mn, 0); mx = Math.max(mx, 0);
+      if (kind === "v") { const m = Math.max(Math.abs(mn), Math.abs(mx), 0.5); mn = -m; mx = m; }
+      const pd = Math.max(0.12 * (mx - mn), 0.2); lo = mn - pd; hi = mx + pd;
+    }
+    const X = t => L + (t / S.T) * pw, Yv = v => Tp + (hi - v) / (hi - lo) * ph;
+    ctx.font = "12px 'Atkinson Hyperlegible', system-ui, sans-serif";
+    ctx.lineWidth = 1; ctx.strokeStyle = line; ctx.fillStyle = muted;
+    ctx.textAlign = "center";
+    for (const tv of ticks(0, S.T, 8)) {
+      ctx.beginPath(); ctx.moveTo(X(tv), Tp); ctx.lineTo(X(tv), Tp + ph); ctx.stroke();
+      ctx.fillText(tickLabel(tv), X(tv), h - 8);
+    }
+    ctx.textAlign = "right";
+    for (const vv of ticks(lo, hi, 4)) {
+      ctx.beginPath(); ctx.moveTo(L, Yv(vv)); ctx.lineTo(L + pw, Yv(vv)); ctx.stroke();
+      ctx.fillText(tickLabel(vv), L - 6, Yv(vv) + 4);
+    }
+    ctx.strokeStyle = muted; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(L, Yv(0)); ctx.lineTo(L + pw, Yv(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(L, Tp); ctx.lineTo(L, Tp + ph); ctx.stroke();
+    ctx.save(); ctx.translate(14, Tp + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center";
+    ctx.fillStyle = color; ctx.fillText(ylabel, 0, 0); ctx.restore();
+    if (kind === "a") { ctx.textAlign = "right"; ctx.fillStyle = muted; ctx.fillText("t (s)", w - R, h - 8 - 14); }
+    // turnaround
+    const tt = turnTime();
+    if (tt !== null && tt <= S.T) {
+      ctx.setLineDash([3, 4]); ctx.strokeStyle = turn; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(X(tt), Tp); ctx.lineTo(X(tt), Tp + ph); ctx.stroke(); ctx.setLineDash([]);
+      if (kind === "v" && S.t >= tt) {
+        ctx.fillStyle = turn; ctx.textAlign = tt < S.T / 2 ? "left" : "right";
+        const off = tt < S.T / 2 ? 6 : -6;
+        const yTxt = S.v0 > 0 ? Tp + ph - 8 : Tp + 14;
+        ctx.fillText(`turnaround: v = 0 m/s, a = ${fmt(S.a)} m/s²`, X(tt) + off, yTxt);
+      }
+    }
+    const N = 240;
+    const path = (t1) => {
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) {
+        const t = Math.min(t1, S.T * i / N);
+        const x = X(t), y = Yv(fn(t));
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        if (t >= t1) break;
+      }
+      ctx.stroke();
+    };
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    if (S.ghost) { ctx.strokeStyle = color; ctx.globalAlpha = 0.22; ctx.lineWidth = 3; path(S.T); ctx.globalAlpha = 1; }
+    ctx.strokeStyle = color; ctx.lineWidth = 3; if (S.t > 0) path(S.t);
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = ink; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(S.t), Tp); ctx.lineTo(X(S.t), Tp + ph); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(X(S.t), Yv(fn(S.t)), 5.5, 0, 7); ctx.fill();
+  }
+
+  function draw() {
+    const free = S.scn === "free";
+    drawMotion();
+    drawGraph("gP", pos, css("--pos"), free ? "y (m)" : "x (m)", "p");
+    drawGraph("gV", vel, css("--vel"), free ? "vy (m/s)" : "vx (m/s)", "v");
+    drawGraph("gA", () => S.a, css("--acc"), free ? "ay (m/s²)" : "ax (m/s²)", "a");
+    $("rt").textContent = S.t.toFixed(2);
+    $("rp").textContent = fixed(pos(S.t));
+    $("rv").textContent = fixed(vel(S.t));
+    $("ra").textContent = fixed(S.a);
+    $("scrub").value = S.T ? S.t / S.T : 0;
+    updatePlay();
+  }
+
+  let last = 0;
+  function loop(now) {
+    if (!S.playing) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    S.t = Math.min(S.T, S.t + dt * S.speed);
+    if (S.t >= S.T) S.playing = false;
+    draw();
+    if (S.playing) requestAnimationFrame(loop);
+  }
+
+  new ResizeObserver(() => draw()).observe(document.querySelector(".stage"));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  applyLimits(); onParamChange(false);
+  if (document.fonts) document.fonts.ready.then(draw);
+})();
+</script>
+</body>
+</html>

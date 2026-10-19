@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset = "utf-8">
+	<!-- iPad edition: lets Safari scale the fixed-width layout natively (nplot.js switches this when Auto Zoom is off) -->
+	<meta name="viewport" id="viewportMeta" content="width=1370">
+	<title>nPlot</title>
+	<meta name="description" content="Browser based graphing and data analysis for science students">
+	<meta name="keywords" content="graphing, plotting, data, data analysis, curve fitting, physics, chemistry, high school, 
+				       school, college, undergraduate, science labs, physics labs, physics laboratory,
+				       chemistry lab, chemistry laboratory, student, science student, uncertainty, error bars, 
+				       tangent finder, teaching, instruction, lab report, modeling instruction">
+
+	<!-- HEY!!!!  UPDATE THE CSS VERSION NUMBER EVERY TIME YOU MAKE A CHANGE -->
+	<link rel = "stylesheet"
+	      type = "text/css"
+	      href = "nPlot.css?version=6.20i" />
+    </head>
+    <body>
+	<div id="mainContainer">
+	    <div id="leftPanel">
+		<div id="logoPanel">
+		    <img src="images/nPlotOnly.png">
+		    <!-- iPad edition: noragulfa.com logo replaced by a link to CalacAttack.com; Geoff's credit and link are in the About box -->
+		    <a id="homeLink" href="https://calacattack.com" target="_blank">CalacAttack.com</a>
+		</div>
+		<div id="miniSheetPanel">
+		    <div id="sheetButtons">
+			<button id="sheetButton1" class="sheetButton">Sheet 1</button>
+			<button id="sheetButton2" class="sheetButton">Sheet 2</button>
+			<button id="sheetButton3" class="sheetButton">Sheet 3</button>
+			<button id="sheetButton4" class="sheetButton">Sheet 4</button>
+			<button id="sheetButton5" class="sheetButton">Sheet 5</button>
+		    </div>
+		    <div id="miniSheet1" class="miniSheet" style="display: block">
+			<table id="Sheet1" class="sheetTable"></table>
+		    </div>
+		    <div id="miniSheet2" class="miniSheet" style="display: none">
+			<table id="Sheet2" class="sheetTable"></table>
+		    </div>
+		    <div id="miniSheet3" class="miniSheet" style="display: none">
+			<table id="Sheet3" class="sheetTable"></table>
+		    </div>
+		    <div id="miniSheet4" class="miniSheet" style="display: none">
+			<table id="Sheet4" class="sheetTable"></table>
+		    </div>
+		    <div id="miniSheet5" class="miniSheet" style="display: none">
+			<table id="Sheet5" class="sheetTable"></table>
+		    </div>
+		</div>
+		<div id="leftButtonsTopRow">
+		    <button id="settingsButton" class="npButton">Preferences</button>
+		    <button id="linearizeButton" class="npButton">Linearize</button>
+		    <button id="tradeButton" class="npButton">Swap x &amp; y</button>
+		    <button id="clearDataButton" class="npButton">Clear Data</button>
+		</div>
+		<div id="labelsPanel">
+		    <div class="labelRow">
+			X label:&nbsp;<input type="text" class="labelClass" onchange="computeAll()" id="xlabel" value="">
+			&ensp;
+			X units:&nbsp;(<input type="text" class="labelClass" onchange="computeAll()" id="xunit" value="">)
+		    </div>
+		    <div class="labelRow">
+			Y label:&nbsp;<input type="text" class="labelClass" onchange="computeAll()" id="ylabel" value="">
+			&ensp;
+			Y units:&nbsp;(<input type="text" class="labelClass" onchange="computeAll()" id="yunit" value="">)
+		    </div>
+		    <div class="labelRow">
+			Title:&nbsp;
+			<input type="text" class="labelClass" onchange="computeAll()" id="plotTitle" value="">
+		    </div>
+		    <div class="labelRow">
+			Save graph as:&nbsp;
+			<input type="text" class="labelClass" onchange="computeAll()" id="saveName" value="">
+		    </div>
+		</div>
+		<div id="leftButtonsBottomRow">
+		    <button id="saveGraphButton" class="npButton">Save Graph</button>
+		    <button id="showSavedGraphsButton" class="npButton">Recall Graph</button>
+		    <button id="downloadImageButton" class="npButton">Graph to Clipboard</button>
+		</div>
+	    </div>
+	    <div id="centerPanel">
+		<div id="centerTabs">
+		    <button id="basicModelsTab" class="modelButton">Basic</button>
+		    <button id="advancedModelsTab" class="modelButton">Advanced</button>
+		    <button id="expertModelsTab" class="modelButton">Expert</button>
+		</div>
+		<div id="basicModelsDiv" class="modelsDiv">
+	 	    <label class="radioButton" style="padding-top: 4px"> None
+			<input type="radio" id="fitNone" name="usefit" checked>
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px">  No Relation
+			<input type="radio" id="noRelation" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px">  Exactly Proportional&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = x</i>
+			<input type="radio" id="yEqualsX" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px">  Proportional&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = Ax</i>
+			<input type="radio" id="yEqualsAX" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px"> Linear&#8239;:&nbsp;&nbsp;
+			<i class="mathClass">y = Ax + B </i>
+			<input type="radio" id="fitLinear"" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton"> Square Law&#8239;:&nbsp;&nbsp;
+			<i class="mathClass">y = Ax<sup>2</sup></i>
+			<input type="radio" id="fitSquare" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton"> Quadratic&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = Ax<sup>2</sup> + Bx + C</i>
+			<input type="radio" id="fitQuadratic" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px"> Inverse&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = A/x</i>
+			<input type="radio" id="fitInverse" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton"> Inverse Square&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = A/x<sup>2</sup></i>
+			<input type="radio" id="fitInverseSquare" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 2px">Square Root&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = A&#8730;<span style="text-decoration: overline">x</span></i>
+	 		<input type="radio" id="fitSquareRoot" name="usefit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" id="invRoot" style="padding-top: 1px">Inverse Square Root&#8239;:&nbsp&nbsp;
+			<i class="mathClass">y = A/&#8730;<span style="text-decoration: overline">x</span></i>
+	 		<input type="radio" id="fitInvSqrRoot" name="usefit">
+			<span class="radioMark" ></span>
+		    </label>
+		</div>
+		<div id="advancedModelsDiv" class="modelsDiv">
+		    <p>These are &quot;advanced&quot; models.  See the user manual if you don't know what that means.
+			You should only be here if your teacher sent you or you know what you are doing.
+			If your teacher has <b><i>not</i></b> sent you here, but you still think you know what you are doing,
+			please check for the Dunning-Kruger effect.</p>
+	 	    <label class="radioButton" style="padding-top: 4px"> None
+			<input type="radio" id="advFitNone" name="advfit" checked>
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 0px">Power Law&#8239;:&nbsp&nbsp; <i class="mathClass">y = Ax<sup>B</sup></i>
+	 		<input type="radio" id="fitPowerLaw" name="advfit">
+			<span class="radioMark" style="bottom: 2px"></span>
+		    </label>
+		    <label class="radioButton">Exponential&#8239;:&nbsp&nbsp; <i class="mathClass">y = Ae<sup>x/B</sup> + C</i>
+	 		<input type="radio" id="fitExponential" name="advfit">
+			<span class="radioMark"></span>
+		    </label>
+		    <label class="radioButton" style="padding-top: 4px">Logarithmic&#8239;:&nbsp&nbsp; <span class ="mathClass">
+			<i>y = A + B</i>&thinsp;ln(<i>x</i>)</span>
+	 		<input type="radio" id="fitLogarithm" name="advfit">
+			<span class="radioMark"></span>
+		    </label>
+		</div>
+		<div id="expertModelsDiv" class="modelsDiv">
+		    <div id="expertModelsList">
+			<label class="radioButton" style="padding-top: 4px"> None
+			    <input type="radio" id="expFitNone" name="expfit" checked>
+			    <span class="radioMark"></span>
+			</label>
+			<label class="radioButton" style="padding-top: 4px">Cosine&#8239;:&nbsp&nbsp; <span class="mathClass"><i>y = A</i>cos(<i>Bx + C</i>)</span>
+	 		    <input type="radio" id="fitCosine" name="expfit">
+			    <span class="radioMark" style="bottom: 2px"></span>
+			</label>
+			<label class="radioButton" style="padding-top: 4px">Damped Cosine&#8239;:&nbsp&nbsp;
+			    <span class="mathClass"><i>y = Ae<sup>-x/D</sup></i>cos(<i>Bx + C</i>)</span>
+	 		    <input type="radio" id="fitDampedCosine" name="expfit">
+			    <span class="radioMark" style="bottom: 3px"></span>
+			</label>
+			<label class="radioButton" style="padding-top: 4px">Relaxation&#8239;:&nbsp&nbsp; <i class="mathClass">y = A(1 - e<sup>-x/B</sup>)</i>
+	 		    <input type="radio" id="fitRelaxation" name="expfit">
+			    <span class="radioMark" style="bottom: 4px"></span>
+			</label>
+			<label class="radioButton" style="padding-top: 4px">Gaussian&#8239;:&nbsp&nbsp; <i class="mathClass">y = Ae<sup>-&half;[(x-B)/C]&sup2;</sup> + D</i>
+	 		    <input type="radio" id="fitGaussian" name="expfit">
+			    <span class="radioMark" style="bottom: 4px"></span>
+			</label>
+			<hr>
+		    </div>
+		    <div id="guessContainer">
+			<div id="guessPanel">
+			    <span>Initial Guesses:</span>
+			    <span class="guessSpan" id="aGuess">
+				<span class="guessLetter">A:</span><input id="guessA" class="guess" type="number">
+			    </span>
+			    <span class="guessSpan" id="bGuess">
+				<span class="guessLetter">B:</span><input id="guessB" class="guess" type="number">
+			    </span>
+			    <span class="guessSpan" id="cGuess">
+				<span class="guessLetter">C:</span><input id="guessC" class="guess" type="number">
+			    </span>
+			    <span class="guessSpan" id="dGuess">
+				<span class="guessLetter">D:</span><input id="guessD" class="guess" type="number">
+			    </span>
+			    <span class="guessSpan" id="baselineSpan">
+				<span class="guessLetter">&nbsp;</span>Baseline = <span id="baselineMessage">123.456</span>
+			    </span>
+			</div>
+			<div id="goButtonPanel">
+			    <button id="goFitButton" class="npButton">Go</button>
+			</div>
+		    </div>
+		</div>
+		<div id="fitResults" class="resultsDiv">
+		    <div id="fitValues">
+			<hr>
+			<span id="Avalue" class="mathClass"><i>A</i> = 0.12345678 &plusmn; 0.12345678</span><br>
+			<span id="Bvalue" class="mathClass"><i>B</i> = 0.12345678 &plusmn; 0.12345678</span><br>
+			<span id="Cvalue" class="mathClass"><i>C</i> = 0.12345678 &plusmn; 0.12345678</span><br>
+			<span id="Dvalue" class="mathClass"><i>D</i> = 0.12345678 &plusmn; 0.12345678</span>
+		    </div>
+		    <div id="rmseDiv">
+			<span id="rmseValue" class="mathClass"><i>rms Error</i> = 0.12345678</span>
+			<hr>
+		    </div>
+		    <hr>
+		</div>
+		<div id="tangentFinding">
+		    <div id="tangentControls">
+			<div>
+			    <label class="radioButton" style="padding-top: 5px"> Tangent Finder
+				<input type="radio" id="trackSlope">
+				<span class="radioMark"></span>
+			    </label>
+			</div>
+			<div>
+			    <label class="radioButton" style="padding-top: 5px"> Lock To Data
+				<input type="radio" id="lockToData">
+				<span class="radioMark"></span>
+			    </label>
+			</div>
+			<div>
+			    <button id="copySlopesButton" class="npButton" title="Copy the slope at every data point">Copy Slopes</button>
+			</div>
+		    </div>
+		    <div id="slopeResults">
+			<span id="xValue" class="mathClass"><i>x</i> value = 0.123456</span>
+			<span id="slopeValue" class="mathClass">slope at <i>x</i> = 0.123456</span>
+		    </div>
+		</div>
+		<div id="centerButtons">
+		    <button id="annotateButton" class="npButton">Annotate</button>
+		    <button id="getHelpButton" class="npButton">User Manual</button>
+		    <button id="aboutButton" class="npButton">About</button>
+		</div>
+	    </div>
+	    <div id="graphPanel">
+		<canvas id="canvas1" width="611" height="605"></canvas>
+	    </div>
+	</div>
+	<!-- End of mainContainer  Everything below is a modal display -->
+
+	<div id="recallSavedGraphModal">
+	    <div id="recallSavedGraphContent">
+		<div id="whyThisDiv">
+		    <span id="closeSideModal">&times</span>
+		</div>
+		<div id="fileButtons">
+		    <button id="exportGraphButton" class="npButton fileButton">Save to File&hellip;</button>
+		    <button id="importGraphButton" class="npButton fileButton">Open File&hellip;</button>
+		    <input type="file" id="importFileInput" style="display: none">
+		</div>
+		<p id="savedGraphsHeading">Saved in this browser:</p>
+		<ul id="savedGraphList">
+		    <li>a graph with a long name</li>
+		    <li>another graph</li>
+		    <li>hmm...a third graph</li>
+		    <li>this is getting suspicious</li>
+		</ul>
+	    </div>
+	</div>
+	<div id="noNameWarn" class="modal">
+	    <div id="noNameContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p>You can't save a graph without a name.</p>
+	    </div>
+	</div>
+	<div id="LMFail" class="modal">
+	    <div id="LMFailContent" class="modal-content">
+		<span class="close">&times;</span>
+		<div id="LMFailMessage">
+		    <div id="LMFailTitle">
+			<p>Your nonlinear fit failed to converge.</p>
+		    </div>
+		    <p id="LMFailBody">You most likely have chosen the wrong model for your data.  If you are sure that you have the
+			correct model, then you can try changing the initial guesses to get a starting curve closer to
+			your data.  These fits are labeled &quot;expert&quot; for a reason.</p>
+		</div>
+	    </div>
+	</div>
+	<div id="saveConfirm" class="modal">
+	    <div id="saveConfirmContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p id="saveMessage">Graph saved as dummy name</p>
+	    </div>
+	</div>
+	<div id="clipConfirm" class="modal">
+	    <div id="clipConfirmContent" class="modal-content">
+		<p id="clipMessage" style="text-align: center">Graph copied to clipboard.</p>
+	    </div>
+	</div>
+	<div id="recallDialog" class ="modalNoClose">
+	    <div id="recallDialogContent" class="modal-content">
+		<p id="proceedMessage">Recalling this graph will completely erase the current graph,
+		    including all fits, axis labeling, and annotation.</p>
+		<p id="proceedQuery">Proceed anyway?</p>
+		<div id="recallGraphButtons">
+		    <button id="recallProceedButton" class="npButton">Ok</button>
+		    <button id="recallCancelButton" class="npButton">Cancel</button>
+		</div>
+	    </div>
+	</div>
+	<div id="settingsModal" class="modalNoClose">
+	    <div id="settingsModalContent" class="modal-content">
+		<div id="settingsTitle">
+		    Preferences
+		</div>
+		<table id="settingsTable">
+		    <tr>
+			<td>
+			    <label class="radioButton"> Grid
+				<input type="radio" id="showGrid" style="margin-top: -5" checked>
+				<span class="radioMark" style="bottom:5px"></span>
+			    </label>
+			</td>
+			<td id="pointDisplayToggles">
+			    Toggle the display of grid lines on the graph.
+			</td>
+		    </tr>
+		    <tr>
+			<td colspan="2">
+			    <hr class="settingsHR">
+			    <div  id="pointDisplayToggles">
+				Toggle the visibility of the data points in individual sheets:
+			    </div>
+			</td>
+		    </tr>
+		    <tr>
+			<td colspan="2">
+			    <div id="pointDisplayButtons">
+				<label class="radioButton">Sheet 1
+				    <input type="radio" id="ptsSheetA" checked>
+				    <span class="radioMark" style="bottom: 5px"></span>
+				</label>
+				<label class="radioButton">Sheet 2
+				    <input type="radio" id="ptsSheetB" checked>
+				    <span class="radioMark" style="bottom: 5px"></span>
+				</label>
+				<label class="radioButton">Sheet 3
+				    <input type="radio" id="ptsSheetC" checked>
+				    <span class="radioMark" style="bottom: 5px"></span>
+				</label>
+				<label class="radioButton">Sheet 4
+				    <input type="radio" id="ptsSheetD" checked>
+				    <span class="radioMark" style="bottom: 5px"></span>
+				</label>
+				<label class="radioButton">Sheet 5
+				    <input type="radio" id="ptsSheetE" checked>
+				    <span class="radioMark" style="bottom: 5px"></span>
+				</label>
+			    </div>
+			    <hr class="settingsHR">
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Show Error Bars
+				<input type="radio" id="showErrorBars">
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Draw the &plusmn;<i>x</i> and &plusmn;<i>y</i> values as error bars.
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Scale w&sol; Error Bars
+				<input type="radio" id="includeBars" checked>
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Uncheck to ignore error bars when scaling the axes.
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Formulas in annotation
+				<input type="radio" id="inclFormulas" checked>
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Check to include formulas in fit annotations.
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton">Download
+				<input type="radio" id="yesDownload">
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			</td>
+			<td>
+			    Download graph as png image file&mldr;
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton" style="margin-left: 40px">Also text
+				<input type="radio" id="includeFit">
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			</td>
+			<td>
+			    &mldr;also download a text file with fit results
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Require (0,0) on axes
+				<input type="radio" id="requireOrigin" checked>
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Uncheck if your data is far from the origin
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Professional Mode
+				<input type="radio" id="professionalMode" checked>
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Give results to a sensible number of decimal places
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Suppress Uncertainties
+				<input type="radio" id="noUncertainty">
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Suppress display of fitting contant uncertainties
+			    </td>
+			</td>
+		    </tr>
+		    <tr>
+			<td>
+			    <label class="radioButton"> Auto Zoom
+				<input type="radio" id="autoZoom" checked>
+				<span class="radioMark" style="bottom: 5px"></span>
+			    </label>
+			    <td>
+				Adjust the size of nPlot to fit the screen.
+			    </td>
+			</td>
+		    </tr>
+		</table>
+		<hr class="settingsHR">
+		<div id="preferencesPanel">
+		    <div id="chooseSheetForPreferences">
+			<label class="radioButton">Sheet 1
+			    <input type="radio" id="prefSheetA" name="prefSheets" checked>
+			    <span class="radioMark" style="bottom: 5px"></span>
+			</label>
+			<label class="radioButton">Sheet 2
+			    <input type="radio" id="prefSheetB" name="prefSheets">
+			    <span class="radioMark" style="bottom: 5px"></span>
+			</label>
+			<label class="radioButton">Sheet 3
+			    <input type="radio" id="prefSheetC" name="prefSheets">
+			    <span class="radioMark" style="bottom: 5px"></span>
+			</label>
+			<label class="radioButton">Sheet 4
+			    <input type="radio" id="prefSheetD" name="prefSheets">
+			    <span class="radioMark" style="bottom: 5px"></span>
+			</label>
+			<label class="radioButton">Sheet 5
+			    <input type="radio" id="prefSheetE" name="prefSheets">
+			    <span class="radioMark" style="bottom: 5px"></span>
+			</label>
+		    </div>
+		    <div id="pointSelectorDropdown" class="selectorDropdown">
+			<div id="pointSelectorLabel" class="selectorLabel">
+			    Point symbol:
+			</div>
+			<div id="pointSelectorButton" class="selectorButton">
+			    <img id="pointButtonImage" src="images/circle.png">
+			</div>
+ 			<div id="pointSelectorContent" class="selectorContent">
+			    <span id="circle" class="selectorItem"><img src="images/circle.png"></span>
+			    <span id="square" class="selectorItem"><img src="images/square.png"></span>
+			    <span id="diamond" class="selectorItem"><img src="images/diamond.png"></span>
+			    <span id="triUp" class="selectorItem"><img src="images/triUp.png"></span>
+			    <span id="triDown" class="selectorItem"><img src="images/triDown.png"></span>
+			    <span id="opeCircle" class="selectorItem"><img src="images/opeCircle.png"></span>
+			    <span id="opeSquare" class="selectorItem"><img src="images/opeSquare.png"></span>
+			    <span id="opeDiamond" class="selectorItem"><img  src="images/opeDiamond.png"></span>
+			    <span id="opeTriUp" class="selectorItem"><img src="images/opeTriUp.png"></span>
+			    <span id="opeTriDown" class="selectorItem"><img src="images/opeTriDown.png"></span>
+			    <span id="cross" class="selectorItem"><img src="images/cross.png"></span>
+			    <span id="ex" class="selectorItem"><img src="images/ex.png"></span>
+			    <span id="star" class="selectorItem"><img src="images/star.png"></span>
+			</div>
+		    </div>
+		    <div id="colorSelectorDropdown" class="selectorDropdown">
+			<div id="colorSelectorLabel" class="selectorLabel">
+			    Curve color:
+			</div>
+			<div id="colorSelectorButton" class="selectorButton">
+			    <img id="colorButtonImage" src="images/npColor1.png">
+			</div>
+ 			<div id="colorSelectorContent" class="selectorContent">
+			    <span id="npColor1" class="selectorItem"><img src="images/npColor1.png"></span>
+			    <span id="npColor2" class="selectorItem"><img src="images/npColor2.png"></span>
+			    <span id="npColor3" class="selectorItem"><img src="images/npColor3.png"></span>
+			    <span id="npColor4" class="selectorItem"><img src="images/npColor4.png"></span>
+			    <span id="npColor5" class="selectorItem"><img src="images/npColor5.png"></span>
+			    <span id="black" class="selectorItem"><img src="images/black.png"></span>
+			    <span id="red" class="selectorItem"><img src="images/red.png"></span>
+			    <span id="green" class="selectorItem"><img src="images/green.png"></span>
+			    <span id="blue" class="selectorItem"><img src="images/blue.png"></span>
+			    <span id="magenta" class="selectorItem"><img src="images/magenta.png"></span>
+			    <span id="cyan" class="selectorItem"><img src="images/cyan.png"></span>
+			</div>
+		    </div>
+		    <div id="dashSelectorDropdown" class="selectorDropdown">
+			<div id="dashSelectorLabel" class="selectorLabel">
+			    Curve dash:
+			</div>
+			<div id="dashSelectorButton" class="selectorButton">
+			    <img id="dashButtonImage" src="images/dash1e12.png">
+			</div>
+ 			<div id="dashSelectorContent" class="selectorContent">
+			    <span id="dash1e12" class="selectorItem"><img src="images/dash1e12.png"></span>
+			    <span id="dash2" class="selectorItem"><img src="images/dash2.png"></span>
+			    <span id="dash5" class="selectorItem"><img src="images/dash5.png"></span>
+			    <span id="dash10" class="selectorItem"><img src="images/dash10.png"></span>
+			    <span id="dash25" class="selectorItem"><img src="images/dash25.png"></span>
+			</div>
+		    </div>
+
+		    <div id="settingsBlather">
+			Most settings are saved in the browser cache.  They will
+			revert to their default values if the browser cache is cleared. 
+			Require (0,0) and the point visibility toggles are never saved.
+		    </div>
+		</div>
+		<div id="settingsDone">
+		    <button id="closeSettingsButton" class="npButton">Done</button>
+		</div>
+	    </div>
+	</div>
+	<div id="linearizeModal" class="modalNoClose">
+	    <div id="linearizeModalContent" class="modal-content">
+		<div id="linearizeTitle">
+		    Linearization Dialog
+		</div>
+		<div id="linearizeIntro">
+		    <p>Use this dialog to linearize your data. You do this by specifying a <i>transformation</i> (math operation
+			to be applied to your <i class="mathClass">x</i> data).  When you close this dialog nPlot will apply
+			the transformation you specified to all your <i class="mathClass">x</i> data points and redraw your
+			graph. It will also modify your <i class="mathClass">x</i> axis label and its units to reflect the
+			transformation you have applied. If the modified labels don't look quite right, you can edit them after
+			you have closed the dialog.</p>
+		    <p>The transformation algorithm is very simple minded, so it is up to you to type things that it
+			understands. It understands that &quot;x&quot; refers to the variable you are transforming, that a
+			caret (&Hat;) means the number that follows is a superscript, that the number one followed by a slash
+			(&sol;) means invert whatever follows, and that &quot;sqrt(x)&quot; means take the square root of x.
+			Spaces will confuse it. So will quotation marks. It does not understand addition or  subtraction.
+		    </p>
+		    <p>If you close the dialog and your data and labels don't change, that means you typed something nPlot
+			didn't understand, so it just rudely ignored you. 
+		    </p>What if your transformation didn't linearize your data?  Press the linearization button again.  There
+		    will now be an Undo button.  Press that and the dialog will close, and your data and labels will be
+		    restored to what you originally typed. Then you can try again.</p>
+		    <p>Note: Applying a transformation does not change the original data in the data grid.  The tranformation
+			is only applied to the data as it is used for plotting and fitting.
+		    </p>
+		</div>
+		<div id="xformDiv">
+		    Transformation:&nbsp;<input type="text" id="transformation" value="">
+		</div>
+		<div id="linearizeDone">
+		    <div>
+			<button id="undoLinearizeButton" class="npButton" style="display: none">Undo Linearization</button>
+		    </div>
+		    <div>
+			<button id="closeLinearizeButton" class="npButton">Done</button>
+		    </div>
+		</div>
+	    </div>
+	</div>
+	<div id="annotateModal" class="modalNoClose">
+	    <div id="annotateModalContent" class="modal-content">
+		<div>
+		    <p>Position the text with the mouse, then click to drop it. (Touchscreen: drag with your finger, then lift.)</p>
+		    <p>Changing the model removes the fit results from the graph, but not your notes and arrows.</p>
+		    <p>To draw an arrow, click (or tap) first where it starts and then where it points to.</p>
+		    <p id="messageLine">This is the message line.&nbsp;</p>
+		</div>
+		<div>
+		    <span id="noteTextSpan">Note:&nbsp;<input type="text" id="noteTextInput" value=""></span>
+		    <p id="noteTextInfo">Note:&nbsp;Text typed here will be added to to the next fit result or can be
+			positioned independently with the Add Note button.</p>
+		</div>
+		<div id="annotateButtons">
+		    <button id="addFitButton" class="npButton" >Add Fit</button>
+		    <button id="addNoteButton" class="npButton">Add Note</button>
+		    <button id="addArrowButton" class="npButton">Add Arrow</button>
+		    <button id="editAnnotationButton" class="npButton">Edit</button>
+		    <button id="cancelAddNoteButton" class="npButton">Done</button>
+		</div>
+		<div id="IBOption">
+		    <hr id ="IBrule">
+		    <p>IB students:&emsp;Manually draw maximum and minimum slope lines:</p>
+		    <div id="manualSlopeTable">
+			<button id="manualLineButton" class="npButton">Start Line</button>
+			<span id="manualSlope"></span>   
+			<span id="manualIntercept"></span>
+		    </div>
+		</div>
+	    </div>
+	</div>
+	<div id="addFitModal" class="modalNoClose">
+	    <div id="addFitModalContent" class="modal-content">
+		<ul id="fitList">
+		</ul>
+		<button id="addFitDoneButton" class="npButton">Done</button>
+	    </div>
+	</div>
+	<div id="editModal" class="modalNoClose">
+	    <div id="editModalContent" class="modal-content">
+		<ul id="annotationList">
+		</ul>
+		<button id="editDoneButton" class="npButton">Done</button>
+	    </div>
+	</div>
+	<div id="updateModal" class="modal">
+	    <div id="updateContent" class="modal-content">
+		<span class="close">&times;</span>
+		<div id="updateVersion" style="text-align: center">dummy text</div>
+		<div id="updateText" style="margin-top: 15px">dummy text</div>
+	    </div>
+	</div>
+	<div id="badPasteModal" class="modal">
+	    <div id="badPasteContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p>Oops!&ensp;nPlot cannot interpret your pasted data as numbers.&ensp;Check your spreadsheet data for letters
+		    and other non-numeric characters.&ensp;You can't have a unit label in the same cell as a data value.</p>
+	    </div>
+	</div>
+	<div id="helpModal" class="modal">
+	    <div id="helpContent" class="modal-content">
+		<span id="helpTop" class="close">&times;</span>
+		<div class ="userManualHeading">
+		    <div class="userManualSection">
+			Quick Start
+		    </div>
+		    <div class="backLink">
+			<span> </span>
+		    </div>
+		</div>
+		<p>Enter your data in the &quot;data&quot; columns in the spreadsheet, label your axes using the entry fields
+		    (below the spreadsheet), and you will get a graph.  Fit a line to your data by selecting a model from the
+		    choices in the middle of the page.  Press the &quot;Graph to Clipboard&quot; button to copy your graph, and
+		    then paste it wherever you like.</p>
+		<div class ="userManualHeading">
+		    <div id="contents" class="userManualSection">
+			Table of Contents
+		    </div>
+		    <div class="backLink">
+			<span> </span>
+		    </div>
+		</div>
+		<ul id="helpList">
+		    <li><a href="#data" class="TOC">Entering and Copying Data</a></li>
+		    <li><a href="#scaling" class="TOC">Labeling and Scaling the Axes</a></li>
+		    <li><a href="#foobar" class="TOC">Choosing a Model</a></li>
+		    <li><a href="#multiple" class="TOC">Graphing Multiple Data Sets</a></li>
+		    <li><a href="#preferences" class="TOC">Changing How the Graph Looks (Preferences)</a></li>
+		    <li><a href="#tangent" class="TOC">Using the Tangent Finder</a></li>
+		    <li><a href="#annote" class="TOC">Annotating Your Graph</a></li>
+		    <li><a href="#saving" class="TOC">Saving &amp; Recalling Your Graphs</a></li>
+		    <li><a href="#download" class="TOC">Pasting or Printing Your Graph</a></li>
+		    <li><a href="#special" class="TOC">Superscripts, Subscripts, and Symbols</a></li>
+		    <li><a href="#advanced" class="TOC">Advanced and Expert Models</a></li>
+		    <li><a href="#philosophy" class="TOC">The Philosophy of nPlot</a></li>
+		</ul>
+		<div class ="userManualHeading">
+		    <div id="dataEntry" class="userManualSection">
+			Entering and Copying Data
+		    </div>
+		</div>
+		<p><b>Manual Entry -</b> Data can be entered by simply typing values into the data columns in the front panel
+		    spreadsheet.  Numbers typed in the &quot;&plusmn;x&quot; and &quot;&plusmn;y&quot; columns will drawn as
+		    uncertainty bars on each data point.  They are optional, and are not used in the fitting process (weighted fits
+		    are not for beginners).  You can navigate between cells using the arrow and enter keys.  If you double click in a
+		    cell, you enter &quot;edit mode&quot; for that cell.  In edit mode the left and right arrow keys move the cursor
+		    within a cell instead of between cells.  The enter key and the up and down arrow keys take you out of edit mode.
+		    If the contents of a cell cannot be interpreted as a number, it will be colored red.  If a number is very large
+		    or very small, it will be shown using scientific (&quot;e&quot;) notation.</p>
+		<p><b>Pasting - </b>Data can also be entered by copying a block of cells from a spreadsheet and pasting it
+		    in (via the ctrl-v paste command). nPlot will correctly parse a paste of one, two, or even four columns at
+		    once.  Copying and pasting tab-delimitted data from a Word or Google document also works.</p>
+		<p><b>Bad Data - </b>A suspect data point in an
+		    otherwise good data set can be ignored by checking its &quot;skip&quot; checkbox.</p>
+		<p><b>Swapping Columns - </b>If you discover that you have accidentally typed your <i>y</i> data into the <i>x</i>
+		    column, just click the &quot;Swap x &amp; y&quot; button.  If you have any entries in the
+		    uncertainty columns, they will be swapped too.  Holding down the control key while you press the swap button
+		    causes the axis labels to also be swapped.  <b>No keyboard?</b> Press and hold the swap button
+		    and choose &quot;Swap x &amp; y data and labels.&quot;</p>
+		<p><b>Using Formulas - </b>The indvidual cells understand math. If you enter 2+2, or 2*2, or 2**2, or 2&Hat;2,
+		    or 24/6, or 6-2, or 16&Hat;.5 the cell contents will be displayed as the number 4.  The value is computed
+		    using the standard conventions for the order of operations.  Placing the cursor in a cell recovers the
+		    original math, which allows for editing.  (Double-click to enable the arrow keys inside the cell.) This can
+		    be very helpful in linearizing your data.  For example, if you have measured something as a function of
+		    velocity and find that the best fit is a square law, you can then just add &Hat;2 (or **2) at the end of
+		    each velocity entry to square it and plot your data as a straight line.</p>
+		<p><b>Clearing Your Data - </b>Clicking the Clear Data button will clear the contents of the currently displayed
+		    spreadsheet.  Holding down the control key while clicking it will clear all the sheets at once, as well as
+		    all the axis labeling and annotation.  If you have selected a portion of your data, hitting the delete key
+		    will clear just that selected portion.  <b>No keyboard?</b> Press and hold the Clear Data button
+		    and choose &quot;Clear all sheets, labels &amp; notes.&quot;</p>
+		<p><b>Copying Your Data - </b>nPlot makes a terrible lab notebook.  If you typed your data into nPlot first, but now
+		    want it somewhere else, you can highlight the cells you want to copy (click-and-drag, just as you would in a
+		    spreadsheet), and use ctrl-c to copy the data to the clipboard.  The highlighting disappears as confirmation
+		    that it has been copied.  From the clipboard, you can paste the data somewhere more permanent.  <b>No keyboard?</b> Press and
+		    hold the Clear Data button and choose &quot;Copy this sheet&rsquo;s data&quot; to copy the whole sheet at once.</p>
+		<div class ="userManualHeading">
+		    <div id="scaling" class="userManualSection">
+			Labeling and Scaling the Axes
+		    </div>
+		    <div>
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p><b>Labeling - </b>To label the axes, just type your labels into the appropriate text inputs.  There are
+		    separate inputs for the axis units (parentheses are automatically added).  There is also a text input for an
+		    optional graph title.  If you need superscripts, subscripts, or any special symbols (like Greek letters),
+		    see <a href="#special" class="inHelpLink">that section</a> of the manual.</p>
+		<p><b>Scaling - </b>It is (mostly) not possible to control the scaling of the graph axes.  The auto-scaling
+		    routine is quite robust, and makes reasonable choices.  If the data consists of very large or very small
+		    numbers, the axis labels will automatically be drawn using scientific notation.  If you feel the need to
+		    have your students set the axis limits by hand, please see the secton on
+		    <a href="#multiple" class="inHelpLink">Multiple Data Sets</a>.</p>
+		<p><b>The Origin - </b>By default, the point (0,0) is always included in the axes.  This is done for pedagogical
+		    reasons, but you may have a data set where that is really inconvenient.  You can turn off this default
+		    behavior in the Preferences menu, but only for the current nPlot session.  Next time you launch the program,
+		    the default behavior will be restored.</p>
+		<div class ="userManualHeading">
+		    <div id="foobar" class="userManualSection">
+			Choosing a Model
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p><b>Select a Model - </b>Choose a model to match your data by clicking on the list of models between the data
+		    sheet and the graph.  The process that nPlot uses to draw the line on the graph is known as &quot;fitting&quot;
+		    a curve to the data, and the curve that results is called &quot;the fit&quot; <i>for that model.</i>  The
+		    &quot;results of the fit&quot; are the set of constants that do the best job of making
+		    the curve pass as close as possible to all the points in the data set, which is why what nPlot draws is
+		    known as &quot;the best fit.&quot; Be aware that every fit from nPlot is technically a &quot;best&quot; fit.
+		    Your job is to choose the correct model.</p>
+		<p><b>Deciding Which Model - </b>An objective measure of how well the fit agrees with the data is provided by
+		    the value of the RMSE, which stands for &quot;root mean square error.&quot; It is essentially an average of
+		    the amount by which the curve misses each data point.  The general rule (also a dangerous rule) is to choose
+		    the model that gives the smallest RMSE. Be aware that a quadratic fit will
+		    almost always give the smallest RMSE, but is almost never the correct model for the data.  See the section on
+		    <a href="#advanced" class="inHelpLink">Advanced and Expert Models</a> if you want to use those.  If you feel
+		    that your students should look at R<sup>2</sup> instead of RMSE, please see the
+		    <a href="#philosophy" class="inHelpLink">Philosophy</a> section.</p>
+		<p><b>Linearizing the Model - </b>If you want your students to linearize their results in order to support
+		    the development of proportional reasoning, have them use the Linearize button. This brings up a simple
+		    dialog that will allow them to transform their data to see if they get a straight line.
+		    The dialog only understands 5 transformations: x&Hat;2, sqrt(x), 1/x, 1/x&Hat;2, and 1/sqrt(x).  They must
+		    be typed correctly to work.  Anything else is ingored.</p>
+		<div class ="userManualHeading">
+		    <div id="multiple" class="userManualSection">
+			Graphing Multiple Data Sets
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>The spreadsheet is actually five separate sheets, selected by the row of tabs (Sheet 1, Sheet 2, etc.) at
+		    the top of the data entry grid.  Each sheet supports a completely separate fitting model and has its own
+		    plotting symbol and style of fitting line. They share a single set of axis labels, and the axes will be
+		    scaled to accomodate all curves at once.  This feature does not allow you to mix and match completely
+		    different data sets.  For example, you cannot put position vs. time and velocity vs. time together in the
+		    same graph.</p>
+		<div class ="userManualHeading">
+		    <div id="preferences" class="userManualSection">
+			Preferences
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>The Preferences button brings up a menu that you can use to make some changes to the appearance of your graph.
+		    Most of these settings are saved in your browser cache.  They will remain the way
+		    you set them until your cache is cleared.  Other settings (Require (0,0), Suppress Uncertainties, and
+		the point display toggles) are not saved and must be reset every time nPlot is restarted.</p>
+		<p><b>Grid - </b>By default, your graph includes a faint grid based on the major axis divisions.  It you don't want
+		    that, uncheck the Grid radio button.</p>
+		<p><b>Toggle Data Display - </b>These radio buttons let you turn off the display of the data in individual
+		    sheets.  The data is still there, and you can even fit a model to it, but the data points don't appear on
+		    the plot. For why you might want to do this, see the <a href="#philosophy" class="inHelpLink">Philosophy</a>
+		    section.</p>
+		<p><b>Show Error Bars - </b>Numbers typed in the &quot;&plusmn;x&quot; and &quot;&plusmn;y&quot; columns are
+		    drawn as error bars only when this is checked.  It is off by default, and the setting is saved.</p>
+		<p><b>Scale With Error Bars - </b>If you have error bars on your data points, the graph will be scaled so those bars
+		    are fully shown.  If you de-select this option, then the scaling will be calculated using only your data points,
+		    and the error bars may be clipped.</p>
+		<p><b>Formulas in annotation - </b>By default, the mathematical formula that was used in the fit is included in the
+		    annotation for the fit (see <a href="#annote" class="inHelpLink">Annotating Your Graph</a>). You can turn
+		    off this feauture in the preference menu. The annotation will still indicate the type of fit (e.g.,
+		    Quadratic).</p>
+		<p><b>Download - </b>If you want to download your graph as a graphics file (as opposed to copying it to the
+		    clipboard), check this radio button.  If you want your fit results as separate text file, check the &quot;Also
+		    text&quot; radio button. You will need to allow multiple downloads when you get the pop-up asking.</p>
+		<p><b>Require (0,0) - </b>By default, nPlot always includes the orign in your graph.  If you have data that covers a
+		    limited range very far from the origin, you may want to override this default by unchecking the radio button.
+		    This setting is <b><i>not</i></b> saved.  It will be reset to default the next time you launch nPlot.</p>
+		<p><b>Professional Mode - </b>This is the default behavior. nPlot rounds the uncertainty to two significant
+		    figures and then rounds the fitting parameter to a matching number of decimal places. If you turn it off,
+		    results are displayed to 8 decimal places, which can be useful for teaching about the meaning of
+		    significant figures.</p>
+		<p><b>Suppress Uncertainties - </b>If selected, this control will cause fitting parameters to be shown without
+		    their uncertainties.  This may be less confusing for some students, but it also robs them of key information
+		    about how well their model agrees with their data.  Use with caution.  In the iPad edition this is on by
+		    default, and the setting is saved.</p>
+		<p><b>Auto Zoom - </b>nPlot will try to adjust itself to fill your computer screen.  Because web browsers
+		    operate in a kind of &quot;sandbox&quot; to protect your computer from malicious web sites and blah, blah,
+		    this may not work well on your device.  If this feaure is giving you trouble, turn it off.  On an iPad, Auto Zoom
+		    lets Safari fit the whole page to the screen; with it off, nPlot is shown at full size and you can pinch to zoom.</p>
+		<p><b>Symbols, Colors, and Lines - </b>Pressing each of the five radio buttons in turn will show you the
+		    default symbol, line color, and line type for each of the five data sheets.  Below the radio buttons is a
+		    set of dropdown menus that will allow you to make different choices for each sheet.  Go wild.</p>
+		<div class ="userManualHeading">
+		    <div id="tangent" class="userManualSection">
+			Using the Tangent Finder
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>The Tangent Finder does just what it says.  When activated, it gives the slope of the fit at the x-value of
+		    the mouse position.  By default, when the Finder is activated, the Lock To Data option is on, which
+		    restricts tangent finding to the x-values of the input data points.  The x value and slope at that x value
+		    appear just below the tangent finder controls.  The finder operates on whichever of the five sheets has been
+		    selected.  If you want to include a tangent in your downloaded graph, slide the mouse off the top or bottom
+		    edge of the graph at the desired x-value.</p>
+		<p><b>Touchscreens - </b>Put a finger (or Apple Pencil) on the graph and drag along the curve.  The tangent follows,
+		    and stays where you lift your finger.</p>
+		<p><b>Copy Slopes - </b>Click the Copy Slopes button to copy the slope of the fit at <i>every</i> data point on
+		    the current sheet, as two columns: the <i>x</i> value and the slope there.  Paste them into a spreadsheet, or
+		    into an empty nPlot graph to plot slope vs. <i>x</i>.  For example, fit a position vs. time graph, copy the
+		    slopes, and paste them in to get a velocity vs. time graph.  Copy Slopes works with the same curved models as
+		    the tangent finder.  (For a straight line the slope is the same everywhere, so just use <i>A</i>.)</p>
+		<div class ="userManualHeading">
+		    <div id="annote" class="userManualSection">
+			Annotating Your Graph
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>This feature is designed to let you paste the results of a fit right on the graph instead of having to copy the
+		    numbers down separately. Clicking the Annotation button brings up the annotation menu, which has buttons for
+		    adding a fit result, a note or an arrow.  There is also an Edit button which will let you change any of the
+		    annotations you have already placed.</p>
+		<p><b>Adding a Fit - </b>If you have a fit for only a single data set, then clicking the Add Fit button will
+		    automatically drop the results on your graph as a block of text.  Use your mouse/trackpad to position the block,
+		    then click to leave it there.  If you have multiple fits on multiple sheets, then you will get a popup menu that
+		    allows you to select which fit to annotate.  As you hover the cursor over each sheet name in the list, the
+		    datapoints for the associated curve will turn red on the graph.  Click on the sheet whose fit results you want
+		    to place next. If you type something in the Note box, when you hit the Add Fit button, that text will be added
+		    to the start of the next fit result you place. If you change the model used on a data set, the fit annotation
+		    for the old model will automatically be erased.</p>
+		<p><b>Adding a Note - </b>To add a note to the graph, type the text in the Note box first, then click the Add Note
+		    button.  As with the fits, click to leave the note where you have positioned it. Notes can include
+		    <a href="#special" class="inHelpLink">subscripts, superscripts, and Greek letters</a>.</p>
+		<p><b>Adding an Arrow - </b>If you have multiple fits and multiple annotations, it can be useful to indicate which
+		    results go with which curves.  That is where arrows come in.  Arrows are drawn tip-to-tail.  Click the add arrow
+		    button, then click in the graph where you want the arrow to start and click again where you want it to end.</p>
+		<p><b>Editing Annotations - </b>This button will bring up a list of all the annotations that have been added to your
+		    graph.  The list tells you only whether a particular annotation is a fit, note, or arrow, but it doesn't tell
+		    you which fit, note, or arrow.  But as you hover the cursor over each item in the list, the corresponding
+		    annotation will highlight red in the graph.  Click on the fit you want and you can reposition the block of text.
+		    If you click on a note, the note text will first be loaded into the Note box so you can edit it.  Click on Add
+		    Note to position the edited text.  If you click on an arrow, you first get to reposition the tail, and then the
+		    tip. Clicking on the &quot;<span style="font-size: 150%; vertical-align: middle;">&times;</span>&quot; next to
+		    an item will delete it.  If you have multiple data sets and erase one data set (using the Clear Data button)
+		    then the annotations associated with that data set will remain on the graph.  You will have to delete them by
+		    hand using this editing function.</p>
+		<p><b>Adding Max&sol;Min Slope Lines - </b>If you have a linear fit on any sheet, you can use the annotation
+		    menu to manually add additional lines to the graph.  This feature is intended for students who need to draw
+		    IB style graphs.  The completed line is drawn using dashes, and the slope and intercept are reported in the
+		    annotation dialog.  If desired, this information can be manually added to the graph using the Add Note feature.
+		    You can draw as many lines as you like, and although you cannot change a line after it has been drawn, you can
+		    remove it using the Edit feature.  </p>
+		<div class ="userManualHeading">
+		    <div id="saving" class="userManualSection">
+			Saving &amp; Recalling Your Graphs
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p><b>Saving - </b>Your entire graph can be saved for later recall by clicking the Save Graph button.  Type a
+		    name in the text input first, or nPlot will complain.  If the name matches an existing saved graph, that
+		    earlier graph will be overwritten.  There is no &quot;are you sure?&quot; warning!  The graph is saved on
+		    your computer only.  It cannot be accessed from any other device.</p>
+		<p><b>Recalling - </b>If you click the Recall Graph button you will be shown a list of all the graphs saved in
+		    your browser.  Click on a name in that list and the graph and data will be restored exactly as they were
+		    when you saved them.  If nPlot detects that there is already data in the spreadsheet, it will ask before
+		    replacing your current graph with the recalled one.</p>
+		<p><b>Deleting - </b>Click the &times; next to a saved graph's name to delete it (you will be asked to confirm).
+		    If you hold down the shift key while clicking on a saved graph name, that graph will be
+		    deleted instead of recalled.  You will not be asked if you are sure.</p>
+		<p><b>Impermanence - </b>Your graphs are stored in the browser cache.  If the cache is cleared for any reason
+		    you will lose all your saved graphs.  Think of this graph saving feature as a convenience and not an
+		    archival record.  Keep a copy of your data in e.g., a Google Sheet.  (Safari on iPads may also clear it if you
+		    have not visited nPlot for a week or so.)</p>
+		<p><b>Saving to a File - </b>For a copy that lasts, open the Recall Graph panel and click &quot;Save to
+		    File&hellip;&quot; (or press and hold the Save Graph button).  This creates a small file ending in
+		    &quot;.nplot.json&quot; that holds everything: what you typed in every cell (including formulas and skipped
+		    points), the models on every sheet, the labels, any linearization, and all annotation.  On an iPad you can save
+		    it to Files or Google Drive, or AirDrop it.  You can also hand it in.  To get the graph back, click &quot;Open
+		    File&hellip;&quot; in the same panel and choose the file.  The file only makes sense to nPlot.</p>
+		<div class ="userManualHeading">
+		    <div id="download" class="userManualSection">
+			Pasting or Printing Your Graph
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>There are actually three separate ways to get a useful copy of your graph.  Which one you should choose
+		    depends on what you want to do with the graph.</p>
+		<p><b>Copy to Clipboard - </b>This is the default option.  Clicking the Graph to Clipboard button puts a copy of the
+		    graph in the system clipboard.  From there it can be pasted into a document and printed.  You can also paste it
+		    into the spreadsheet you are using as a lab notebook.</p>
+		<p><b>Open in a Tab - </b>This option is designed for making a quick hard copy that you can tape into a real (made
+		    from paper!) lab notebook.  Hold down the control key and the &quot;Graph to Clipboard&quot; button changes to
+		    the &quot;Graph in New Tab&quot; button.  Click this button and your graph will appear by itself in a new tab.
+		    Print that tab to get a graph suitable for taping into a notebook.  <b>No keyboard?</b> Press and hold the
+		    Graph to Clipboard button for a menu that also offers &quot;Open graph in a new tab,&quot; &quot;Download
+		    graph as a PNG file,&quot; and &quot;Show graph to save to Photos.&quot;</p>
+		<p><b>Download an Image - </b>If you check the &quot;Yes, download&quot; radio button in the Preferences menu, then
+		    the &quot;Graph to Clipboard&quot; button changes to the &quot;Download Graph&quot; button.  Clicking it will
+		    download your graph as a graphics file (named using your axis labels as
+		    &quot;y-axis_label_vs_x-axis_label.png&quot;) that you can use however you like.  If you also select the
+		    &quot;Include fit&quot; radio button, you will get a second (plain text) file containing the results of all your
+		    fits.  If you request the text file, allow multiple downloads when the pop-up asks your permission.</p>
+		<div class ="userManualHeading">
+		    <div id="special" class="userManualSection">
+			Superscripts, Subscripts, and Symbols
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p><b>Superscripts - </b>You can add a superscipt to any text that you type into nPlot (axis labels, units, plot
+		    title, or annotation notes). Superscripts come in two styles. <b>(1)</b> If you just need a numerical
+		    superscipt, simply precede the numerical superscript with the caret symbol &quot;&Hat;&quot;.  For example, to
+		    get v<sup>2</sup>, type v&Hat;2.  Superscripts done this way are restricted to numbers (digits) and the plus and
+		    minus symbols.  All digits between the caret and the first non-digit character are assumed to be part of the
+		    same superscript in this style. <b(2)</b> If you need a superscript that contains plain text and&sol;or Greek
+		    letters, you need to type a LaTeX style superscript. This kind of superscript still starts with a caret, but
+		    that symbol is immediately followed by a pair of opening and closing curly brackets.  For example, to obtain
+		    T<sup><i>&beta;</i></sup>, type &quot;&Hat;&lcub;&bsol;beta&rcub;&quot;. The curly brackets are essential for
+		    telling nPlot when the superscript starts and when it ends. There are some restrictions. Superscripts may not
+		    have super- or subscripts, and if your desire is to have curly brackets as part of your superscript text, that
+		    is guaranteed not to work right. (A curly bracket by not preceded by a caret will simply print as a curly
+		    bracket.)</p>
+		<p><b>Subscripts - </b>Subscripts work the same way as the LaTeX style superscripts, except with a different
+		    starting symbol: an underscore instead of a caret.  For example,
+		    typing F&lowbar;&lcub;net&rcub; gives F<sub>net</sub>.  All the rules that apply to LaTex superscripts apply to
+		    LaTeX subscripts.</p>
+		<p><b>Greek and Other Symbols - </b>To get a Greek letter, type a backslash &quot;&bsol;&quot; followed by the
+		    name of the Greek letter.  For example, type e.g. &bsol;Delta, &bsol;delta, or &bsol;mu to get &Delta;,
+		    <i>&delta;</i>, or <i>&mu;</i>. If an uppercase Greek letter is the same as a character in the Roman alphabet, no
+		    translation is made.  Disappointingly, typing &bsol;Alpha just gives &bsol;Alpha, not the A you were hoping
+		    for.  To make it easier to read what you are typing, the first blank space between the Greek letter and the
+		    rest of the text is ignored.  If you actually want a space after the Greek letter, type two spaces in your
+		    input.  For example, both &quot;&bsol;DeltaL&quot; and &quot;&bsol;Delta L&quot; will print as &Delta;L, but
+		    &quot;&bsol;Delta&emsp;L&quot; will print as &Delta; L.</p>
+		<p><b>Special Characters - </b>The Greek symbol processor also understands a few special characters (which means
+		    the same business about spaces applies).  These characters are &bsol;deg (&deg;), &bsol;times (&times;),
+		    &bsol;sqrt (&radic;&thinsp;), &bsol;pm (&plusmn;), and &bsol;ell (&ell;).</p>
+		<div class ="userManualHeading">
+		    <div id="advanced" class="userManualSection">
+			Advanced and Expert Models
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>The Basic models are all &quot;linear,&quot; while the Advanced and Expert models are &quot;nonlinear.&quot;
+		    Linear and nonlinear in this context have specific mathematical meanings.  If you want to know more about these
+		    meanings, you should read chapter 15 of <i>Numerical Recipes</i> by Press, Teukolsky, <i>et al.</i> To use
+		    nPlot, however, all you need to know is that a fit to a linear model (all the ones on the Basic tab) cannot
+		    fail.  No matter how unrelated the shape of the model and the shape of your data, you will get some kind of an
+		    answer.  Nonlinear models, on the other hand, require you to guess what the answer is first.  If your guesses
+		    are close enough, then the algorithm will quickly converge to a best fit set of parameters.  If they are not,
+		    then the algorithm will wander off in parameter space and never be heard from again.  If it seems unfair that
+		    you can only get the answer if you already know the answer, you are right.  Life is like that sometimes.  The
+		    good news is that, since guessing can be hard, nPlot will guess for you.</p>
+		<p><b>Advanced Models - </b>For these models, the guessing algorithm works really well, as long as the majority
+		    of your data has positive values for both <i class="mathClass">x</i> and <i class="mathClass">y</i>.  If you
+		    follow that simple rule, then these models will appear to you just like the basic ones: select the model and
+		    instantly get a fit.</p>
+		<p><b>Expert Models - </b>For these models, nPlot is still going to guess for you, but for reasons, it might not do
+		    such a great job.  So, when you select an expert model, nPlot will make the guesses, show you the curve that
+		    results, and let you change the guesses before the nonlinear fit starts. Probably the best strategy is to just
+		    accept nPlot's guesses by hitting the Go button, and only try guessing yourself if the fit fails. I said nPlot
+		    might not make great guesses, but maybe I was being modest.</p>
+		<p><b>Failure is an option - </b>If there really is no reasonable relationship between your data and the model you
+		    have chosen, then the Levenberg-Marquardt fitting engine will not converge and you will get a message that the
+		    fit has failed.  A less likely, but still possible, outcome is that the fit converges, but to parameter values
+		    that make no sense.  If you are really sure that you have the right model, then you can try again and adjust the
+		    intital guesses by hand before hitting Go.  All that being said, the most likely reason for a failed fit is that
+		    the model is wrong or the data are complete nonsense.</p>
+		<div class ="userManualHeading">
+		    <div id="philosophy" class="userManualSection">
+			The Philosophy of nPlot
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>As every teacher knows, designing a course requires making choices: what to include and what to leave out.  There
+		    are many teachers who believe that students can learn a lot through making graphs by hand: how to linearize
+		    data, how to choose an appropriate scale for the axes, how to decide on what is or is not a reasonable line
+		    through the data.  As it happens, I am one of those teachers.  But learning these skills takes time, and it can
+		    actually be quite a while before students have mastered them well enough to see through the graphing mechanics
+		    to the physics you want to teach them.  If you have that time, then you should teach your students to graph
+		    their data by hand.  nPlot was created because I did not have that time, and because, while there were many
+		    computer graphing tools to choose from, they all still wasted time that I could use better teaching physics.
+		    Also, since wherever they go in life, our students will likely have access to computer based graphing tools
+		    (from an icon right next to the one for Chat GPT), they might as well know what a good one looks like.</p>
+		<p><b>Scaling - </b>Left to their own devices, students will naturally make boneheaded choices when scaling
+		    their graphs.  Many computer-based graphing programs will make boneheaded choices of their own.  In designing
+		    nPlot, I made a decision to take scaling completely out of the students' hands.  The data will always be more or
+		    less centered and fit completely within the graph.  The number and placement of axis divisions will be wisely
+		    chosen.  There will be no more squinting at a row of dots pressed against the <i class="mathClass">x</i> or
+		    <i class="mathClass">y</i> axis in an attempt to figure out if they make a straight line or a curve.  There will
+		    be no tick marks placed at locations that can only be represented using an infinite number of decimal digits.</p>
+		<p><b>What about comparisons? - </b>If you are used to making your students all use the same scale so they can
+		    compare what is the same and what is different, try using the multiple sheets feature of nPlot.  Have two
+		    or three lab groups share their data so that all the data sets appear together on the same graph with the
+		    same scale.  Making comparisons doesn't get more direct than that. (If the multiple sheet feature really
+		    doesn't work the way you need it to for data comparisons in your classroom, the multiple sheet feature can
+		    still work for you.  Have each group put their data in Sheet 1. Then have every group of students enter the
+		    same two points on Sheet 2 and turn off display of that sheet using the Preferences menu.  If you choose
+		    that pair of points correctly, every graph in the class will have the same scale, and every data set will
+		    fit within that scale.)</p>
+		<p><b>RMSE vs. R<sup>2</sup> - </b>These two quantities are used to answer two completely different questions.
+		    R<sup>2</sup> (the square of the linear correlation coefficient) will provide an answer to a question like
+		    &quot;Does my crop yield depend on the amount of fertilizer I use?&quot; Or, at the next level, "Does crop
+		    yield depend more closely on fertilizer per acre or irrigation per acre?&quot; These are not physics questions.
+		    In an introductory physics lab, we are not in doubt as to which is the correct independent variable.  Rather, we
+		    want to know which of the many possible mathematical relations between <i class="mathClass">x</i> and
+		    <i class="mathClass">y</i> is the correct one.  The RMSE is what answers that question.  For more on this topic
+		    than you really want to know, see <i>Data Reduction and Error Analysis for the Physical Sciences</i> by
+		    Bevington and Robinson.</p>
+	    </div>
+	</div>
+
+	<!-- iPad edition: pop-ups used by the clipboard fallback, Copy Slopes, and the press-and-hold menus -->
+	<div id="graphImageModal" class="modal">
+	    <div id="graphImageContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p>Touch and hold the graph, then choose <b>Copy</b> or <b>Save to Photos</b>.
+		    (On a computer, right-click it and choose Copy Image.)</p>
+		<img id="graphImage" alt="Your graph">
+	    </div>
+	</div>
+	<div id="copyTextModal" class="modal">
+	    <div id="copyTextContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p>Your browser would not let nPlot copy this automatically. Select all of the text below and copy it.</p>
+		<textarea id="copyTextArea" rows="12" readonly></textarea>
+	    </div>
+	</div>
+	<div id="toastMessage"></div>
+	<div id="actionMenu"></div>
+
+	<div id="aboutModal" class="modal">
+	    <div id="aboutContent" class="modal-content">
+		<span id="aboutClose" class="close">&times;</span>
+		<p id="version">nPlot v5.93</p>
+		<p>&copy; Geoff Nunes, 2020-2026</p>
+		<p>Questions, brickbats, and requests for new features can be sent to <span>d</span><span>o</span><span>c</span> at
+		    this website&ensp;(<span>n</span><span>o</span><span>r</span><span>a</span><span>g</span><span>u</span><span>l</span><span>f</span><span>a</span><span>.</span><span>c</span><span>o</span><span>m</span>).  Please don't expect a rapid response.
+		</p>
+		<p>The fitting routines are adapted from Press, Teukolsky, et al., <i>Numerical Recipes.</i>
+		    The data grid was adapted from
+		    <a href="http://jsfiddle.net/ondras/hYfN3/" target="_blank" class="linked">code by Ondřej Žára.</a>  Everything else is my fault.</p>
+		<p>iPad edition (6.20i) adapted by Alan Calac (<a href="https://calacattack.com" target="_blank" class="linked">CalacAttack.com</a>), St. Ignatius College Prep, San Francisco, with the author's
+		    permission. The original nPlot is at <a href="https://noragulfa.com/nPlot/" target="_blank" class="linked">noragulfa.com/nPlot</a>.</p>
+		<p id="changeLogTitle">Change Log</p>
+		<p class="verNumber">v6.20i (iPad edition)</p>
+		<p class="change"><b>New Feature: </b>Touch and Apple Pencil support on the graph: drag to place notes, fits, and arrows, and to move the tangent finder; lift to drop.</p>
+		<p class="change"><b>New Feature: </b>Press and hold Clear Data, Swap x &amp; y, Save Graph, or Graph to Clipboard for the options that used to need the ctrl key.</p>
+		<p class="change"><b>New Feature: </b>Saved graphs can be deleted with the &times; next to their name (no shift key needed).</p>
+		<p class="change"><b>New Feature: </b>Save to File and Open File (in the Recall Graph panel) keep a graph permanently, including formulas, skipped points, all models, linearization, and annotation.</p>
+		<p class="change"><b>New Feature: </b>Copy Slopes copies the tangent slope at every data point as two columns, ready to paste.</p>
+		<p class="change"><b>New Feature: </b>Show Error Bars setting. Error bars are now hidden unless it is turned on.</p>
+		<p class="change"><b>Change: </b>Suppress Uncertainties is now on by default, and the setting is remembered.</p>
+		<p class="change"><b>Change: </b>On iPads, Auto Zoom uses Safari's own page scaling instead of a CSS transform.</p>
+		<p class="change"><b>Bug Fix: </b>Graph to Clipboard now works in Safari. If the clipboard is blocked, the graph is shown so it can be copied or saved by hand.</p>
+		<p class="change"><b>Bug Fix: </b>The X/Y label rows no longer wrap the closing parenthesis on iPads.</p>
+		<p class="change"><b>Bug Fix: </b>The Cancel button in the Recall Graph confirmation now closes the dialog.</p>
+		<p class="change"><b>Change: </b>noragulfa.com logo on the front panel replaced by a link to CalacAttack.com (Geoff's credit is here in About).</p>
+		<p class="verNumber">v6.20</p>
+		<p class="change"><b>New Feature: </b>Button and pop-up dialog to allow linearization of data.</p>
+		<p class="change"><b>New Feature: </b>Fit to a logarithmic function has been added to the Advanced Models.</p>
+		<p class="change"><b>New Feature: </b>The display of data points can now be turned off separately for each data sheet.</p>
+		<p class="change"><b>New Feature: </b>Fitting constant uncertainties can be turned off in the Preferences menu.</p>
+		<p class="change"><b>Change: </b>Professional Mode is now the default behavior.</p>
+		<p class="change"><b>Bug Fix: </b>Screen display now adjusts correctly when Auto Zoom is turned off.</p>
+		<p class="change"><b>Bug Fix: </b>Selecting filled triangle symbols in the Preferences menu now works correctly.</p>
+		<p class="verNumber">v6.10</p>
+		<p class="change"><b>New Feature: </b>Annotation now includes formula of fit. Turn off in Preferences.</p>
+		<p class="change"><b>New Feature: </b>Non-numeric superscripts available using ^{stuff}.</p>
+		<p class="change"><b>Bug Fix: </b>Professional Mode did not handle trailing zeroes correctly.</p>
+		<p class="change"><b>Aesthetic: </b>"+/-" in fit annotation replaced with unicode plus-minus.</p>
+		<p class="change"><b>Aesthetic: </b>Tangent finder text now hidden when finder is inactive.</p>
+		<p class="change"><b>Aesthetic: </b>Minor improvements to display of the User Manual and other pop-ups.</p>
+		<p class="verNumber">v6.04</p>
+		<p class="change"><b>Bug Fix: </b>Auto Zoom not working on iPads.</p>
+		<p class="verNumber">v6.03</p>
+		<p class="change"><b>Bug Fix: </b>X-axis error bars would not plot.</p>
+		<p class="verNumber">v6.02</p>
+		<p class="change"><b>Bug Fix: </b>Y-intercept for manual lines incorrect when Require (0,0) option not checked.</p>
+		<p class="change"><b>Bug Fix: </b>Y axis labels slightly mis-positioned</p>
+		<p class="change"><b>Bug Fix: </b>Certain data sets would cause scaling to fail</p>
+		<p class="verNumber">v6.01</p>
+		<p class="change"><b>Bug Fix: </b>In Professional Mode, certain data sets would cause symbols not to be plotted</p>
+		<p class="change"><b>Bug Fix: </b>Sometimes curves were drawn with the wrong line width</p>
+		<p class="verNumber">v6.00</p>
+		<p class="change"><b>New Feature: </b>User control of plotting symbol, line color and line type from Preferences menu</p>
+		<p class="change"><b>New Feature: </b>Auto zoom feature scales the page display to match the screen</p>
+		<p class="change"><b>New Feature: </b>Professional Mode displays fit results based on significant figures</p>
+		<p class="change"><b>New Feature: </b>New Expert models for certain nonlinear fits</p>
+		<p class="change"><b>Change: </b>Control for downloading the graph as an image file moved to the Preferences menu</p>
+		<p class="change"><b>Change: </b>Improved front panel layout</p>
+		<p class="verNumber">v5.93</p>
+		<p class="change"><b>Bug Fix: </b>A problem plotting multiple curves when one of them had only a single point has now been fixed.</p>
+		<p class="verNumber">v5.92</p>
+		<p class="change"><b>New Feature:</b>  A new Setting frees the axis scaling from requiring that the point (0,0) always be included.</p>
+		<p class="change"><b>New Feature:</b> Any text in the Note input box in the Annotation dialog will be prepended to the fit results.</p>
+		<p class="change"><b>New Feature:</b> Highlighted values in the data table can be cleared with the delete key.</p>
+		<p class="change"><b>Bug Fix:</b> Cell background color is correctly reset after editing the cell contents.</p> 
+		<p class="change"><b>Bug Fix:</b> Manual line parameters are now actually added to the note input field, as
+		    promised in the user manual.</p> 
+		<p class="change"><b>Bug Fix:</b> It is no longer possible to post the same fit annotation an infinite number of times.</p> 
+		<p class="verNumber">v5.91</p>
+		<p class="change"><b>Change:</b>  The data table can now handle as many as 100 points.</p>
+		<p class="verNumber">v5.90</p>
+		<p class="change"><b>Enhancement:</b>  Downloaded graphs are now named using the axis labels.  Control characters are stripped and the graph is named using
+		    the format &quot;x-axis_label_vs_y-axislabel.png&quot;</p>
+		<p class="change"><b>New Feature</b>:  By default, the axis scaling routine now looks at the error bars and prevents them from being clipped.  If
+		    this feaure is turned off, the previous behavior is recovered: scaling is done using only the data points and the error
+		    bars may be clipped.</p>
+		<p class="change"><b>New Feature:</b>  The settings of the show Grid and Show Data radio buttons are now stored in the browser cache, along with
+		    the setting for the new "scale using the error bars" feature.  Buttons to control all three settings are on the new
+		    pop-up Settings menu accessed by a new front panel button.</p>
+		<p class="change"><b>Aesthetic Tweak:</b>  Front panel buttons are now shaded when the cursor hovers over them.</p>
+		<p class="change"><b>Bug Fix:</b>  Y axis labels were mispositioned (as a byproduct of fixing an earlier bug...).</p>
+		<p class="change"><b>Bug Fix:</b>  The reported slope of a manually drawn line was incorrect if the line intersected the top or bottom of the
+		    graph box.</p>
+		<p class="verNumber">v5.84</p>
+		<p class="change"><b>Bug Fix:</b>  Correct minor label placement error introduced in v5.83.</p>
+		<p class="verNumber">v5.83</p>
+		<p class="change"><b>New Feature:</b> Ability to manually add max and min slope lines to a linear fit (for IB Physics) using Annotate dialog.</p>
+		<p class="change">Tweak: Arrows can now be drawn right up to graph border.</p>
+		<p class="change"><b>Bug Fix:</b> Correction to wording in the Annotate dialog.</p>
+		<p class="verNumber">v5.82</p>
+		<p class="change"><b>Bug Fix:</b> Annotation arrows now actually start and end at the crosshairs.</p>
+		<p class="verNumber">v5.81</p>
+		<p class="change"><b>Bug Fix:</b> Minisheets now scroll when selecting data below row 12.</p>
+		<p class="verNumber">v5.80</p>
+		<p class="change"><b>New Feature:</b> Can now drag the mouse to highlight data in the spreadsheet and ctrl-c/ctrl-v to
+		    copy & paste it to a document or spreadsheet.</p>
+		<p class="change"><b>New Feature:</b>  Now get a notification the first time nPlot is launched or after a new version release.</p>
+		<p class="change"><b>New Feature:</b>  When you ctrl-click the Graph to Clipboard button, the graph opens in a new tab for ease in printing.</p>
+		<p class="change"><b>Enhancement:</b>  The Teacher Notes are now the User Manual which is better organized.</p>
+		<p class="change"><b>Enhancement:</b> Labels on the Clear Data and Swap x & y buttons now display the correct
+		    action when the control key is pressed.</p>
+		<p class="change"><b>Enhancement:</b> Better crosshairs to help in positioning annotation.</p>
+		<p class="change"><b>Aesthetic <b>Tweak:</b></b> The graph region is now shown as a box, even when there is no data to plot.</p>
+		<p class="verNumber">v5.79</p>
+		<p class="change"><b>Enhancement:</b>  square root symbol (\sqrt) and multiplication symbol (\times) added to text parser.</p>
+		<p class="verNumber">v5.78</p>
+		<p class="change"><b>Bug Fix:</b>  Recalling a saved graph with no annotation would break further attempts at annotation.</p>
+		<p class="verNumber">v5.77</p>
+		<p class="change"><b>Bug Fix:</b>  Certain data sets would cause the autoscaling routine to hang.</p>
+		<p class="verNumber">v5.76</p>
+		<p class="change"><b>New Feature:</b>  Inverse square root added to the advanced models list.</p>
+		<p class="verNumber">v5.75</p>
+		<p class="change"><b>Bug Fix:</b> A (unreadable) file was downloaded even when the graph was supposed to only be copied to the clipboard.</p>
+		<p class="change"><b>Change:</b> A separate radio button controls whether you get the text file with the fits.</p>
+		<p class="verNumber">v5.74</p>
+		<p class="change"><b>New Feature:</b> The new default download behavior is to copy the graph to the clipboard.  If an actual png file is required,
+		    select the &quot;Yes, download&quot; radio button.</p>
+		<p class="verNumber">v5.73</p>
+		<p class="change"><b>Bug Fix:</b> Waiting for data message was not diplayed after using the Clear Data button.</p>
+		<p class="verNumber">v5.72</p>
+		<p class="change">Minor aesthetic tweaks.</p>
+		<p class="verNumber">v5.71</p>
+		<p class="change"><b>New Feature:</b> No plotting will occur until both axes have been labeled.</p>
+		<p class="change"><b>Enhancement:</b> Cursor now changes to a crosshair when positioning annotation.</p>
+		<p class="change"><b>Bug Fix:</b> You could not delete a fit annotation, change your mind, and immediately re-add it.</p>
+		<p class="change"><b>Bug Fix:</b> Sometimes closing the annotation menu required an extra click.</p>
+		<p class="change"><b>Bug Fix:</b> Sometimes the annotation Done button said Cancel instead.</p>
+		<p class="verNumber">v5.70</p>
+		<p class="change"><b>New Feature:</b> Annotation is now done through a single dialog.</p>
+		<p class="change"><b>New Feature:</b> Annotations can be edited.</p>
+		<p class="change"><b>New Feature:</b>  Save Graph now saves all sheets with data and all annotation as a single "graph".</p>
+		<p class="change"><b>Enhancement:</b>  Annotation notes now understand super- and subscripts.</p>
+		<p class="change"><b>Change:</b>  The square root fit is now a "standard" model rather than an advanced one.</p>
+		<p class="change"><b>Change:</b>  Lock To Data now defaults to "on."</p>
+		<p class="change"><b>Enhancement:</b>  Teacher Notes have been extended into something that is almost a user manual.</p>
+		<p class="change"><b>Enhancement:</b>  Control-clicking the Swap x &amp; y button swaps the axis labels too.</p>
+		<p class="verNumber">v5.63</p>
+		<p class="change"><b>Bug Fix:</b>  Annotation for an inverse fit did not work properly.</p>
+		<p class="change"><b>Bug Fix:</b>  Highlighting of the sheet selection buttons now works correctly.</p>
+		<p class="verNumber">v5.62</p>
+		<p class="change"><b>New Feature:</b>  Added a Swap x & y button, which does just what it says.</p>
+		<p class="verNumber">v5.61</p>
+		<p class="change"><b>Bug Fix:</b> Adding extra data sheets broke graph saving and recalling.</p>
+		<p class="verNumber">v5.60</p>
+		<p class="change"><b>Enhancement:</b> nPlot now supports 5 separate curves!</p>
+		<p class="verNumber">v5.52</p>
+		<p class="change"><b>Bug Fix:</b> The width of the background box for annotation depended on what was in the Y Label field.</p>
+		<p class="change"><b>Bug Fix:</b> Canceling an annotation arrow did not work properly.</p>
+		<p class="verNumber">v5.51</p>
+		<p class="change"><b>Bug Fix:</b> Drawing arrows didn't work properly if you tried two arrows in a row.</p>
+		<p class="change"><b>Enhancement:</b>  Type of fit now included with fit parameters in annotation.</p>
+		<p class="verNumber">v5.50</p>
+		<p class="change"><b>New Feature:</b>  Annotation - Can position the fit results, notes, and arrows on the graph.</p>
+		<p class="change"><b>New Feature:</b>  Lock To Data option draws tangents only at the data points.</p>
+		<p class="change"><b>New Feature:</b>  The exponential fit has a baseline.  Which it should have had before.</p>
+		<p class="change"><b>Aesthetic Tweak:</b>  Rounded corners on pop-ups.  Because life is spiky enough.</p>
+		<p class="verNumber">v5.45</p>
+		<p class="change"><b>New Feature:</b>  Double-clicking in a cell enables the arrow keys for editing.  Overall behavior is more spreadsheet-like.</p>
+		<p class="verNumber">v5.44</p>
+		<p class="change"><b>Bug Fix:</b>  Scaling for large/small numbers caused the fitting parameters to be reported incorrectly.</p>
+		<p class="change"><b>Aesthetic Tweak:</b>  Large or small fitting constants now displayed using scientific notation.</p>
+		<p class="verNumber">v5.43</p>
+		<p class="change"><b>New Feature:</b> Plot title now understands subscripts.</p>
+		<p class="verNumber">v5.42</p>
+		<p class="change"><b>Bug Fix:</b> Correct offset in y labels introduced in v5.40</p>
+		<p class="change"><b>Bug Fix:</b> Correct axis scaling for cases where all data is negative.</p>
+		<p class="verNumber">v5.41</p>
+		<p class="change"><b>Bug Fix:</b> Subscript feature broke superscripts for labels with no subscripts.</p>
+		<p class="verNumber">v5.40</p>
+		<p class="change"><b>New Feature:</b> Subscripts in axis labels and units.  Enclose your subscript like _{this}.</p>
+		<p class="change"><b>Aesthetic Tweak:</b> Advanced model radio buttons now line up with the other model radio buttons.</p>
+		<p class="change"><b>Aesthetic Tweak:</b> Save Name input field shortened so it stays on the same line as the text.</p>
+		<p class="verNumber">v5.31</p>
+		<p class="change"><b>Bug Fix:</b> cells with two decimal points now parse properly.</p>
+		<p class="change"><b>Bug Fix:</b> data with math operators can now be pasted.</p>
+		<p class="verNumber">v5.30</p>
+		<p class="change"><b>New Feature:</b> cells now understand math operators.</p>
+		<p class="change"><b>Bug Fix:</b> if the optimum max value for an axis was zero, axis scaling would fail.</p>
+		<p class="verNumber">v5.25</p>
+		<p class="change"><b>Enhancement:</b> Improved wording of error message for pasted non-numeric characters.</p>
+		<p class="change"><b>Enhancement:</b> CSS edits to improve formatting of text input fields.</p>
+		<p class="verNumber">v5.24</p>
+		<p class="change"><b>Bug Fix:</b> m^2/s^2 will now display correctly as m<sup>2</sup>/s<sup>2</sup> in the axes labels.</p>
+		<p class="verNumber">v5.23</p>
+		<p class="change"><b>New Feature:</b>  Brief confirmation dialog displayed when saving a curve.</p>
+		<p class="verNumber">v5.22</p>
+		<p class="change"><b>New Feature:</b>  Title and axis labeling now includes a degree symbol.  Type "&#92deg".</p>
+		<p class="verNumber">v5.21</p>
+		<p class="change"><b>New Feature:</b>  RMSE is now calculated for the Exactly Proportional (non)fit.</p>
+		<p class="change"><b>Aesthetic Tweak:</b>  zero values in data grid no longer in scientific notation.</p>
+		<p class="change">Really minor aesthetic fix:  Save, Recall, and Download buttons don't move when you change sheets.</p>
+		<p class="verNumber">v5.20</p>
+		<p class="change"><b>New fits:</b>  <i class="mathClass">y = Ax<sup>1/2</sup></i> (under Advanced Models) and a "No Relation" fit</p>
+		<p class="verNumber">v5.10</p>
+		<p class="change"><b>New Feature:</b>  Scientific notation automatically used for large and small numbers.</p>
+		<p class="change">Partial bug fix:  no longer hangs when non-numeric data points are entered.  But the point count will be off
+		    so some data points will not plot.</p>
+		<p class="verNumber">v5.08</p>
+		<p clRass="change">Minor aesthetic improvement when a quadratic curve dips out of the plotting box</p>
+		<p class="verNumber">v5.07</p>
+		<p class="change"><b>Bug Fix:</b>  Program would hang if max and min on either axis were both zero</p>
+		<p class="verNumber">v5.06</p>
+		<p class="change"><b>Bug Fix:</b>  Bad CSS forced unnecessary scroll bars on 1366 x 768 (WXGA) displays</p>
+		<p class="verNumber">v5.05</p>
+		<p class="change">Clear Data now also clears checked skip checkboxes</p>
+		<p class="verNumber">v5.04</p>
+		<p class="change"><b>Bug Fix:</b> entering data only in the x column caused nPlot to hang</p>
+		<p class="verNumber">v5.03</p>
+		<p class="change"><b>Bug Fix:</b> autoscaling failed for some data sets</p>
+		<p class="verNumber">v5.02</p>
+		<p class="change">Front panel changed to make it clear that Saving a graph saves only the current sheet, not all three</p>
+		<p class="change">Minor aesthetic improvements</p>
+		<p class="verNumber">v5.01</p>
+		<p class="change"><b>Bug Fix:</b>  version 5.00 broke superscripts in labels</p>
+		<p class="verNumber">v5.00</p>
+		<p class="change"><b>New Feature:</b> support up to three separate curves, each with independent fit</p>
+		<p class="verNumber">v4.4</p>
+		<p class="change">Internal variable handling finally cleaned up</p>
+		<p class="verNumber">v4.3</p>
+		<p class="change"><b>New Feature:</b> add Advanced Models (power law and exponential)</p>
+		<p class="verNumber">v4.2</p>
+		<p class="change"><b>New Feature:</b> add "skip" checkboxes to suppress data points</p>
+		<p class="verNumber">v4.1</p>
+		<p class="change"><b>New Feature:</b> graph title option</p>
+		<p class="change"><b>New Feature:</b> option to download fit parameters as a text file</p>
+		<p class="verNumber">v4.02</p>
+		<p class="change"><b>Bug Fix:</b> previous version broke graph saving</p>
+		<p class="verNumber">v4.01</p>
+		<p class="change">Labels at lower left corner are "flush" to prevent overlap</p>
+		<p class="change">Minor aesthetic improvements to HTML</p>
+		<p class="verNumber">v4.0</p>
+		<p class="change">Redesigned and renamed as nPlot</p>
+		<p class="change">Obsolete fitting models removed</p>
+		<p class="change"><b>New Feature:</b> TeX style Greek letter and superscripts in axis labels</p>
+		<p class="change">Improved detection of "junk" inputs in data sheet</p>
+		<p class="change"><b>New Feature:</b> report uncertainties in parameters and RMSE of fit</p>
+	    </div>
+	</div>
+	</div>
+    </body>
+    <script src="nplot.js"></script> 
+</html>

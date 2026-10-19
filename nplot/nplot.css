@@ -1,0 +1,1485 @@
+/* REMEMBER TO UPDATE THE VERSION NUMBER IN THE HTML FILE!!!  */
+/* iPad edition (6.20i) changes are marked "iPad edition" and collected at the end of this file. */
+
+@font-face {
+   font-family: bahnschrift, 'DIN Alternate', sans-serif;
+   src: local('Bahnschrift'), url(fonts/bahnschrift.ttf), url(../fonts/bahnschrift.ttf);   /* iPad edition: also look next to nPlot */
+}
+
+:root {
+    --leftPanelWidth: 355px;
+    --centerPanelWidth: 323px;
+    --rightPanelWidth: 611px;
+    --halfModalWidth: 717px;
+    --preferenceLabelWidth: 100px;
+    --preferenceItemWidth: 100px;
+    
+    --fontColor: #4C6A94;
+    --backgroundColor:  #F0F0F0;
+    --sheetTabColor: #E0E0E0;
+    --hoverColor: #C0C0C0;
+    --selectedColor: #D0D0D0;
+    --closeColor: #AAAAAA;
+    --closeHoverColor: #000000;
+    --modalColor: #FEFEFE;
+    --modalBorderColor: #505050;
+    --annoteSelectColor: #FF6666;
+    --alertColor: #FF0000;
+    --cellSelectColor: #C0C0f0;
+    --cellBorderColor: #999999;
+    --sheetHeadColor: #CCCCCC;
+    --radioMarkColor: #C4D8F2;
+    --visitedLinkColor: #88B1E4;
+}
+
+html {
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 100%;
+    color: var(--fontColor);
+    background-color: var(--backgroundColor);
+}
+
+/* html * { -webkit-text-size-adjust: none; } */
+
+body {
+    height: auto;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    user-select: none;
+    -webkit-text-size-adjust: 100%;
+}
+
+#mainContainer {
+    width: 1360px;
+    /* height: 610px; */
+    height: 100%;
+    position: relative;
+    transition: margin-left .5s;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    column-gap: 19px;
+
+    /* border: 1px solid black; */
+}
+
+#leftPanel {
+    width: var(--leftPanelWidth);
+    height: 610px;
+    margin-left: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+
+    /* border: 1px solid black; */
+
+}
+
+#logoPanel {
+    width: var(--leftPanelWidth);
+    height: 40px;
+    margin-top: 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#miniSheetPanel {
+    width: var(--leftPanelWidth);
+    height: 300px;
+    margin-top:10px;
+    padding: 0;
+
+/*    border: 1px solid black; */
+}
+
+#sheetButtons {
+    width: 339px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--fontColor);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+    
+.sheetButton {
+    width: 64px;
+    height: 20px;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 14px;
+    font-weight: 450;
+    color: var(--fontColor);
+    padding: 2px;
+    border: 0;
+    margin-right: 0;
+    border-top: 1px solid var(--fontColor);
+    border-left: 1px solid var(--fontColor);
+    border-right: 1px solid var(--fontColor);
+    border-bottom: 0;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+   
+    background-color: var(--sheetTabColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.sheetButton:hover {
+    background-color: var(--hoverColor) !important;
+    cursor: pointer;   
+}
+}
+
+.sheetButton:focus {
+    outline: none;
+}
+
+/* #sheetButton5 { */
+/*     margin-left: 3px; */
+/* } */
+
+.miniSheet {
+    width: var(--leftPanelWidth);
+    height: 280px;
+/*     font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 12px;
+    font-weight: 450;
+    color: var(--fontColor); */
+    overflow-y: scroll;
+    overflow-x: clip;
+    padding: 0;
+}
+
+.sheetTable {
+    border-collapse: collapse;
+}
+
+.sheetTable td {
+    border: 1px solid var(--cellBorderColor);
+    padding: 0;
+}
+
+.sheetTable tr:first-child td, td:first-child {
+    background-color: var(--sheetHeadColor);
+    padding: 1px 3px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.cellClass {
+    border: none;
+    width: 57px;
+    font-size: 14px;
+    padding: 2px;
+    background-color: var(--backgroundColor);
+    outline: 0;
+}
+
+.cellClass:focus {
+    background-color: var(--cellSelectColor);
+}
+
+.cellClass:not(:focus) {
+    text-align: right;
+}
+
+.chkClass {
+    border: none;
+    width: 55px;
+    font-size: 14px;
+    padding: 2px;
+    background-color: var(--backgroundColor);
+}
+
+#leftButtonsTopRow {
+    width: var(--leftPanelWidth);
+    height: 35px;
+    margin-top:10px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+    
+.npButton {
+    background-color: var(--backgroundColor);
+    color: var(--fontColor);
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 14px;
+    border-radius: 6px;
+    padding-left: 3px;
+    padding-right: 4px;
+    padding-top: 8px;
+    padding-bottom: 7px;
+    border: 2px solid var(--fontColor);
+}
+
+.npButton:focus {
+    outline: 0;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.npButton:hover {
+    cursor: pointer;
+    background-color: #d0d0d0;
+}
+}
+
+#settingsButton {
+    width: 92px;
+}
+
+#linearizeButton {
+    width: 85px;
+}
+
+#tradeButton {
+    width: 85px;
+}
+
+#clearDataButton {
+    width: 83px;
+}
+
+#labelsPanel {
+    width: var(--leftPanelWidth);
+    height: 150px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.labelRow {
+    width: var(--leftPanelWidth);
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.labelClass {
+    border: 0;
+    border-bottom: 1px solid var(--fontColor);
+    background-color: var(--backgroundColor);
+    padding-top: 0px;
+    outline: 0;
+}
+
+.labelClass:focus {
+    outline: 0;
+}
+
+#xlabel, #ylabel {
+    width: 155px;
+}
+
+#xunit {
+    width: 55px;
+}
+
+#yunit {
+    width: 55px;
+    padding-left: 4px;
+}
+
+#plotTitle {
+    width: 312px;
+}
+
+#saveName {
+    width: 240px;
+}
+
+#leftButtonsBottomRow {
+    width: var(--leftPanelWidth);
+    height: 35px;
+    margin-top:10px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#saveGraphButton {
+    width: 85px;
+}
+
+#showSavedGraphsButton {
+    width: 95px;
+}
+
+#downloadImageButton {
+    width: 135px;
+}
+    
+#centerPanel {
+    width: var(--centerPanelWidth);
+    height: 610px;
+    margin-left: 0;
+    top: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    
+    /* border: 1px solid black; */
+}
+
+#centerTabs {
+    width: var(--centerPanelWidth);
+    height: 30px;
+    margin-top: 10px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--fontColor);
+}
+
+.modelButton {
+    width: 104px;
+    height: 30px;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 16px;
+    font-weight: 450;
+    color: var(--fontColor);
+    padding: 2px;
+    border-top: 2px solid var(--fontColor);
+    border-left: 2px solid var(--fontColor);
+    border-right: 2px solid var(--fontColor);
+    border-bottom: 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background-color: var(--backgroundColor);
+}
+
+.modelButton:focus {
+    outline: 0;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.modelButton:hover {
+    cursor: pointer;
+    background-color: var(--hoverColor) !important;
+}
+}
+
+#basicModelsTab {
+    background-color: var(--selectedColor);
+}
+
+#basicModelsDiv {
+    width: var(--centerPanelWidth);
+    height: 285px;
+    margin-top: 10px;
+    padding: 0;
+    display: block;
+}
+
+#advancedModelsDiv {
+    width: var(--centerPanelWidth);
+    height: 300px;
+    margin-top: 10px;
+    padding: 0;
+    display: none;
+}
+
+#expertModelsDiv {
+    width: var(--centerPanelWidth);
+    height: 365px;
+    margin-top: 10px;
+    padding: 0;
+    display: none;
+}
+
+
+/* Hide the browser's default radio button */
+.radioButton input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radioButton {
+    display: block;
+    position: relative;
+    padding-left: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.radioMark {
+  position: absolute;
+  bottom: 3px;
+  left: 0;
+  height: 12px;
+  width: 12px;
+  background-color: var(--selectedColor);
+  border-radius: 50%;
+  border: 1px solid var(--fontColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+/* On mouse-over, add a grey background color */
+.radioButton:hover input ~ .radioMark {
+  background-color: var(--fontColor);
+}
+}
+
+/* When the radio button is checked, add a background */
+.radioButton input:checked ~ .radioMark {
+    background-color: var(--radioMarkColor);
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.radioMark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.radioButton input:checked ~ .radioMark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.radioButton .radioMark:after {
+ 	top: 3px;
+	left: 3px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--fontColor);
+}
+
+#rmseDiv {
+    margin-top: 10px;
+}
+
+.mathClass {
+    font-family: serif;
+    font-weight: 500;
+    font-size: 110%;
+    margin: 0;
+    padding: none;
+}
+
+.modelsDiv p{
+    width: 333px;
+    text-align: justify;
+}
+
+
+#fitResults {
+    width: var(--centerPanelWidth);
+    height: 140px;
+    margin-top: 5px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+    
+#tangentFinding {
+    width: var(--centerPanelWidth);
+    height: 65px;
+    margin-top: 10px;
+    margin-bottom: 7px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#tangentControls {
+    width: var(--centerPanelWidth);
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#slopeResults {
+    width: var(--centerPanelWidth);
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#guessContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#guessPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.guessSpan {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-left: 0;
+    margin-top: 7px;
+}
+
+.guessLetter {
+    width: 20px;
+}
+
+.guessInput {
+    width: 100px;
+}
+
+#goButtonPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 15px;
+}
+
+#goFitButton {
+    width: 50px;
+}
+
+#centerButtons {
+    width: var(--centerPanelWidth);
+    height: 35px;
+    margin-top: 23px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#annotateButton {
+    width: 100px;
+}
+
+#getHelpButton {
+    width: 100px;
+}
+
+#aboutButton {
+    width: 100px;
+}
+
+#graphPanel {
+    width: var(--rightPanelWidth);
+    height: 610px;
+    padding: 0;
+    
+    /* border: 1px solid black; */
+}
+
+#canvas1 {
+    padding: 0;
+    margin-top: 5px;
+    z-index: 0;
+}
+
+#recallSavedGraphModal {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #000000;
+    overflow-x: hidden;
+    padding: 0;
+    transition: 0.5s;
+}
+
+#recallSavedGraphContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: left;
+}
+
+#whyThisDiv {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+#closeSideModal {
+    color: #818181;
+    font-size: 32px;
+    font-weight: bold;
+    transition: 0.3s;
+    margin: 0;
+    padding-right: 20px;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+#closeSideModal:hover {
+    color: #F1F1F1;
+    cursor: pointer;
+}
+}
+
+#recallSavedGraphContent ul {
+    list-style: none;
+    padding-left: 20px;
+    cursor:pointer;
+    margin: 0;
+
+}
+
+#recallSavedGraphContent li {
+    margin: 0px 8px 8px 8px;
+    text-decoration: none;
+    font-family: sans-serif;
+    font-size: 20px;
+    color: var(--selectedColor);
+    display: block;
+    transition: 0.3s;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+#recallSavedGraphContent li:hover{
+    color: var(--annoteSelectColor);
+    text-shadow: 0 0 5px var(--alertColor);
+    cursor: pointer;
+}
+}    
+    
+#noNameContent, #saveConfirmContent {
+    width: 400px;
+    text-align: center;
+}
+
+#LMFailContent {
+    width: 600px;
+}
+
+#LMFailMessage {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}    
+#LMFailMessage p {
+    margin-top: 5px;
+}
+
+#LMFailTitle {
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 110%;
+    font-weight: 450;
+}
+    
+
+#clipConfirmContent {
+    width: 300px;
+    text-align: center;
+}
+
+#recallDialogContent {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#proceedMessage {
+    text-align: justify;
+}
+
+#proceedQuery {
+    text-align: center;
+}
+
+#recallGraphButtons {
+    width: 200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#recallProceedButton, #recallCancelButton {
+    width: 80px;
+}
+
+#settingsModal {
+    width: var(--halfModalWidth);
+    height: 100%;
+}
+
+#settingsModalContent {
+    width: 85%;
+    height: 640px;
+    padding-top: 10px;;
+    padding-bottom: 20px;
+    font-size: 100%;
+    font-weight: 450;
+    margin-top: -85px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#settingsTitle {
+    font-size: 130%;
+    font-weight: 600;
+}
+
+#settingsTable {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-collapse: collapse;
+}
+
+#settingsTable tr {
+    height: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+#settingsTable td {
+    border: 0;
+    padding: 0;
+    text-align: left;
+    background-color: var(--modalColor);
+    font-weight: 450;
+}
+
+#settingsTable td:nth-child(1) {
+    width: 210px;
+}
+
+#pointDisplayToggles {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+#pointDisplayButtons {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.settingsHR {
+    width: 100%;
+}
+
+#preferencesPanel {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+}
+ 
+#chooseSheetForPreferences {
+    margin: 0;
+    margin-top: 2px;
+    margin-bottom: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.selectorDropdown {
+    margin-top: 10px;
+    margin-left: 180px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}    
+
+.selectorLabel {
+    width: var(--preferenceLabelWidth);
+}
+.selectorButton {
+    width: var(--preferenceItemWidth);
+    text-align: center;
+    background-color: var(--backgroundColor);
+    display: inline;
+}
+
+.selectorContent {
+    position: absolute;
+    margin-left: var(--preferenceLabelWidth);
+    width: var(--preferenceItemWidth);
+    text-align: center;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: 1;
+}
+
+.selectorItem {
+    width: var(--preferenceItemWidth);
+    text-alilgn: center;
+    background-color: var(--backgroundColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.selectorItem:hover {
+    background-color: var(--selectedColor);
+    cursor: pointer;
+}
+}
+
+#settingsBlather {
+    margin-top: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#settingsDone {
+    text-align: right;
+    margin-top: 20px;
+}
+
+#closeSettingsButton {
+    width: 80px;
+}
+
+#linearizeModal {
+    width: var(--halfModalWidth);
+    height: 100%;
+}
+
+#linearizeModalContent {
+    width: 85%;
+    height: 630px;
+    padding-top: 10px;;
+    padding-bottom: 20px;
+    font-size: 100%;
+    font-weight: 450;
+    margin-top: -85px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+#linearizeTitle {
+    font-size: 130%;
+    font-weight: 600;
+}
+
+#xformDiv {
+    padding-right: 100px;
+    margin-top: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#transformation {
+    border: 2px solid var(--fontColor);
+    background-color: var(--backgroundColor);
+    width: 200px;
+    height: 20px;
+    outline: 0;
+    font-size: 16px;
+}
+
+#linearizeDone {
+    /* text-align: right; */
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#closeLinearizeButton {
+    width: 80px;
+}
+
+#annotateModal, #addFitModal, #editModal {
+    width: var(--halfModalWidth);
+    height: 100%;
+}
+
+#annotateModalContent {
+    width: 85%;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 120%;
+    font-weight: 450;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: left;
+}
+
+/* #noteTextSpan { */
+/*     margin-bottom: 0; */
+/*     padding-bottom: 0; */
+/* } */
+
+#noteTextInput {
+    border: 2px solid var(--fontColor);
+    background-color: var(--backgroundColor);
+    width: 570px;
+    height: 20px;
+    outline: 0;
+    font-size: 16px;
+}
+#noteTextInfo {
+    margin-top: 3px;
+    margin-bottom: 0;
+    margin-left: 60px;
+    margin-right: 40px;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 80%;
+    font-weight: 400;
+}
+
+#annotateButtons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#addFitButton, #addNoteButton, #addArrowButton, #editAnnotationButton, #cancelAddNoteButton {
+    width: 80px;
+    margin: 15px;
+}
+
+#IBOption {
+    display: block;
+}
+
+#IBrule {
+    border: 1px solid var(--fontColor);
+}
+
+#manualSlopeTable {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#manualLineButton {
+    width: 100px;
+}
+
+#manualSlope, #manualIntercept {
+    width: 225px;
+    font-weight: 450;
+}
+
+#addFitModalContent, #editModalContent {
+    width: 125px;
+    margin-top: -50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    
+}
+
+#fitList {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+#fitList li, #annotationList li {
+    list-style-type: none;
+    cursor: pointer;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+#fitList li:hover, #annotationList li:hover {
+    color: var(--annoteSelectColor);
+}
+}
+
+#addFitDoneButton, #editDoneButton {
+    width: 80px;
+    margin-top: 10px;
+}
+
+#editModalContent {
+    width: 150px;
+    display: flex;
+    
+}
+
+#annotationList {
+    width: 100px;
+    margin: 0;
+    padding: 0;
+}
+
+#annotationList li {
+    list-style-type: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.delAnnote {
+    color: var(--fontColor);
+    font-size: 32px;
+    padding: 0;
+    margin-top: -7px;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.delAnnote:hover, focus {
+    color: var(--alertColor);
+    cursor: pointer;
+}
+}
+
+#updateContent {
+    margin-top: -40px;
+    width: 800px;
+    font-size: 120%;
+}
+
+#updateVersion {
+    font-size: 120%;
+    font-weight: 600;
+}
+
+#updateText ol {
+    margin-top: 0;
+}
+
+#badPasteContent {
+    width: 600px;
+}
+
+#helpModal {
+    /* box-sizing: border-box; */
+    
+}
+
+#helpContent {
+    width: 907px;
+    margin-left: 227px;
+}
+
+.userManualHeading {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: top;
+    padding-bottom: 0;
+    margin-bottom: -10px;
+}
+
+.userManualSection {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.helpLink:link {
+    color: var(--fontColor);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.helpLink:visited {
+    color: var(--fontColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.helpLink:hover {
+    color: var(--visitedLinkColor);
+}
+}
+.TOC:link, .TOC:visited {
+    color: var(--fontColor);
+    text-decoration: none;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.TOC:hover {
+    color: var(--visitedLinkColor);
+}
+}
+
+.inHelpLink:link {
+    color: var(--visitedLinkColor);
+    text-decoration: none;
+}
+
+.inHelpLink:visited {
+    color: var(--visitedLinkColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.inHelpLink:hover {
+    color: var(--fontColor);
+}
+}
+
+#changeLogTitle {
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 120%;
+    font-weight: 100%;
+    color: var(--fontColor);
+}
+
+/* #aboutModal {
+    box-sizing: border-box;
+} */
+
+#aboutContent {
+    width: 55%;
+    font-size: 100%;
+}
+
+.verNumber {
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 100%;
+    font-weight: 600;
+    color: var(--fontColor);
+    margin-bottom: -12px;
+    padding: 0;
+}
+
+.change {
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 100%;
+    font-weight: 350;
+    color: var(--fontColor);
+    margin-bottom: -10px;*/
+    padding: 0;
+}
+
+.upara {
+    padding:0;
+    margin-top: -15px;
+}
+
+.modal, .modalNoClose {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    padding-bottom: 100px;
+    left: 0;
+    top: 0;
+    /* width: 100%; /* Full width */
+    /*  width: auto; */
+    width: 1360px;
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: var(--modalColor);
+    margin: auto;
+    padding: 20px;
+    border: 4px solid var(--modalBorderColor);
+    border-radius: 12px;
+    width: 30%;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 20px;
+    font-weight: 450;
+    color: var(--fontColor);
+}
+
+.close {
+    color: var(--closeColor);
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.close:hover,
+.close:focus {
+    color: var(--closeHoverColor);
+    text-decoration: none;
+    cursor: pointer;
+}
+}
+
+.linked:link {
+    color: var(--visitedLinkColor);
+    text-decoration: none;
+}
+
+.linked:visited {
+    color: var(--visitedLinkColor);
+}
+
+@media (hover: hover) {   /* iPad edition: hover styles only on devices that can hover */
+.linked:hover {
+    color: var(--fontColor);
+}
+}
+
+/* ************************************************************************ */
+
+#selectorPanel {
+    width: 500px;
+    margin-left: 100px;
+    margin-top: 200px;
+    border: 1 px black;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: 0;
+}
+
+
+
+
+/* ************************************************************************ */
+/* iPad edition (6.20i) additions                                           */
+/* ************************************************************************ */
+
+/* Safari on iPads gives text inputs its own padding, border, rounded corners and font.  That made the X/Y label rows
+   a few pixels too wide, so the closing parenthesis wrapped to its own line.  Normalize the inputs and keep each
+   label row on one line, letting the text boxes shrink slightly if they have to. */
+input[type="text"], input[type="number"], input:not([type]), textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.labelRow {
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    align-items: baseline;
+}
+
+.labelClass {
+    box-sizing: content-box;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13.33px;
+    padding: 0 2px 1px 2px;
+    margin: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    flex: 0 1 auto;
+    min-width: 20px;
+}
+
+.cellClass, .guess {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+/* buttons: no iOS long-press callout or text-selection loupe, and no double-tap-to-zoom delay */
+button, .npButton, .sheetButton, .modelButton, .radioButton, #canvas1 {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* tangent finder: Copy Slopes button, and readout text that can be selected */
+#tangentControls {
+    align-items: center;
+}
+
+#copySlopesButton {
+    font-size: 12px;
+    padding: 3px 6px;
+    border-width: 1px;
+}
+
+#slopeResults {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* recall panel: Save to File / Open File, and a delete control on each saved graph */
+#fileButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 10px 28px;
+}
+
+.fileButton {
+    width: 190px;
+}
+
+#savedGraphsHeading, .noSavedGraphs {
+    font-family: sans-serif;
+    font-size: 14px;
+    color: var(--hoverColor);
+    margin: 10px 20px 8px 28px;
+    white-space: nowrap;
+}
+
+#recallSavedGraphContent li {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.savedGraphName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 170px;
+}
+
+.delGraph {
+    color: #818181;
+    font-size: 26px;
+    line-height: 20px;
+    padding: 4px 6px;
+    margin-left: 6px;
+}
+
+@media (hover: hover) {
+    .delGraph:hover {
+	color: var(--alertColor);
+    }
+}
+
+/* press-and-hold menus */
+#leftButtonsTopRow, #leftButtonsBottomRow {
+    position: relative;
+}
+
+#actionMenu {
+    display: none;
+    position: absolute;
+    z-index: 5;
+    min-width: 220px;
+    background-color: var(--modalColor);
+    border: 2px solid var(--fontColor);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    padding: 4px 0;
+}
+
+.actionMenuItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 10px 14px;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 15px;
+    color: var(--fontColor);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.actionMenuItem:active {
+    background-color: var(--selectedColor);
+}
+
+@media (hover: hover) {
+    .actionMenuItem:hover {
+	background-color: var(--selectedColor);
+    }
+}
+
+/* short messages */
+#toastMessage {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 50%;
+    bottom: 40px;
+    transform: translateX(-50%);
+    max-width: 640px;
+    padding: 12px 18px;
+    background-color: var(--fontColor);
+    color: #FFFFFF;
+    border-radius: 10px;
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+/* graph-as-image and copy-by-hand pop-ups */
+#graphImageContent {
+    width: 520px;
+    text-align: center;
+}
+
+#graphImage {
+    width: 480px;
+    height: auto;
+    border: 1px solid var(--cellBorderColor);
+    -webkit-touch-callout: default;
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+#copyTextContent {
+    width: 420px;
+}
+
+#copyTextArea {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 15px;
+    border: 2px solid var(--fontColor);
+    padding: 6px;
+}
+
+/* front-panel link to CalacAttack.com (replaces the noragulfa.com logo) */
+#logoPanel {
+    align-items: flex-end;
+}
+
+#homeLink {
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fontColor);
+    text-decoration: none;
+    padding-bottom: 4px;
+}
+
+@media (hover: hover) {
+    #homeLink:hover {
+	text-decoration: underline;
+    }
+}
