@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactives — CalacAttack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="logo" href="./">CalacAttack</a>
+      <nav class="nav">
+        <a href="tools.html">Tools</a>
+        <a href="interactives.html" aria-current="page">Interactives</a>
+        <a href="links.html">Links</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Interactives</h1>
+    <p class="page-sub">Simulations and activities for exploring physics concepts.</p>
+    <div id="simList"></div>
+  </main>
+
+  <footer>CalacAttack · physics resources</footer>
+
+  <script src="site.js"></script>
+  <script>
+
+    // ================================================================
+    //  ✏️  YOUR INTERACTIVES — EDIT THIS LIST TO ADD / UPDATE SIMS
+    // ================================================================
+    //
+    //  HOW TO GET A LINK FROM CLAUDE:
+    //    1. Open your simulation/artifact in Claude.ai
+    //    2. Click the share icon in the top-right of the artifact
+    //    3. Click "Publish" (if not already published), then "Copy link"
+    //    4. Paste that URL into the "url" field below
+    //  Or save the .html file in this folder and use its file name.
+    //
+    //  FIELDS:
+    //    title  — name shown on the card
+    //    desc   — 1–2 sentence description
+    //    tag    — short topic labels, separated by commas
+    //    url    — link to the sim. Leave as "" for "Coming soon".
+    //
+    //  TO ADD:     copy one { block }, paste it, fill in your info
+    //  TO REMOVE:  delete the whole { block }
+    //  TO REORDER: move the { blocks } into the order you want
+    //
+    // ================================================================
+
+    const simulations = [
+
+      {
+        title: "Standing Waves on a String",
+        desc:  "Experiment with standing waves by changing tension, mass density, length, and harmonic pattern.",
+        tag:   "waves, standing waves, harmonics",
+        url:   "https://strong-frangollo-591d81.netlify.app/"
+      },
+
+      {
+        title: "Guitar String Resonance",
+        desc:  "Learn how tension, mass density, and fretting location affect the sound of a guitar.",
+        tag:   "waves, sound",
+        url:   "https://claude.ai/public/artifacts/fb30d18f-8fef-419e-aa63-852481d3a98e"
+      },
+
+      {
+        title: "Two-Source Sound Wave Interference",
+        desc:  "See how two sound sources interfere depending on location, distance apart, and frequency.",
+        tag:   "waves, sound, interference",
+        url:   "https://eclectic-rolypoly-f064b1.netlify.app/"
+      },
+
+      {
+        title: "Match the Motion",
+        desc:  "A kinematics card deck: match position, velocity, and acceleration graphs to written motion descriptions across six scenarios.",
+        tag:   "kinematics, motion graphs",
+        url:   "match-the-motion.html"
+      },
+
+      {
+        title: "Constant-Acceleration Lab",
+        desc:  "Choose a setup, set the starting values, and press Play to watch position, velocity, and acceleration graphs fill in as the object moves.",
+        tag:   "kinematics, constant acceleration",
+        url:   "constant-acceleration-lab.html"
+      },
+
+    ];
+
+    renderCards(simulations, 'simList', 'interactives');
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools — CalacAttack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="logo" href="./">CalacAttack</a>
+      <nav class="nav">
+        <a href="tools.html" aria-current="page">Tools</a>
+        <a href="interactives.html">Interactives</a>
+        <a href="links.html">Links</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Tools</h1>
+    <p class="page-sub">Web-based software we use in class. Everything runs in the browser and works on iPads.</p>
+    <div id="toolList"></div>
+  </main>
+
+  <footer>CalacAttack · physics resources</footer>
+
+  <script src="site.js"></script>
+  <script>
+
+    // ================================================================
+    //  ✏️  YOUR TOOLS — EDIT THIS LIST TO ADD / UPDATE TOOLS
+    // ================================================================
+    //
+    //  FIELDS:
+    //    title  — name shown on the card
+    //    desc   — 1–2 sentence description
+    //    tag    — short labels, separated by commas
+    //    url    — link to the tool (a folder in this site like "nplot/",
+    //             or a full https:// link). Leave as "" for "Coming soon".
+    //
+    //  TO ADD:     copy one { block }, paste it, fill in your info
+    //  TO REMOVE:  delete the whole { block }
+    //  TO REORDER: move the { blocks } into the order you want
+    //
+    // ================================================================
+
+    const tools = [
+
+      {
+        title: "Sigmund",
+        desc:  "Video analysis. Track an object frame by frame and export position and time data.",
+        tag:   "video analysis",
+        url:   "sigmund/"
+      },
+
+      {
+        title: "nPlot",
+        desc:  "Graph your data, fit curves, and find slopes.",
+        tag:   "graphing, curve fitting",
+        url:   "nplot/"
+      },
+
+    ];
+
+    renderCards(tools, 'toolList', 'tools');
+  </script>
+
+</body>
+</html>
