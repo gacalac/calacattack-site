@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atomic Particles — Freeform Sort</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .container { max-width: 640px; margin: 0 auto; }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 0.75rem;
+  }
+
+  button {
+    background: #fff;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #1a1a1a;
+    transition: background 0.15s;
+  }
+  button:hover { background: #f0f0ee; }
+  button:active { transform: scale(0.98); }
+
+  .scene {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    background: #ebebea;
+    border-radius: 12px;
+    border: 0.5px solid #d0d0cc;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .column-zone {
+    position: absolute;
+    top: 12px;
+    width: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .col-header {
+    width: 100%;
+    background: #fff;
+    border: 0.5px solid #ccc;
+    border-radius: 12px;
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    transition: background 0.12s, border-color 0.12s;
+    z-index: 5;
+  }
+  .col-header.drop-active {
+    background: #eff6ff;
+    border: 2px solid #3b82f6;
+    color: #1d4ed8;
+  }
+
+  .col-cards {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 10px;
+  }
+
+  .placed-card {
+    width: 100%;
+    background: #fff;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: grab;
+    line-height: 1.35;
+    min-height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: none;
+  }
+  .placed-card.correct {
+    border: 2px solid #16a34a;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+  .placed-card.incorrect {
+    border: 2px solid #dc2626;
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+
+  .free-card {
+    position: absolute;
+    width: 110px;
+    background: #fff;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: grab;
+    line-height: 1.35;
+    min-height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: none;
+    z-index: 10;
+  }
+
+  #ghost-el {
+    position: fixed;
+    pointer-events: none;
+    width: 110px;
+    background: #fff;
+    border: 1.5px solid #3b82f6;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.35;
+    min-height: 50px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.92;
+    z-index: 9999;
+    transform: rotate(2deg);
+  }
+
+  .result-msg {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 1.4rem;
+    margin-top: 0.75rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Atomic Particles</h1>
+  <p class="hint">Drag cards onto a header to place them · Drag placed cards back to the open area to remove</p>
+
+  <div class="toolbar">
+    <button onclick="resetAll()">Reset ↺</button>
+    <button onclick="checkAnswers()">Check answers ✓</button>
+  </div>
+
+  <div class="scene" id="scene">
+    <div class="column-zone" id="zone0" style="left:12px;">
+      <div class="col-header" id="h0" data-col="0">Proton</div>
+      <div class="col-cards" id="col0"></div>
+    </div>
+    <div class="column-zone" id="zone1" style="left:50%; transform:translateX(-50%);">
+      <div class="col-header" id="h1" data-col="1">Neutron</div>
+      <div class="col-cards" id="col1"></div>
+    </div>
+    <div class="column-zone" id="zone2" style="right:12px;">
+      <div class="col-header" id="h2" data-col="2">Electron</div>
+      <div class="col-cards" id="col2"></div>
+    </div>
+  </div>
+
+  <div id="ghost-el"></div>
+  <div class="result-msg" id="result-msg"></div>
+</div>
+
+<script>
+const ALL_CARDS = [
+  "Inside nucleus","Inside nucleus","Outside nucleus",
+  "Tightly bound to the atom","Tightly bound to the atom","Weakly bound to the atom",
+  "Positively charged","Not charged","Negatively charged",
+  "Massive","Massive","Not very massive"
+];
+const answerKey = {
+  "Proton":   ["Inside nucleus","Tightly bound to the atom","Positively charged","Massive"],
+  "Neutron":  ["Inside nucleus","Tightly bound to the atom","Not charged","Massive"],
+  "Electron": ["Outside nucleus","Weakly bound to the atom","Negatively charged","Not very massive"]
+};
+
+const ghostEl = document.getElementById('ghost-el');
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+
+function getHeaders() { return [document.getElementById('h0'),document.getElementById('h1'),document.getElementById('h2')]; }
+function getCols()    { return [document.getElementById('col0'),document.getElementById('col1'),document.getElementById('col2')]; }
+function getZones()   { return [document.getElementById('zone0'),document.getElementById('zone1'),document.getElementById('zone2')]; }
+
+function showGhost(text, cx, cy) {
+  ghostEl.textContent = text;
+  ghostEl.style.display = 'flex';
+  ghostEl.style.left = (cx - 55) + 'px';
+  ghostEl.style.top  = (cy - 25) + 'px';
+}
+function moveGhost(cx, cy) {
+  ghostEl.style.left = (cx - 55) + 'px';
+  ghostEl.style.top  = (cy - 25) + 'px';
+}
+function hideGhost() {
+  ghostEl.style.display = 'none';
+  ghostEl.textContent = '';
+}
+
+function clearFeedback() {
+  document.querySelectorAll('.correct,.incorrect').forEach(c=>c.classList.remove('correct','incorrect'));
+  const m=document.getElementById('result-msg'); m.textContent=''; m.style.color='';
+}
+
+function shuffle(a) {
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+}
+
+function headerUnderPoint(cx,cy) {
+  return getHeaders().find(h=>{const r=h.getBoundingClientRect();return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom;})||null;
+}
+function zoneUnderPoint(cx,cy) {
+  return getZones().find(z=>{const r=z.getBoundingClientRect();return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom;})||null;
+}
+function sceneRect() { return document.getElementById('scene').getBoundingClientRect(); }
+
+function endDrag(e) {
+  if (!dragging) return;
+  const card = dragging;
+  dragging = null;
+  hideGhost();
+  getHeaders().forEach(h=>h.classList.remove('drop-active'));
+
+  const text = card.dataset.text;
+  const isFree = card.classList.contains('free-card');
+  const cx = e.clientX, cy = e.clientY;
+  const h = headerUnderPoint(cx, cy);
+  const zone = zoneUnderPoint(cx, cy);
+  const sr = sceneRect();
+  const inScene = cx>=sr.left&&cx<=sr.right&&cy>=sr.top&&cy<=sr.bottom;
+
+  card.style.opacity = '';
+
+  if (isFree) {
+    if (h) {
+      placeInColumn(text, parseInt(h.dataset.col));
+      card.remove();
+    } else {
+      let x = Math.max(0, Math.min(sr.width - card.offsetWidth, cx - sr.left - dragOffX));
+      let y = Math.max(0, Math.min(sr.height - card.offsetHeight, cy - sr.top - dragOffY));
+      card.style.left = x + 'px';
+      card.style.top  = y + 'px';
+    }
+  } else {
+    if (h) {
+      const newColIdx = parseInt(h.dataset.col);
+      const oldCol = card.closest('.col-cards');
+      const newCol = getCols()[newColIdx];
+      if (oldCol !== newCol) {
+        card.remove();
+        placeInColumn(text, newColIdx);
+      }
+    } else if (!zone && inScene) {
+      let x = Math.max(0, Math.min(sr.width - 110, cx - sr.left - 55));
+      let y = Math.max(0, Math.min(sr.height - 50, cy - sr.top - 25));
+      card.remove();
+      spawnFreeCard(text, x, y);
+    }
+  }
+}
+
+function startDrag(card, e) {
+  if (dragging) { hideGhost(); dragging.style.opacity=''; dragging=null; }
+  e.preventDefault(); e.stopPropagation();
+  clearFeedback();
+  dragging = card;
+  card.setPointerCapture(e.pointerId);
+  const r = card.getBoundingClientRect();
+  if (card.classList.contains('free-card')) {
+    dragOffX = e.clientX - r.left;
+    dragOffY = e.clientY - r.top;
+  } else {
+    dragOffX = 55; dragOffY = 25;
+  }
+  card.style.opacity = '0.15';
+  showGhost(card.dataset.text, e.clientX, e.clientY);
+}
+
+function onPointerMove(card, e) {
+  if (dragging !== card) return;
+  e.preventDefault();
+  moveGhost(e.clientX, e.clientY);
+  getHeaders().forEach(h=>h.classList.remove('drop-active'));
+  const h = headerUnderPoint(e.clientX, e.clientY);
+  if (h) h.classList.add('drop-active');
+}
+
+function cancelDrag() {
+  if (dragging) { dragging.style.opacity=''; dragging=null; }
+  hideGhost();
+  getHeaders().forEach(h=>h.classList.remove('drop-active'));
+}
+
+function spawnFreeCard(text, x, y) {
+  const scene = document.getElementById('scene');
+  const card = document.createElement('div');
+  card.className = 'free-card';
+  card.textContent = text;
+  card.dataset.text = text;
+  card.style.left = x + 'px';
+  card.style.top  = y + 'px';
+  card.addEventListener('pointerdown', e => { if (!e.button || e.button===0) startDrag(card, e); });
+  card.addEventListener('pointermove', e => onPointerMove(card, e));
+  card.addEventListener('pointerup',   e => endDrag(e));
+  card.addEventListener('pointercancel', cancelDrag);
+  scene.appendChild(card);
+  return card;
+}
+
+function makePlacedCard(text) {
+  const card = document.createElement('div');
+  card.className = 'placed-card';
+  card.textContent = text;
+  card.dataset.text = text;
+  card.addEventListener('pointerdown', e => { if (!e.button || e.button===0) startDrag(card, e); });
+  card.addEventListener('pointermove', e => onPointerMove(card, e));
+  card.addEventListener('pointerup',   e => endDrag(e));
+  card.addEventListener('pointercancel', cancelDrag);
+  return card;
+}
+
+function placeInColumn(text, colIdx) {
+  getCols()[colIdx].appendChild(makePlacedCard(text));
+}
+
+function resetAll() {
+  cancelDrag();
+  clearFeedback();
+  getCols().forEach(c=>{while(c.firstChild)c.removeChild(c.firstChild);});
+  document.getElementById('scene').querySelectorAll('.free-card').forEach(c=>c.remove());
+  spawnCards();
+}
+
+function spawnCards() {
+  const scene = document.getElementById('scene');
+  const sw = scene.offsetWidth || 500;
+  const sh = scene.offsetHeight || 520;
+  const cardW=110, cardH=50;
+  const shuffled = shuffle(ALL_CARDS);
+  const safeLeft=155, safeRight=sw-155;
+  const usableW = safeRight - safeLeft - cardW;
+  const cols=3;
+  shuffled.forEach((text,i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const xBase = safeLeft + col * (usableW / (cols-1));
+    const yBase = 80 + row * (cardH + 22);
+    const jx = (Math.random()-0.5)*20;
+    const jy = (Math.random()-0.5)*12;
+    const x = Math.max(safeLeft, Math.min(safeRight-cardW, xBase+jx));
+    const y = Math.max(60, Math.min(sh-cardH-10, yBase+jy));
+    spawnFreeCard(text, x, y);
+  });
+}
+
+function checkAnswers() {
+  clearFeedback();
+  const headers = getHeaders();
+  const cols = getCols();
+  const colData = cols.map((col,i) => ({
+    headerText: headers[i].textContent.trim(),
+    cards: [...col.querySelectorAll('.placed-card')]
+  }));
+  const textCounts = {};
+  colData.forEach(({headerText, cards}) => {
+    cards.forEach(card => {
+      const t = card.dataset.text;
+      if (!textCounts[t]) textCounts[t] = {};
+      textCounts[t][headerText] = (textCounts[t][headerText]||0) + 1;
+    });
+  });
+  let total=0, correct=0;
+  colData.forEach(({headerText, cards}) => {
+    const expected = answerKey[headerText]||[];
+    cards.forEach(card => {
+      total++;
+      const t = card.dataset.text;
+      const belongsHere = expected.includes(t);
+      const duplicatedHere = (textCounts[t]?.[headerText]||0) > 1;
+      if (belongsHere && !duplicatedHere) { card.classList.add('correct'); correct++; }
+      else card.classList.add('incorrect');
+    });
+  });
+  const unplaced = document.querySelectorAll('.free-card').length;
+  const msg = document.getElementById('result-msg');
+  if (unplaced > 0) {
+    msg.textContent = `${unplaced} card${unplaced>1?'s':''} still unplaced — keep sorting!`;
+    msg.style.color = '#888';
+  } else if (correct===total && total>0) {
+    msg.textContent = `All ${total} cards correct!`;
+    msg.style.color = '#15803d';
+  } else {
+    msg.textContent = `${correct} of ${total} correct — red cards are in the wrong column.`;
+    msg.style.color = '#b91c1c';
+  }
+}
+
+window.addEventListener('pointerup', e => { if (dragging) endDrag(e); });
+window.addEventListener('pointercancel', cancelDrag);
+
+spawnCards();
+</script>
+</body>
+</html>

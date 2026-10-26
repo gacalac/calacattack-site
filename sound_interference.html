@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sound Wave Interference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; color: #e0e0f0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 12px; }
+  h1 { font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase; color: #a0a0cc; margin-bottom: 8px; }
+  #main { display: flex; gap: 12px; width: 100%; max-width: 900px; }
+  #left { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  #right { width: 210px; display: flex; flex-direction: column; gap: 8px; }
+  canvas { border-radius: 10px; display: block; }
+  #waveCanvas { width: 100%; background: #0a0a18; border-radius: 10px; }
+  .panel { background: #1a1a2e; border-radius: 10px; padding: 12px; }
+  .panel h3 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: #6060aa; margin-bottom: 10px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.82rem; }
+  .stat-val { font-weight: bold; font-size: 0.92rem; color: #aaaacc; }
+  input[type=range] { width: 100%; accent-color: #7070dd; margin: 4px 0; }
+  label { font-size: 0.75rem; color: #8888bb; display: block; }
+  .badge { display: inline-block; padding: 3px 6px; border-radius: 20px; font-size: 0.72rem; font-weight: bold; white-space: nowrap; }
+  .badge.con { background: #eee; color: #222; border: 1px solid #ccc; }
+  .badge.des { background: #111; color: #888; border: 1px solid #444; }
+  .badge.neu { background: #1a1a2e; color: #aaaacc; border: 1px solid #aaaacc; }
+  #status { font-size: 0.75rem; color: #7070aa; margin-top: 4px; min-height: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  hr { border: none; border-top: 1px solid #2a2a4a; margin: 6px 0; }
+  .tip { font-size: 0.7rem; color: #555588; font-style: italic; margin-top: 6px; line-height: 1.4; }
+  #audioBtn { width:100%; padding:6px; background:#2a2a4a; color:#cccce0; border:1px solid #5050aa; border-radius:8px; cursor:pointer; font-size:0.82rem; }
+  .legend { display: flex; flex-direction: column; gap: 6px; }
+  .leg-item { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #aaaacc; }
+  .leg-swatch { width: 22px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>🔊 Sound Wave Interference</h1>
+<div id="main">
+  <div id="left">
+    <canvas id="fieldCanvas"></canvas>
+    <canvas id="waveCanvas" height="110"></canvas>
+  </div>
+  <div id="right">
+    <div class="panel">
+      <h3>Controls</h3>
+      <label>Frequency: <span id="freqVal">400</span> Hz</label>
+      <input type="range" id="freqSlider" min="200" max="800" value="400">
+      <label>Wavelength: <span id="lambdaVal">—</span> m</label>
+      <hr>
+      <label>Speed of Sound: 343 m/s</label>
+      <hr>
+      <button id="audioBtn">▶ Hear the Listener</button>
+      <p class="tip">Drag 🔊 S2 and 👂 Listener to explore patterns.</p>
+    </div>
+    <div class="panel">
+      <h3>At the Listener</h3>
+      <div class="stat-row"><span>d₁</span><span class="stat-val" id="d1val">—</span></div>
+      <div class="stat-row"><span>d₂</span><span class="stat-val" id="d2val">—</span></div>
+      <div class="stat-row"><span>Δd</span><span class="stat-val" id="ddval">—</span></div>
+      <div class="stat-row"><span>Δd / λ</span><span class="stat-val" id="ratval">—</span></div>
+      <hr>
+      <div class="stat-row"><span>Status</span><span id="intBadge" class="badge neu">—</span></div>
+      <div id="status"></div>
+    </div>
+    <div class="panel legend">
+      <h3>Legend</h3>
+      <div class="leg-item"><div class="leg-swatch" style="background:#fff"></div>Constructive (loud)</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:#000;border:1px solid #333"></div>Destructive (silent)</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:#888"></div>Partial</div>
+      <div class="leg-item"><span style="font-size:1rem">🔊</span> Speaker 1 (fixed)</div>
+      <div class="leg-item"><span style="font-size:1rem">🔊</span> Speaker 2 (drag)</div>
+      <div class="leg-item"><span style="font-size:1rem">👂</span> Listener (drag)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const fieldCanvas = document.getElementById('fieldCanvas');
+const waveCanvas  = document.getElementById('waveCanvas');
+const fc = fieldCanvas.getContext('2d');
+const wc = waveCanvas.getContext('2d');
+
+const SPEED = 343;
+let W, H, scale;
+let s1 = {x:3,   y:3.5};
+let s2 = {x:7,   y:3.5};
+let ls = {x:5,   y:1.5};
+let freq = 400, lambda = SPEED/freq;
+let t = 0;
+
+// Offscreen for field
+let offCanvas = document.createElement('canvas');
+let oc = offCanvas.getContext('2d');
+let imgBuf = null;
+
+function resize() {
+  const maxW = Math.min(window.innerWidth - 240, 660);
+  W = maxW; H = Math.round(maxW * 0.65);
+  fieldCanvas.width = W; fieldCanvas.height = H;
+  waveCanvas.width  = W;
+  offCanvas.width   = W; offCanvas.height = H;
+  imgBuf = oc.createImageData(W, H);
+  scale = W / 10;
+}
+
+const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+const toCanvas = (mx,my) => ({x:mx*scale, y:my*scale});
+const toMeter  = (cx,cy) => ({x:cx/scale, y:cy/scale});
+const clamp    = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+
+function drawField() {
+  const d = imgBuf.data;
+  const k = (2*Math.PI) / lambda;
+  for (let py = 0; py < H; py++) {
+    const my = py / scale;
+    for (let px = 0; px < W; px++) {
+      const mx = px / scale;
+      const r1 = Math.hypot(mx-s1.x, my-s1.y);
+      const r2 = Math.hypot(mx-s2.x, my-s2.y);
+      // Each source: cosine wave expanding outward over time
+      const w1 = Math.cos(k*r1 - t);
+      const w2 = Math.cos(k*r2 - t);
+      // Superposition, normalized to 0..255
+      const sum = (w1 + w2) / 2; // -1..1
+      const v = Math.round((sum + 1) * 0.5 * 255);
+      const idx = (py*W + px)*4;
+      d[idx] = d[idx+1] = d[idx+2] = v;
+      d[idx+3] = 255;
+    }
+  }
+  oc.putImageData(imgBuf, 0, 0);
+  fc.drawImage(offCanvas, 0, 0);
+}
+
+function drawOverlay() {
+  // subtle grid
+  fc.strokeStyle = 'rgba(255,255,255,0.06)';
+  fc.lineWidth = 0.5;
+  for (let x=0;x<=10;x++){fc.beginPath();fc.moveTo(x*scale,0);fc.lineTo(x*scale,H);fc.stroke();}
+  for (let y=0;y*scale<=H;y++){fc.beginPath();fc.moveTo(0,y*scale);fc.lineTo(W,y*scale);fc.stroke();}
+
+  const cs1=toCanvas(s1.x,s1.y), cs2=toCanvas(s2.x,s2.y), cls=toCanvas(ls.x,ls.y);
+
+  // distance lines
+  fc.setLineDash([4,4]); fc.lineWidth=1.5;
+  fc.strokeStyle='rgba(255,180,0,0.7)';
+  fc.beginPath();fc.moveTo(cs1.x,cs1.y);fc.lineTo(cls.x,cls.y);fc.stroke();
+  fc.strokeStyle='rgba(100,160,255,0.7)';
+  fc.beginPath();fc.moveTo(cs2.x,cs2.y);fc.lineTo(cls.x,cls.y);fc.stroke();
+  fc.setLineDash([]);
+
+  // icons
+  fc.font='22px serif'; fc.textAlign='center'; fc.textBaseline='middle';
+  fc.fillText('🔊',cs1.x,cs1.y);
+  fc.fillText('🔊',cs2.x,cs2.y);
+  fc.fillText('👂',cls.x,cls.y);
+
+  // labels with dark backing
+  function label(txt,x,y,col){
+    fc.font='bold 11px Segoe UI'; fc.textAlign='left'; fc.textBaseline='middle';
+    const tw = fc.measureText(txt).width;
+    fc.fillStyle='rgba(0,0,0,0.6)'; fc.fillRect(x-1,y-8,tw+4,16);
+    fc.fillStyle=col; fc.fillText(txt,x+1,y);
+  }
+  label('S1',cs1.x+14,cs1.y-12,'#ffdd88');
+  label('S2',cs2.x+14,cs2.y-12,'#88aaff');
+}
+
+function updateStats() {
+  const d1=dist(ls,s1), d2=dist(ls,s2);
+  const dd=Math.abs(d1-d2), ratio=dd/lambda;
+  const nearInt=Math.round(ratio), nearHalf=Math.round(ratio*2)/2;
+
+  document.getElementById('d1val').textContent  = d1.toFixed(2)+' m';
+  document.getElementById('d2val').textContent  = d2.toFixed(2)+' m';
+  document.getElementById('ddval').textContent  = dd.toFixed(2)+' m';
+  document.getElementById('ratval').textContent = ratio.toFixed(3);
+
+  const badge=document.getElementById('intBadge'), status=document.getElementById('status');
+  if (Math.abs(ratio-nearInt)<0.08){
+    badge.className='badge con'; badge.textContent='CONSTRUCTIVE';
+    status.textContent=`Δd ≈ ${nearInt}λ — waves reinforce`;
+  } else if (Math.abs(ratio-nearHalf)<0.08 && nearHalf%1!==0){
+    badge.className='badge des'; badge.textContent='DESTRUCTIVE';
+    status.textContent=`Δd ≈ ${nearHalf}λ — waves cancel`;
+  } else {
+    badge.className='badge neu'; badge.textContent='PARTIAL';
+    status.textContent=`Δd/λ = ${ratio.toFixed(3)}`;
+  }
+}
+
+function drawWaves() {
+  const cw=waveCanvas.width, ch=waveCanvas.height;
+  wc.fillStyle='#0a0a18'; wc.fillRect(0,0,cw,ch);
+  const d1=dist(ls,s1), d2=dist(ls,s2);
+  const amp=26, k=(2*Math.PI)/lambda;
+  const midY1=ch*0.22, midY2=ch*0.52, midY3=ch*0.82;
+
+  wc.font='10px Segoe UI'; wc.textAlign='left'; wc.textBaseline='middle';
+  wc.fillStyle='#ffaa44'; wc.fillText('S1',4,midY1);
+  wc.fillStyle='#4488ff'; wc.fillText('S2',4,midY2);
+  wc.fillStyle='#aaffaa'; wc.fillText('Sum',4,midY3);
+
+  wc.strokeStyle='rgba(255,255,255,0.05)'; wc.lineWidth=1;
+  [midY1,midY2,midY3].forEach(y=>{wc.beginPath();wc.moveTo(28,y);wc.lineTo(cw,y);wc.stroke();});
+
+  const p1=k*d1, p2=k*d2;
+  function wave(midY,phase,color){
+    wc.strokeStyle=color; wc.lineWidth=1.8; wc.beginPath();
+    for(let px=28;px<cw;px++){
+      const frac=(px-28)/(cw-28);
+      const y=midY - amp*Math.cos(frac*4*Math.PI - phase + t)*Math.exp(-frac*1.1);
+      px===28?wc.moveTo(px,y):wc.lineTo(px,y);
+    }
+    wc.stroke();
+  }
+  wave(midY1,p1,'#ffaa44');
+  wave(midY2,p2,'#4488ff');
+
+  // Sum wave
+  wc.strokeStyle='#aaffaa'; wc.lineWidth=2.2; wc.beginPath();
+  for(let px=28;px<cw;px++){
+    const frac=(px-28)/(cw-28), decay=Math.exp(-frac*1.1);
+    const y=midY3-(amp*Math.cos(frac*4*Math.PI-p1+t)+amp*Math.cos(frac*4*Math.PI-p2+t))*0.5*decay;
+    px===28?wc.moveTo(px,y):wc.lineTo(px,y);
+  }
+  wc.stroke();
+}
+
+function drawAll() {
+  drawField();
+  drawOverlay();
+  updateStats();
+  drawWaves();
+  updateAudio();
+}
+
+function animate() { t += 0.05; drawAll(); requestAnimationFrame(animate); }
+
+// --- Drag ---
+let dragging = null;
+const GRAB = 22;
+function getPos(e) {
+  const r=fieldCanvas.getBoundingClientRect(), sx=fieldCanvas.width/r.width;
+  return toMeter((e.clientX-r.left)*sx,(e.clientY-r.top)*sx);
+}
+fieldCanvas.addEventListener('mousedown',e=>{
+  const m=getPos(e);
+  if(dist(m,s2)<GRAB/scale) dragging='s2';
+  else if(dist(m,ls)<GRAB/scale) dragging='ls';
+});
+fieldCanvas.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const m=getPos(e),mx=W/scale,my=H/scale;
+  const cx=clamp(m.x,0.3,mx-0.3),cy=clamp(m.y,0.3,my-0.3);
+  if(dragging==='s2'){s2.x=cx;s2.y=cy;}else{ls.x=cx;ls.y=cy;}
+});
+fieldCanvas.addEventListener('mouseup',()=>dragging=null);
+fieldCanvas.addEventListener('mouseleave',()=>dragging=null);
+
+function getTPos(e){return getPos({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});}
+fieldCanvas.addEventListener('touchstart',e=>{e.preventDefault();const m=getTPos(e);if(dist(m,s2)<GRAB/scale)dragging='s2';else if(dist(m,ls)<GRAB/scale)dragging='ls';},{passive:false});
+fieldCanvas.addEventListener('touchmove',e=>{e.preventDefault();if(!dragging)return;const m=getTPos(e),mx=W/scale,my=H/scale,cx=clamp(m.x,0.3,mx-0.3),cy=clamp(m.y,0.3,my-0.3);if(dragging==='s2'){s2.x=cx;s2.y=cy;}else{ls.x=cx;ls.y=cy;}},{passive:false});
+fieldCanvas.addEventListener('touchend',()=>dragging=null);
+
+// --- Audio ---
+let audioCtx=null,gainNode=null,osc1=null,osc2=null,delayNode=null,audioOn=false;
+function getAmplitude(){ return Math.abs(Math.cos(Math.PI*(dist(ls,s1)-dist(ls,s2))/lambda)); }
+function startAudio(){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  gainNode=audioCtx.createGain(); gainNode.gain.value=getAmplitude()*0.15; gainNode.connect(audioCtx.destination);
+  osc1=audioCtx.createOscillator(); osc1.type='sine'; osc1.frequency.value=freq;
+  osc2=audioCtx.createOscillator(); osc2.type='sine'; osc2.frequency.value=freq;
+  delayNode=audioCtx.createDelay(1); delayNode.delayTime.value=Math.abs(dist(ls,s2)-dist(ls,s1))/SPEED;
+  osc1.connect(gainNode); osc2.connect(delayNode); delayNode.connect(gainNode);
+  osc1.start(); osc2.start();
+}
+function stopAudio(){
+  if(osc1){osc1.stop();osc1=null;} if(osc2){osc2.stop();osc2=null;}
+  if(gainNode){gainNode.disconnect();gainNode=null;} if(audioCtx){audioCtx.close();audioCtx=null;}
+}
+function updateAudio(){
+  if(!audioOn||!gainNode||!osc1||!osc2)return;
+  gainNode.gain.setTargetAtTime(getAmplitude()*0.15,audioCtx.currentTime,0.05);
+  osc1.frequency.setTargetAtTime(freq,audioCtx.currentTime,0.05);
+  osc2.frequency.setTargetAtTime(freq,audioCtx.currentTime,0.05);
+  if(delayNode) delayNode.delayTime.setTargetAtTime(Math.abs(dist(ls,s2)-dist(ls,s1))/SPEED,audioCtx.currentTime,0.05);
+}
+document.getElementById('audioBtn').addEventListener('click',()=>{
+  const btn=document.getElementById('audioBtn');
+  if(!audioOn){startAudio();audioOn=true;btn.textContent='⏹ Stop Audio';btn.style.cssText='width:100%;padding:6px;background:#3a1a1a;color:#ffaaaa;border:1px solid #aa4444;border-radius:8px;cursor:pointer;font-size:0.82rem;';}
+  else{stopAudio();audioOn=false;btn.textContent='▶ Hear the Listener';btn.style.cssText='width:100%;padding:6px;background:#2a2a4a;color:#cccce0;border:1px solid #5050aa;border-radius:8px;cursor:pointer;font-size:0.82rem;';}
+});
+
+// --- Frequency slider ---
+document.getElementById('freqSlider').addEventListener('input',e=>{
+  freq=+e.target.value; lambda=SPEED/freq;
+  document.getElementById('freqVal').textContent=freq;
+  document.getElementById('lambdaVal').textContent=lambda.toFixed(2);
+});
+document.getElementById('freqVal').textContent=freq;
+document.getElementById('lambdaVal').textContent=(SPEED/freq).toFixed(2);
+
+window.addEventListener('resize',resize);
+resize();
+animate();
+</script>
+</body>
+</html>

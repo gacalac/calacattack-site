@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font-sans,sans-serif)}
+body{background:var(--color-background-tertiary,#f5f5f3);color:var(--color-text-primary,#111);min-height:100vh;padding:1rem}
+h1{font-size:18px;font-weight:500;margin-bottom:1rem;text-align:center}
+.panel{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.15));border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+canvas{display:block;width:100%;border-radius:8px}
+.controls{display:flex;align-items:center;gap:12px;margin-top:1rem;flex-wrap:wrap}
+.mode-toggle{display:flex;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.3));border-radius:8px;overflow:hidden}
+.mode-btn{padding:6px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--color-text-primary,#111)}
+.mode-btn.active{background:#1d9e75;color:#fff}
+.knobs-row{display:flex;gap:24px;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+.knob-group{display:flex;flex-direction:column;align-items:center;gap:4px}
+.knob-label{font-size:12px;color:var(--color-text-secondary,#888)}
+.knob-val{font-size:12px;font-weight:500}
+canvas.knob{cursor:ns-resize;border-radius:50%}
+.mute-btn{padding:4px 14px;font-size:12px;border-radius:6px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.3));background:transparent;color:var(--color-text-primary,#111);cursor:pointer}
+.mute-btn.muted{background:#e24b4a;color:#fff;border-color:#a32d2d}
+.mute-btn:hover{background:var(--color-background-secondary,#f1efe8)}
+.mute-btn.muted:hover{background:#c03030}
+.table-wrap{overflow-x:auto;margin-top:0.5rem}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:500;padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.15));color:var(--color-text-secondary,#888)}
+td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.08))}
+input.ans{width:90px;padding:4px 8px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.3));border-radius:6px;font-size:13px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#111)}
+input.ans.correct{border-color:#1d9e75;background:#e1f5ee}
+input.ans.wrong{border-color:#e24b4a;background:#fcebeb}
+select.hsel{padding:4px 6px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.3));border-radius:6px;font-size:13px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#111)}
+.btn-row{display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap}
+button.action{padding:8px 18px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.3));border-radius:8px;background:transparent;color:var(--color-text-primary,#111);font-size:14px;cursor:pointer}
+button.action:hover{background:var(--color-background-secondary,#f1efe8)}
+button.action:active{transform:scale(0.98)}
+#feedback{margin-top:0.75rem;font-size:14px;min-height:20px;font-weight:500}
+.feedback-ok{color:#0f6e56}
+.feedback-err{color:#a32d2d}
+.hint{font-size:12px;color:var(--color-text-secondary,#888);margin-top:0.5rem}
+</style>
+</head>
+<body>
+<h1>Standing waves on strings</h1>
+
+<div class="panel">
+  <canvas id="main" height="220"></canvas>
+  <div class="controls">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnGuitar" onclick="setMode('guitar')">Guitar (frets)</button>
+      <button class="mode-btn" id="btnViolin" onclick="setMode('violin')">Violin (fretless)</button>
+    </div>
+    <span style="font-size:12px;color:var(--color-text-secondary,#888)" id="modeHint">Click a fret to stop the string</span>
+  </div>
+  <div class="knobs-row" id="knobsRow"></div>
+</div>
+
+<div class="panel">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>String</th><th>Harmonic</th><th>Eff. length (m)</th><th>Velocity (m/s)</th><th>Wavelength (m)</th><th>Frequency (Hz)</th></tr></thead>
+      <tbody id="ansBody"></tbody>
+    </table>
+  </div>
+  <div id="feedback"></div>
+  <div class="btn-row">
+    <button class="action" onclick="checkAll()">Check answers</button>
+    <button class="action" onclick="revealAll()">Show answers</button>
+    <button class="action" onclick="resetFrets()">Reset frets</button>
+  </div>
+  <p class="hint">Drag knobs up/down or scroll to adjust tension. Click strings to fret them.</p>
+</div>
+
+<script>
+// Open strings: E2=82.41Hz, A2=110Hz, D3=146.83Hz
+// f = v/(2L), v=sqrt(T/mu), so T = mu*(2L*f)^2
+// Using L=0.648m (standard scale length)
+const FULL_L = 0.648;
+const NUM_FRETS = 12;
+
+// Display order: D on top (index 0), A middle (index 1), E on bottom (index 2)
+// Visually top->bottom = D, A, E but E is thickest at bottom
+const STRINGS = [
+  {name:'D', openHz:146.83, color:'#e0e0e0', glowColor:'rgba(220,230,255,0.8)', labelColor:'#eef0ff'},
+  {name:'A', openHz:110.00, color:'#b0b0b0', glowColor:'rgba(180,200,255,0.7)', labelColor:'#d0d8ff'},
+  {name:'E', openHz:82.41,  color:'#c0a060', glowColor:'rgba(255,200,80,0.7)',  labelColor:'#ffd080'},
+];
+
+// Derive mu from open tuning: mu = T/(2Lf)^2, pick T=65N as starting tension
+// Then solve: for given T and mu, open f = sqrt(T/mu)/(2L)
+// We want open f to match exactly, so we pin mu from a reference tension T0
+const T0 = 65;
+const MUS = STRINGS.map(s => T0 / Math.pow(2 * FULL_L * s.openHz, 2));
+
+// Thickness: E thickest, D thinnest (bottom to top display = E,A,D = index 2,1,0)
+// thicknesses by display index 0=D,1=A,2=E
+const THICKNESSES = [1.5, 3.0, 5.0];
+
+let mode = 'guitar';
+let tensions = [T0, T0, T0];
+let harmonics = [1, 1, 1];
+// fretted[si] = fret index 1..NUM_FRETS (1=first fret, not nut), null=open
+let fretted = [null, null, null];
+let violinPos = [null, null, null];
+let muted = [false, false, false];
+let animTs = [0, 0, 0];
+let raf;
+let draggingKnob = null, knobStartY = 0, knobStartT = 0;
+let draggingViolin = null;
+
+let audioCtx = null, oscillators = [null,null,null], gainNodes = [null,null,null];
+
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function startOsc(si){
+  stopOsc(si);
+  const ac = getAudioCtx();
+  const {f} = computeString(si); // always read AFTER compute
+  const masterGain = ac.createGain();
+  masterGain.gain.value = muted[si] ? 0 : 0.12;
+  const weights = [1, 0.5, 0.25, 0.1];
+  const oscs = [1,2,3,4].map((p,pi)=>{
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.value = f * p; // set before start()
+    g.gain.value = weights[pi];
+    o.connect(g); g.connect(masterGain);
+    o.start();
+    return o;
+  });
+  masterGain.connect(ac.destination);
+  oscillators[si] = {oscs, masterGain};
+  gainNodes[si] = masterGain;
+}
+
+function stopOsc(si){
+  if(oscillators[si]){
+    oscillators[si].oscs.forEach(o=>{try{o.stop();}catch(e){}});
+    oscillators[si] = null; gainNodes[si] = null;
+  }
+}
+
+function updateOscFreq(si){
+  if(!oscillators[si]){
+    // osc not started yet — start it fresh with correct freq already computed
+    if(!muted[si]) startOsc(si);
+    return;
+  }
+  const {f} = computeString(si);
+  const ac = getAudioCtx();
+  oscillators[si].oscs.forEach((o,pi)=>{
+    o.frequency.setTargetAtTime(f*(pi+1), ac.currentTime, 0.02);
+  });
+}
+
+function toggleMute(si){
+  muted[si] = !muted[si];
+  const btn = document.getElementById(`mute${si}`);
+  btn.textContent = muted[si] ? 'Unmute' : 'Mute';
+  btn.classList.toggle('muted', muted[si]);
+  const ac = getAudioCtx();
+  if(muted[si]){
+    if(gainNodes[si]) gainNodes[si].gain.setTargetAtTime(0, ac.currentTime, 0.05);
+  } else {
+    if(!oscillators[si]) startOsc(si);
+    if(gainNodes[si]) gainNodes[si].gain.setTargetAtTime(0.12, ac.currentTime, 0.05);
+  }
+}
+
+const canvas = document.getElementById('main');
+const ctx = canvas.getContext('2d');
+
+// Fretting: fret 1 = first fret (just right of nut).
+// Effective length when fretted at fret fi: L = FULL_L * 2^(-fi/12)
+// This SHORTENS the string and RAISES frequency. Nut (fi=0) is not frettable.
+function effL(si){
+  if(mode === 'guitar'){
+    if(fretted[si] === null) return FULL_L;
+    return FULL_L * Math.pow(2, -fretted[si]/12);
+  } else {
+    if(violinPos[si] === null) return FULL_L;
+    return FULL_L * (1 - violinPos[si]);
+  }
+}
+
+function computeString(si){
+  const T = tensions[si], mu = MUS[si], L = effL(si), n = harmonics[si];
+  const v = Math.sqrt(T/mu), lam = 2*L/n, f = v/lam;
+  return {v, lam, f, L};
+}
+
+function setMode(m){
+  mode = m;
+  document.getElementById('btnGuitar').classList.toggle('active', m==='guitar');
+  document.getElementById('btnViolin').classList.toggle('active', m==='violin');
+  document.getElementById('modeHint').textContent = m==='guitar'
+    ? 'Click a fret to stop the string'
+    : 'Click & drag on a string to place your finger';
+  STRINGS.forEach((_,si)=>updateOscFreq(si));
+  buildAnswerTable();
+}
+
+function resetFrets(){
+  fretted = [null,null,null]; violinPos = [null,null,null];
+  tensions = [T0, T0, T0];
+  harmonics = [1,1,1];
+  muted = [false,false,false];
+  STRINGS.forEach((_,si)=>{
+    tensions[si] = T0;
+    document.getElementById(`kval${si}`).textContent = T0.toFixed(0)+' N';
+    drawKnob(si);
+    const btn = document.getElementById(`mute${si}`);
+    btn.textContent='Mute'; btn.classList.remove('muted');
+    if(gainNodes[si]) gainNodes[si].gain.setTargetAtTime(0.12, getAudioCtx().currentTime, 0.05);
+    updateOscFreq(si);
+  });
+  buildAnswerTable();
+}
+
+function buildKnobs(){
+  const row = document.getElementById('knobsRow');
+  row.innerHTML = '';
+  STRINGS.forEach((s,i)=>{
+    const grp = document.createElement('div');
+    grp.className = 'knob-group';
+    grp.innerHTML = `<div class="knob-label">${s.name} string</div>`;
+    const kc = document.createElement('canvas');
+    kc.className='knob'; kc.width=64; kc.height=64; kc.id=`knob${i}`;
+    const val = document.createElement('div');
+    val.className='knob-val'; val.id=`kval${i}`; val.textContent=tensions[i].toFixed(0)+' N';
+    const mb = document.createElement('button');
+    mb.className='mute-btn'; mb.id=`mute${i}`; mb.textContent='Mute';
+    mb.onclick = ()=>toggleMute(i);
+    grp.appendChild(kc); grp.appendChild(val); grp.appendChild(mb);
+    row.appendChild(grp);
+    kc.addEventListener('mousedown', e=>{draggingKnob=i; knobStartY=e.clientY; knobStartT=tensions[i]; e.preventDefault();});
+    kc.addEventListener('wheel', e=>{
+      tensions[i] = Math.max(10,Math.min(150,tensions[i]-e.deltaY*0.2));
+      document.getElementById(`kval${i}`).textContent = tensions[i].toFixed(0)+' N';
+      drawKnob(i); updateOscFreq(i); buildAnswerTable(); e.preventDefault();
+    },{passive:false});
+    drawKnob(i);
+  });
+}
+
+function drawKnob(i){
+  const kc = document.getElementById(`knob${i}`); if(!kc) return;
+  const kctx = kc.getContext('2d'), cx=32, cy=32, r=26;
+  kctx.clearRect(0,0,64,64);
+  kctx.fillStyle='#1a1a2e'; kctx.beginPath(); kctx.arc(cx,cy,r+2,0,Math.PI*2); kctx.fill();
+  const gr = kctx.createRadialGradient(cx-6,cy-6,2,cx,cy,r);
+  gr.addColorStop(0,'#3a3a5a'); gr.addColorStop(1,'#1a1a2e');
+  kctx.fillStyle=gr; kctx.beginPath(); kctx.arc(cx,cy,r,0,Math.PI*2); kctx.fill();
+  kctx.strokeStyle='#555'; kctx.lineWidth=1; kctx.beginPath(); kctx.arc(cx,cy,r,0,Math.PI*2); kctx.stroke();
+  const frac = (tensions[i]-10)/140;
+  const angle = -2.4 + frac*3.14;
+  kctx.strokeStyle = STRINGS[i].color; kctx.lineWidth=3;
+  kctx.beginPath(); kctx.moveTo(cx,cy); kctx.lineTo(cx+Math.cos(angle)*(r-6), cy+Math.sin(angle)*(r-6)); kctx.stroke();
+  kctx.fillStyle='#fff'; kctx.beginPath(); kctx.arc(cx,cy,3,0,Math.PI*2); kctx.fill();
+}
+
+document.addEventListener('mousemove', e=>{
+  if(draggingKnob !== null){
+    const dy = knobStartY - e.clientY;
+    tensions[draggingKnob] = Math.max(10,Math.min(150, knobStartT+dy*0.8));
+    document.getElementById(`kval${draggingKnob}`).textContent = tensions[draggingKnob].toFixed(0)+' N';
+    drawKnob(draggingKnob); updateOscFreq(draggingKnob); buildAnswerTable();
+  }
+  if(draggingViolin !== null){
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX-rect.left)*(canvas.width/rect.width)/devicePixelRatio;
+    const {nutX,bridgeX} = getLayout();
+    let frac = (mx-nutX)/(bridgeX-nutX);
+    frac = Math.max(0.05, Math.min(0.95, frac));
+    violinPos[draggingViolin] = frac;
+    updateOscFreq(draggingViolin); buildAnswerTable();
+  }
+});
+document.addEventListener('mouseup', ()=>{draggingKnob=null; draggingViolin=null;});
+
+function getLayout(){
+  const W = canvas.offsetWidth||700;
+  return {W, nutX:40, bridgeX:W-100};
+}
+
+function getStringYs(H){
+  const top=35, bot=H-45;
+  // D top, A middle, E bottom
+  return [top, top+(bot-top)/2, bot];
+}
+
+canvas.addEventListener('mousedown', e=>{
+  getAudioCtx();
+  STRINGS.forEach((_,si)=>{ if(!oscillators[si]&&!muted[si]) startOsc(si); });
+
+  const rect = canvas.getBoundingClientRect();
+  const dpr = devicePixelRatio||1;
+  const mx = (e.clientX-rect.left)*(canvas.width/rect.width)/dpr;
+  const my = (e.clientY-rect.top)*(canvas.height/rect.height)/dpr;
+  const H = 220;
+  const {nutX,bridgeX} = getLayout();
+  const strYs = getStringYs(H);
+  const fretW = (bridgeX-nutX)/NUM_FRETS;
+
+  if(mode==='violin'){
+    for(let si=0;si<3;si++){
+      if(Math.abs(my-strYs[si])<22 && mx>nutX && mx<bridgeX){
+        draggingViolin = si;
+        let frac = (mx-nutX)/(bridgeX-nutX);
+        violinPos[si] = Math.max(0.05,Math.min(0.95,frac));
+        updateOscFreq(si); buildAnswerTable(); return;
+      }
+    }
+  } else {
+    for(let si=0;si<3;si++){
+      if(Math.abs(my-strYs[si])<22 && mx>nutX && mx<bridgeX){
+        // fi=0 would be the nut — not frettable. First frettable fret is fi=1.
+        const fi = Math.floor((mx-nutX)/fretW);
+        if(fi < 1) return; // block nut (fi=0)
+        fretted[si] = fretted[si]===fi ? null : fi;
+        updateOscFreq(si); buildAnswerTable(); return;
+      }
+    }
+  }
+});
+
+function draw(){
+  const dpr = devicePixelRatio||1;
+  const W = canvas.offsetWidth||700, H = 220;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  ctx.fillStyle='#0d0a06'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#2a1f0f'; ctx.lineWidth=0.5;
+  for(let x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  const {nutX,bridgeX} = getLayout();
+  const strYs = getStringYs(H);
+  const fretW = (bridgeX-nutX)/NUM_FRETS;
+
+  // Fretboard
+  ctx.fillStyle='#3a2a10';
+  ctx.fillRect(nutX-6, strYs[0]-28, bridgeX-nutX+6, strYs[2]-strYs[0]+56);
+
+  if(mode==='guitar'){
+    for(let f=0;f<=NUM_FRETS;f++){
+      const x = nutX+f*fretW;
+      ctx.strokeStyle = f===0 ? '#e8d090' : '#888';
+      ctx.lineWidth = f===0 ? 4 : 1.5;
+      ctx.beginPath(); ctx.moveTo(x,strYs[0]-18); ctx.lineTo(x,strYs[2]+18); ctx.stroke();
+    }
+    [3,5,7,9,12].forEach(f=>{
+      if(f>NUM_FRETS) return;
+      const x = nutX+(f-0.5)*fretW, y=(strYs[0]+strYs[2])/2;
+      ctx.fillStyle='rgba(255,255,255,0.15)';
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  // Bridge
+  ctx.fillStyle='#6b4a10';
+  ctx.fillRect(bridgeX-2, strYs[0]-26, 8, strYs[2]-strYs[0]+52);
+  ctx.strokeStyle='#8b6914'; ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(bridgeX,strYs[0]-23); ctx.lineTo(bridgeX,strYs[2]+23); ctx.stroke();
+
+  STRINGS.forEach((s,si)=>{
+    const thick = THICKNESSES[si];
+    const midY = strYs[si];
+    const L = effL(si);
+
+    // Finger position on canvas
+    const stopX = mode==='guitar'
+      ? (fretted[si]===null ? null : nutX + fretted[si]*fretW)
+      : (violinPos[si]===null ? null : nutX + violinPos[si]*(bridgeX-nutX));
+
+    // Vibrating section: finger (or nut if open) -> bridge
+    const waveStart = stopX !== null ? stopX : nutX;
+    const waveLen = bridgeX - waveStart;
+
+    // Dead section (nut -> finger): dim static string
+    if(stopX !== null){
+      ctx.strokeStyle='#443322'; ctx.lineWidth=thick*0.4;
+      ctx.beginPath(); ctx.moveTo(nutX, midY); ctx.lineTo(stopX, midY); ctx.stroke();
+    }
+
+    const isMuted = muted[si];
+    const {f} = computeString(si);
+    const amp = isMuted ? 2 : 12;
+    const n = harmonics[si];
+    const t = animTs[si];
+    const pts = 300;
+
+    const drawWv = (phase,color,alpha,glow,lw)=>{
+      ctx.save();
+      ctx.shadowColor=s.glowColor; ctx.shadowBlur=glow?10:0;
+      ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.globalAlpha=alpha*(isMuted?0.3:1);
+      ctx.beginPath();
+      for(let i=0;i<=pts;i++){
+        const x=waveStart+waveLen*i/pts, frc=i/pts;
+        const y=midY+amp*Math.sin(n*Math.PI*frc)*Math.cos(t+phase);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke(); ctx.restore();
+    };
+    drawWv(Math.PI, s.color, 0.15, false, thick*0.5);
+    drawWv(0,       s.color, 0.25, false, thick*0.7);
+    drawWv(0,       s.color, 1,    !isMuted, thick);
+
+    // Nodes along vibrating section (finger to bridge)
+    ctx.fillStyle='#ff6060';
+    for(let i=0;i<=n;i++){
+      const x=waveStart+waveLen*i/n;
+      ctx.beginPath(); ctx.arc(x,midY,3.5,0,Math.PI*2); ctx.fill();
+    }
+
+    // Finger marker
+    if(stopX !== null){
+      if(mode==='guitar'){
+        ctx.fillStyle='#ff8c00';
+        ctx.beginPath(); ctx.arc(stopX,midY,7,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+        ctx.fillText(fretted[si], stopX, midY+3.5);
+      } else {
+        ctx.fillStyle='#e06030';
+        ctx.beginPath(); ctx.arc(stopX,midY,8,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#ff9060'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(stopX,midY,8,0,Math.PI*2); ctx.stroke();
+      }
+    }
+
+    // String label
+    ctx.fillStyle = isMuted ? '#666' : s.labelColor;
+    ctx.font='12px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(s.name, nutX-10, midY+4);
+
+    // Freq readout
+    ctx.fillStyle = isMuted ? 'rgba(120,120,120,0.5)' : 'rgba(180,180,180,0.5)';
+    ctx.font='10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(isMuted ? 'muted' : `${f.toFixed(1)} Hz`, bridgeX+8, midY+4);
+
+    animTs[si] += (2*Math.PI*f)*0.002*(isMuted?0.3:1);
+  });
+
+  // Fret numbers (skip 0 = nut)
+  if(mode==='guitar'){
+    ctx.fillStyle='rgba(120,90,40,0.7)'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+    for(let f=1;f<=NUM_FRETS;f++)
+      ctx.fillText(f, nutX+(f-0.5)*fretW, strYs[2]+34);
+  }
+
+  raf = requestAnimationFrame(draw);
+}
+
+function buildAnswerTable(){
+  const body = document.getElementById('ansBody');
+  body.innerHTML = '';
+  STRINGS.forEach((s,si)=>{
+    const {v,lam,f,L} = computeString(si);
+    const tr = document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:500;color:${s.labelColor}">${s.name}</td>
+      <td><select class="hsel" onchange="harmonics[${si}]=+this.value;updateOscFreq(${si});buildAnswerTable()">
+        ${[1,2,3,4,5,6].map(i=>`<option value="${i}"${i===harmonics[si]?' selected':''}>${i}</option>`).join('')}
+      </select></td>
+      <td>${L.toFixed(3)}</td>
+      <td><input class="ans" type="number" id="v${si}" placeholder="—"></td>
+      <td><input class="ans" type="number" id="w${si}" placeholder="—"></td>
+      <td><input class="ans" type="number" id="f${si}" placeholder="—"></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function tol(u,a){return Math.abs(u-a)/a<0.02;}
+
+function checkAll(){
+  let ok=0,total=0;
+  STRINGS.forEach((_,si)=>{
+    const {v,lam,f} = computeString(si);
+    [['v'+si,v],['w'+si,lam],['f'+si,f]].forEach(([id,ans])=>{
+      const el=document.getElementById(id), u=parseFloat(el.value);
+      if(!isNaN(u)){total++;const c=tol(u,ans);el.className='ans '+(c?'correct':'wrong');if(c)ok++;}
+    });
+  });
+  const fb=document.getElementById('feedback');
+  if(total===0){fb.textContent='Enter at least one answer.';fb.className='feedback-err';return;}
+  fb.textContent=ok===total?`All ${ok} answer${ok>1?'s':''} correct!`:`${ok} of ${total} correct.`;
+  fb.className=ok===total?'feedback-ok':'feedback-err';
+}
+
+function revealAll(){
+  STRINGS.forEach((_,si)=>{
+    const {v,lam,f} = computeString(si);
+    document.getElementById('v'+si).value=v.toFixed(3);
+    document.getElementById('w'+si).value=lam.toFixed(3);
+    document.getElementById('f'+si).value=f.toFixed(3);
+    ['v'+si,'w'+si,'f'+si].forEach(id=>document.getElementById(id).className='ans correct');
+  });
+  document.getElementById('feedback').textContent='Answers revealed.';
+  document.getElementById('feedback').className='feedback-ok';
+}
+
+buildKnobs();
+buildAnswerTable();
+draw();
+window.addEventListener('resize',()=>{cancelAnimationFrame(raf);draw();});
+</script>
+</body>
+</html>
