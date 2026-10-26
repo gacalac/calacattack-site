@@ -3219,7 +3219,7 @@ function getSelection (selector, selected, parent) {
 	selected = parent;
     }
     var selectorButtonImage = selector + 'ButtonImage';
-    var newButtonImage = 'images/' + selected + '.png';
+    var newButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
     document.getElementById(selectorButtonImage).src = newButtonImage;
     selectorDisplay(selector, 'hide');
     if (selector != 'dash') {
@@ -3233,11 +3233,11 @@ function getSelection (selector, selected, parent) {
 
 function updateSelectors() {
     var selected = sheetSymbols[getSheetNumber(activePrefSheet)];
-    var pointButtonImage = 'images/' + selected + '.png';
+    var pointButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
     document.getElementById("pointButtonImage").src = pointButtonImage;
 
     selected = sheetColors[getSheetNumber(activePrefSheet)];
-    var colorButtonImage = 'images/' + selected + '.png';
+    var colorButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
     document.getElementById("colorButtonImage").src = colorButtonImage;
 
     var selected = Number(sheetDashes[getSheetNumber(activePrefSheet)]);
