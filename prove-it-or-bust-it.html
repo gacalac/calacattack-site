@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Prove It or Bust It — CalacAttack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* video embeds (only shown once you add videos below) */
+    .videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 36px; }
+    .video { background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--links); padding: 14px; }
+    .video-frame { position: relative; aspect-ratio: 16 / 9; background: #000; }
+    .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .video-title { font-weight: 500; margin-top: 10px; }
+    .video-note { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 600px) { .videos { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="logo" href="./">CalacAttack</a>
+      <nav class="nav">
+        <a href="tools.html">Tools</a>
+        <a href="interactives.html">Interactives</a>
+        <a href="links.html" aria-current="page">Links</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Prove It or Bust It</h1>
+    <p class="page-sub">Pick a claim about motion, get a video of it, and use Sigmund and nPlot to prove it or bust it.</p>
+    <div id="projectList"></div>
+    <div id="videoList"></div>
+  </main>
+
+  <footer>CalacAttack · physics resources</footer>
+
+  <script src="site.js"></script>
+  <script>
+
+    // ================================================================
+    //  ✏️  PROJECT DOCUMENTS — EDIT THIS LIST
+    // ================================================================
+    //
+    //  FIELDS:
+    //    title  — name shown on the card
+    //    desc   — 1–2 sentence description
+    //    tag    — short labels, separated by commas
+    //    url    — the link. Leave as "" to show "Coming soon".
+    //
+    // ================================================================
+
+    const project = [
+
+      {
+        title: "Project Document",
+        desc:  "The full challenge: pick a claim, get a good video, track it in Sigmund, fit it in nPlot, and deliver your verdict.",
+        tag:   "start here",
+        url:   "https://docs.google.com/document/d/19PnLkFJPiw58hWB5fx-4lW0hdBDva-7bVszlR4FDo5E/edit?usp=sharing"
+      },
+
+      {
+        title: "Sample Lab Report",
+        desc:  "A finished example report with embedded videos.",
+        tag:   "example",
+        url:   ""
+      },
+
+    ];
+
+    renderCards(project, 'projectList', 'links');
+
+
+    // ================================================================
+    //  🎬  VIDEOS — EDIT THIS LIST (section stays hidden while empty)
+    // ================================================================
+    //
+    //  FIELDS:
+    //    title  — name shown under the video
+    //    note   — optional short description
+    //    embed  — the video's EMBED link:
+    //               YouTube: https://www.youtube.com/embed/VIDEO_ID
+    //               Google Drive: https://drive.google.com/file/d/FILE_ID/preview
+    //
+    //  EXAMPLE:
+    //    { title: "Ball drop", note: "30 fps, meter stick for scale",
+    //      embed: "https://www.youtube.com/embed/VIDEO_ID" },
+    //
+    // ================================================================
+
+    const videos = [
+
+    ];
+
+    (function renderVideos() {
+      if (!videos.length) return;
+      const root = document.getElementById('videoList');
+      root.appendChild(el('h2', 'group-label', 'Videos'));
+      const grid = el('div', 'videos');
+      for (const v of videos) {
+        const box = el('div', 'video');
+        const frame = el('div', 'video-frame');
+        const iframe = document.createElement('iframe');
+        iframe.src = v.embed;
+        iframe.title = v.title;
+        iframe.allowFullscreen = true;
+        iframe.loading = 'lazy';
+        frame.appendChild(iframe);
+        box.appendChild(frame);
+        box.appendChild(el('div', 'video-title', v.title));
+        if (v.note) box.appendChild(el('div', 'video-note', v.note));
+        grid.appendChild(box);
+      }
+      root.appendChild(grid);
+    })();
+  </script>
+
+</body>
+</html>
