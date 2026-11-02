@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="site.css">
   <style>
     /* video embeds (only shown once you add videos below) */
-    .videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 36px; }
+    .videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    #videoList:not(:empty) { margin-top: 40px; }
     .video { background: var(--card); border: 1px solid var(--border); border-top: 3px solid var(--links); padding: 14px; }
     .video-frame { position: relative; aspect-ratio: 16 / 9; background: #000; }
     .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
@@ -60,17 +61,24 @@
     const project = [
 
       {
-        title: "Project Document",
-        desc:  "The full challenge: pick a claim, get a good video, track it in Sigmund, fit it in nPlot, and deliver your verdict.",
+        title: "Video Analysis Challenge: Prove It or Bust It",
+        desc:  "Overview and Part 1",
         tag:   "start here",
-        url:   "https://docs.google.com/document/d/19PnLkFJPiw58hWB5fx-4lW0hdBDva-7bVszlR4FDo5E/edit?usp=sharing"
+        url:   "https://docs.google.com/document/d/1Y4KRgKw7rrWLNJOsx_NftxXcznk2_xwGlbuQotrMK84/edit?usp=sharing"
+      },
+ 	
+      {
+        title: "Video Analysis Challenge: Prove It or Bust It",
+        desc:  "Part 2, Pick a Claim",
+        tag:   "part 2",
+        url:   "https://docs.google.com/document/d/1UwNhdhP6-CA94l-2Zj6sdJYRjKBr57d0Q3Ae1xKV4NU/edit?usp=sharing"
       },
 
       {
         title: "Sample Lab Report",
-        desc:  "A finished example report with embedded videos.",
+        desc:  "A finished example report with data and graphs",
         tag:   "example",
-        url:   ""
+        url:   "https://drive.google.com/file/d/1gWNil6WyfkEm7oYNsqToo0mLJ_PMtARW/view?usp=sharing"
       },
 
     ];
@@ -85,30 +93,50 @@
     //  FIELDS:
     //    title  — name shown under the video
     //    note   — optional short description
-    //    embed  — the video's EMBED link:
-    //               YouTube: https://www.youtube.com/embed/VIDEO_ID
-    //               Google Drive: https://drive.google.com/file/d/FILE_ID/preview
+    //    embed  — the video link. You can paste a Google Drive share link
+    //             (…/view?usp=sharing) as-is; it's converted automatically.
+    //             For YouTube use: https://www.youtube.com/embed/VIDEO_ID
     //
-    //  EXAMPLE:
-    //    { title: "Ball drop", note: "30 fps, meter stick for scale",
-    //      embed: "https://www.youtube.com/embed/VIDEO_ID" },
+    //  Drive videos must be shared "Anyone with the link" (or your
+    //  school domain) or students will see an access error.
+    //
+    //  TO ADD:     copy one { block }, paste it, fill in your info
     //
     // ================================================================
 
     const videos = [
+
+      {
+        title: "Josh Imatorbhebhe's Record Jump",
+        note:  "47.1-inch vertical jump at the 2015 Nike Football Rating Championships",
+        embed: "https://drive.google.com/file/d/15NGZlzYUx-ErkwcwrD_RUlpsKsBu9hGX/view?usp=sharing"
+      },
+
+      {
+        title: "Moon Jump Clip",
+        note:  "John Young's Lunar Salute on Apollo 16",
+        embed: "https://drive.google.com/file/d/1_Up_Wa7ZUtt4EKPP04SnLwHlkOmTpGcy/view?usp=sharing"
+      },
+      {
+        title: "Kobe Jackass Dunk: Real or Fake?",
+        note:  "",
+        embed: "https://drive.google.com/file/d/1mEvcl5gEhPqVwRmc0M7agnf_gEJJeSAk/view?usp=sharing"
+      },
 
     ];
 
     (function renderVideos() {
       if (!videos.length) return;
       const root = document.getElementById('videoList');
-      root.appendChild(el('h2', 'group-label', 'Videos'));
+      root.appendChild(el('h2', 'group-label', 'Example Videos'));
       const grid = el('div', 'videos');
       for (const v of videos) {
         const box = el('div', 'video');
         const frame = el('div', 'video-frame');
         const iframe = document.createElement('iframe');
-        iframe.src = v.embed;
+        // turn a Drive share link (/view?...) into its embeddable /preview form
+        iframe.src = v.embed.replace(/(drive\.google\.com\/file\/d\/[^/]+)\/view.*$/, '$1/preview');
+        iframe.allow = 'autoplay; fullscreen';
         iframe.title = v.title;
         iframe.allowFullscreen = true;
         iframe.loading = 'lazy';
