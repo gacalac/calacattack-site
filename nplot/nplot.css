@@ -502,8 +502,8 @@ body {
 #tangentFinding {
     width: var(--centerPanelWidth);
     height: 65px;
-    margin-top: 10px;
-    margin-bottom: 7px;
+    margin-top: 4px;     /* 6.21i: was 10px, to make room for the region bar */
+    margin-bottom: 3px;  /* 6.21i: was 7px */
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -569,7 +569,7 @@ body {
 #centerButtons {
     width: var(--centerPanelWidth);
     height: 35px;
-    margin-top: 23px;
+    margin-top: 3px;     /* 6.21i: was 23px, to make room for the region bar */
     padding: 0;
     display: flex;
     flex-direction: row;
@@ -1482,4 +1482,109 @@ button, .npButton, .sheetButton, .modelButton, .radioButton, #canvas1 {
     #homeLink:hover {
 	text-decoration: underline;
     }
+}
+
+/* 6.21i: region bar (+ Region, All points, 1, 2, 3 ...) */
+#regionBar {
+    width: var(--centerPanelWidth);
+    height: 26px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+
+#newRegionButton {
+    flex: 0 0 auto;
+    font-size: 12px;
+    padding: 3px 7px;
+    border-width: 1px;
+}
+
+#newRegionButton.regionButtonActive {
+    background-color: var(--fontColor);
+    color: #FFFFFF;
+}
+
+#regionChips {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.regionChip {
+    flex: 0 0 auto;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 7px;
+    border: 2px solid var(--fontColor);
+    border-radius: 12px;
+    background-color: var(--backgroundColor);
+    color: var(--fontColor);
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.regionChip.regionChipSelected {
+    background-color: var(--fontColor);
+    color: #FFFFFF;
+}
+
+.regionDelete {
+    font-size: 17px;
+    line-height: 14px;
+    margin-left: 2px;
+    opacity: 0.9;
+}
+
+/* 6.21i: export options pop-up */
+#exportOptionsContent {
+    width: 470px;
+}
+
+#exportOptionsTitle {
+    margin-top: 0;
+    font-weight: 600;
+}
+
+#exportOptionList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    font-size: 16px;
+}
+
+.exportOption {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.exportOption input {
+    width: 18px;
+    height: 18px;
+    -webkit-appearance: auto;
+    appearance: auto;
+}
+
+#exportOptionsNote {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+#exportButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }

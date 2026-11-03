@@ -1,4 +1,4 @@
-# nPlot iPad edition (6.20i)
+# nPlot iPad edition (6.22i)
 
 A fork of nPlot 6.20 by Geoff Nunes (https://noragulfa.com/nPlot/), adapted for iPads by Alan Calac, St. Ignatius College Prep, with the author's permission.
 
@@ -8,9 +8,27 @@ Upload this whole folder (index.html, nplot.js, nPlot.css, images/) to the web s
 
 **Font:** nPlot uses the Bahnschrift font, which Geoff serves from `noragulfa.com/fonts/`. That file is not included here. Without it, the page falls back to DIN Alternate on iPads and to the system sans-serif elsewhere, and the layout still fits. Bahnschrift is a Microsoft font, so check its license before you copy it to `fonts/bahnschrift.ttf` next to index.html.
 
-## What changed
+## New in 6.22i
 
-Every change in the code is marked with an `iPad edition` comment. `nplot-6.20i-changes.diff` (next to this folder) is a unified diff against the original 6.20, which makes it easy for Geoff to merge.
+- Region edges snap to a neighboring region's edge, or to the first or last data point, when dropped close by (10 px with a mouse, 24 px with a finger). Neighboring regions then share a boundary and no point falls in a gap.
+- Region numbers have a background-colored outline, and move to the bottom of the graph when the region's data or curve reaches the top.
+- Copy Slopes shows round-off values such as 1.4e-17 as 0, and tells you how many points weren't inside any region.
+
+## New in 6.21i
+
+**Region fits.** Fit separate models to separate parts of one sheet, for example a long video analysis that is still, then speeds up, coasts, and slows down.
+- Tap **+ Region** (under the fit results) and drag across the graph. The band gets a number (left to right), and the model list now sets that region's model. nPlot fits only the points in the band and draws the curve only across it.
+- Tap a number (or inside a band) to switch regions. **All points** returns to the whole-sheet model, which is unchanged. Drag the handles on the selected region's edges to adjust it; tap its × to delete it.
+- Basic and Advanced models work in regions. Expert models stay whole-sheet only because of their starting-guess step.
+- The tangent finder works on the selected region. **Copy Slopes** copies the selected region's slopes, or, with All points selected, every point's slope from its own region, which turns a piecewise x–t graph into one v–t table. Copy Slopes now also handles Linear, Proportional and Logarithmic fits.
+- Annotate → Add Fit lists each region's results. Save to File keeps regions; the browser's Save Graph does not.
+- Clearing a sheet, swapping x and y, or linearizing removes that sheet's regions.
+
+**Export options.** A tap on Graph to Clipboard copies using the last choices. Press and hold it and choose **Choose what the graph includes…** to turn on or off: data points, error bars, whole-sheet fit, region curves, region numbers, region boundary lines, region shading, annotation, tangent line, grid, and title. The default is region curves and numbers without shading. Choices are remembered and apply to copies, downloads, and new tabs. Students see a one-time tip about this after their first copy.
+
+## What changed in 6.20i
+
+Every change in the code is marked with an `iPad edition` or `6.21i` comment. `nplot-6.21i-changes.diff` is a unified diff against the original 6.20, which makes it easy for Geoff to merge.
 
 **iPad and touch**
 - Pointer events on the graph. With a finger or Apple Pencil, you drag to position a note, fit, or arrow, then lift to drop it. The tangent finder follows your finger. While one of these is active, dragging on the graph does not scroll the page.
@@ -39,6 +57,9 @@ Every change in the code is marked with an `iPad edition` comment. `nplot-6.20i-
 
 ## Testing
 
+6.21i: a second self-test (40 checks) covered region creation by mouse and touch, region models and coefficients on broom-ball style data, piecewise Copy Slopes, edge dragging, tap-to-select, the region tangent, Add Fit for regions, export options, Save/Open File with regions, and region cleanup. One check failed only because the test data was noise-free and so the panel showed A = 2.4999999999999951 rather than 2.5.
+
+6.20i:
 A scripted self-test (39 checks) passed in desktop Chrome with simulated touch events. It covered:
 - defaults
 - error bars

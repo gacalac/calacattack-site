@@ -14,13 +14,13 @@
 	<!-- HEY!!!!  UPDATE THE CSS VERSION NUMBER EVERY TIME YOU MAKE A CHANGE -->
 	<link rel = "stylesheet"
 	      type = "text/css"
-	      href = "nplot.css?version=6.20i" />
+	      href = "nPlot.css?version=6.22i" />
     </head>
     <body>
 	<div id="mainContainer">
 	    <div id="leftPanel">
 		<div id="logoPanel">
-		    <img src="images/nplotonly.png">
+		    <img src="images/nPlotOnly.png">
 		    <!-- iPad edition: noragulfa.com logo replaced by a link to CalacAttack.com; Geoff's credit and link are in the About box -->
 		    <a id="homeLink" href="https://calacattack.com" target="_blank">CalacAttack.com</a>
 		</div>
@@ -226,6 +226,11 @@
 			<hr>
 		    </div>
 		    <hr>
+		</div>
+		<!-- 6.21i: region fits -->
+		<div id="regionBar">
+		    <button id="newRegionButton" class="npButton" title="Drag across the graph to fit part of the data">+ Region</button>
+		    <div id="regionChips"></div>
 		</div>
 		<div id="tangentFinding">
 		    <div id="tangentControls">
@@ -509,13 +514,13 @@
 			    <span id="circle" class="selectorItem"><img src="images/circle.png"></span>
 			    <span id="square" class="selectorItem"><img src="images/square.png"></span>
 			    <span id="diamond" class="selectorItem"><img src="images/diamond.png"></span>
-			    <span id="triUp" class="selectorItem"><img src="images/triup.png"></span>
-			    <span id="triDown" class="selectorItem"><img src="images/tridown.png"></span>
-			    <span id="opeCircle" class="selectorItem"><img src="images/opecircle.png"></span>
-			    <span id="opeSquare" class="selectorItem"><img src="images/opesquare.png"></span>
-			    <span id="opeDiamond" class="selectorItem"><img  src="images/opediamond.png"></span>
-			    <span id="opeTriUp" class="selectorItem"><img src="images/opetriup.png"></span>
-			    <span id="opeTriDown" class="selectorItem"><img src="images/opetridown.png"></span>
+			    <span id="triUp" class="selectorItem"><img src="images/triUp.png"></span>
+			    <span id="triDown" class="selectorItem"><img src="images/triDown.png"></span>
+			    <span id="opeCircle" class="selectorItem"><img src="images/opeCircle.png"></span>
+			    <span id="opeSquare" class="selectorItem"><img src="images/opeSquare.png"></span>
+			    <span id="opeDiamond" class="selectorItem"><img  src="images/opeDiamond.png"></span>
+			    <span id="opeTriUp" class="selectorItem"><img src="images/opeTriUp.png"></span>
+			    <span id="opeTriDown" class="selectorItem"><img src="images/opeTriDown.png"></span>
 			    <span id="cross" class="selectorItem"><img src="images/cross.png"></span>
 			    <span id="ex" class="selectorItem"><img src="images/ex.png"></span>
 			    <span id="star" class="selectorItem"><img src="images/star.png"></span>
@@ -526,14 +531,14 @@
 			    Curve color:
 			</div>
 			<div id="colorSelectorButton" class="selectorButton">
-			    <img id="colorButtonImage" src="images/npcolor1.png">
+			    <img id="colorButtonImage" src="images/npColor1.png">
 			</div>
  			<div id="colorSelectorContent" class="selectorContent">
-			    <span id="npColor1" class="selectorItem"><img src="images/npcolor1.png"></span>
-			    <span id="npColor2" class="selectorItem"><img src="images/npcolor2.png"></span>
-			    <span id="npColor3" class="selectorItem"><img src="images/npcolor3.png"></span>
-			    <span id="npColor4" class="selectorItem"><img src="images/npcolor4.png"></span>
-			    <span id="npColor5" class="selectorItem"><img src="images/npcolor5.png"></span>
+			    <span id="npColor1" class="selectorItem"><img src="images/npColor1.png"></span>
+			    <span id="npColor2" class="selectorItem"><img src="images/npColor2.png"></span>
+			    <span id="npColor3" class="selectorItem"><img src="images/npColor3.png"></span>
+			    <span id="npColor4" class="selectorItem"><img src="images/npColor4.png"></span>
+			    <span id="npColor5" class="selectorItem"><img src="images/npColor5.png"></span>
 			    <span id="black" class="selectorItem"><img src="images/black.png"></span>
 			    <span id="red" class="selectorItem"><img src="images/red.png"></span>
 			    <span id="green" class="selectorItem"><img src="images/green.png"></span>
@@ -697,6 +702,7 @@
 		    <li><a href="#foobar" class="TOC">Choosing a Model</a></li>
 		    <li><a href="#multiple" class="TOC">Graphing Multiple Data Sets</a></li>
 		    <li><a href="#preferences" class="TOC">Changing How the Graph Looks (Preferences)</a></li>
+		    <li><a href="#regions" class="TOC">Fitting Regions of a Graph</a></li>
 		    <li><a href="#tangent" class="TOC">Using the Tangent Finder</a></li>
 		    <li><a href="#annote" class="TOC">Annotating Your Graph</a></li>
 		    <li><a href="#saving" class="TOC">Saving &amp; Recalling Your Graphs</a></li>
@@ -857,6 +863,36 @@
 		    default symbol, line color, and line type for each of the five data sheets.  Below the radio buttons is a
 		    set of dropdown menus that will allow you to make different choices for each sheet.  Go wild.</p>
 		<div class ="userManualHeading">
+		    <div id="regions" class="userManualSection">
+			Fitting Regions of a Graph
+		    </div>
+		    <div class="backLink">
+			<a href="#helpTop" class="helpLink">Back to top</a>
+		    </div>
+		</div>
+		<p>Some data sets have different behavior in different parts. A long video analysis of a ball being pushed
+		    around might sit still, speed up, coast, slow down, and come back. Instead of splitting the data into
+		    separate graphs, you can mark each part as a <i>region</i> and fit a separate model to each one.</p>
+		<p><b>Making a Region - </b>Click <b>+ Region</b> (below the fit results), then drag across the graph from where the
+		    part starts to where it ends.  A shaded band marks the region, and it gets a number (regions are numbered
+		    left to right).  Now choose a model from the list, just as you would for the whole sheet.  nPlot fits only the
+		    points inside the band, draws the curve only across the band, and shows that region's <i>A</i>, <i>B</i>,
+		    <i>C</i>, and RMSE.  Repeat for each part of the graph.</p>
+		<p><b>Switching Between Regions - </b>Tap a region's number in the row of buttons, or tap inside its band on the
+		    graph.  The selected region's band is darker, its points are circled, and the model list and results show
+		    that region.  <b>All points</b> goes back to the model for the whole sheet, which works exactly as before.</p>
+		<p><b>Changing or Deleting a Region - </b>Drag the handle on either edge of the selected region to move that edge.
+		    Tap the &times; on the selected region's button to delete it.  An edge dropped close to a neighboring region's
+		    edge, or to the first or last data point, snaps to it, so neighboring regions share their boundary.  A point exactly on a shared boundary belongs to
+		    both regions.  Regions belong to one sheet; each sheet can have its own.  Clearing a sheet, swapping
+		    <i>x</i> and <i>y</i>, or linearizing removes the regions, because their <i>x</i> ranges no longer apply.</p>
+		<p><b>What Works with Regions - </b>All the Basic and Advanced models.  Expert models need their starting guesses
+		    and only work on a whole sheet.  The Tangent Finder works on the selected region.  <b>Copy Slopes</b> copies
+		    the selected region's slopes, or, with All points selected, the slope at every point using the fit of the
+		    region it is in, which turns a piecewise position graph into one velocity table.  <b>Add Fit</b> in the
+		    Annotate dialog lists each region's results.  Save to File keeps the regions; Save Graph (in the browser)
+		    does not.</p>
+		<div class ="userManualHeading">
 		    <div id="tangent" class="userManualSection">
 			Using the Tangent Finder
 		    </div>
@@ -967,6 +1003,11 @@
 		    Print that tab to get a graph suitable for taping into a notebook.  <b>No keyboard?</b> Press and hold the
 		    Graph to Clipboard button for a menu that also offers &quot;Open graph in a new tab,&quot; &quot;Download
 		    graph as a PNG file,&quot; and &quot;Show graph to save to Photos.&quot;</p>
+		<p><b>Choosing What the Graph Includes - </b>Press and hold the Graph to Clipboard button and choose
+		    &quot;Choose what the graph includes&hellip;&quot;.  Check or uncheck the data points, error bars, fit curves,
+		    region curves, numbers, boundary lines and shading, annotation, tangent line, grid, and title.  Your choices
+		    are remembered and used every time you copy, download, or open the graph in a new tab.  The screen is not
+		    affected.  By default, copied graphs include region curves and numbers but not the shading.</p>
 		<p><b>Download an Image - </b>If you check the &quot;Yes, download&quot; radio button in the Preferences menu, then
 		    the &quot;Graph to Clipboard&quot; button changes to the &quot;Download Graph&quot; button.  Clicking it will
 		    download your graph as a graphics file (named using your axis labels as
@@ -1104,6 +1145,22 @@
 		<textarea id="copyTextArea" rows="12" readonly></textarea>
 	    </div>
 	</div>
+	<div id="exportOptionsModal" class="modal">
+	    <div id="exportOptionsContent" class="modal-content">
+		<span class="close">&times;</span>
+		<p id="exportOptionsTitle">What should the copied graph include?</p>
+		<div id="exportOptionList"></div>
+		<p id="exportOptionsNote">These choices apply to Graph to Clipboard, downloaded graphs, and new tabs.  They are
+		    remembered, so after this a quick tap on Graph to Clipboard uses them.</p>
+		<div id="exportButtons">
+		    <button id="exportCopyButton" class="npButton">Copy Graph</button>
+		    <button id="exportDownloadButton" class="npButton">Download PNG</button>
+		    <button id="exportTabButton" class="npButton">Open in New Tab</button>
+		    <button id="exportPhotosButton" class="npButton">Save to Photos&hellip;</button>
+		    <button id="exportDoneButton" class="npButton">Done</button>
+		</div>
+	    </div>
+	</div>
 	<div id="toastMessage"></div>
 	<div id="actionMenu"></div>
 
@@ -1118,9 +1175,18 @@
 		<p>The fitting routines are adapted from Press, Teukolsky, et al., <i>Numerical Recipes.</i>
 		    The data grid was adapted from
 		    <a href="http://jsfiddle.net/ondras/hYfN3/" target="_blank" class="linked">code by Ondřej Žára.</a>  Everything else is my fault.</p>
-		<p>iPad edition (6.20i) adapted by Alan Calac (<a href="https://calacattack.com" target="_blank" class="linked">CalacAttack.com</a>), St. Ignatius College Prep, San Francisco, with the author's
+		<p>iPad edition (6.20i and later) adapted by Alan Calac (<a href="https://calacattack.com" target="_blank" class="linked">CalacAttack.com</a>), St. Ignatius College Prep, San Francisco, with the author's
 		    permission. The original nPlot is at <a href="https://noragulfa.com/nPlot/" target="_blank" class="linked">noragulfa.com/nPlot</a>.</p>
 		<p id="changeLogTitle">Change Log</p>
+		<p class="verNumber">v6.22i (iPad edition)</p>
+		<p class="change"><b>Change: </b>A region edge dropped near a neighboring region's edge, or near the first or last data point, snaps to it.</p>
+		<p class="change"><b>Change: </b>Region numbers have an outline so they stay readable, and move to the bottom when the data is near the top.</p>
+		<p class="change"><b>Change: </b>Copy Slopes shows round-off values like 1.4e-17 as 0, and says how many points were outside every region.</p>
+		<p class="verNumber">v6.21i (iPad edition)</p>
+		<p class="change"><b>New Feature: </b>Region fits. Mark parts of a graph with + Region and fit a separate model to each part.</p>
+		<p class="change"><b>New Feature: </b>Copy Slopes works region by region, or for the whole graph using each point's region.</p>
+		<p class="change"><b>New Feature: </b>Choose what copied and downloaded graphs include (press and hold Graph to Clipboard).</p>
+		<p class="change"><b>Change: </b>Copy Slopes now also works with Linear, Proportional and Logarithmic fits.</p>
 		<p class="verNumber">v6.20i (iPad edition)</p>
 		<p class="change"><b>New Feature: </b>Touch and Apple Pencil support on the graph: drag to place notes, fits, and arrows, and to move the tangent finder; lift to drop.</p>
 		<p class="change"><b>New Feature: </b>Press and hold Clear Data, Swap x &amp; y, Save Graph, or Graph to Clipboard for the options that used to need the ctrl key.</p>

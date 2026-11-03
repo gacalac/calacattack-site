@@ -1,9 +1,11 @@
 "use strict";
 // nPlot graphing program
-var version = "6.20i";
+var version = "6.22i";
 // iPad edition (6.20i): touch/pointer input, no-keyboard alternatives for ctrl/shift actions, Safari clipboard fix,
 //   export/import of graphs as files, Copy Slopes for the tangent finder, and error bars / uncertainties hidden by default.
 //   Adapted by Alan Calac (St. Ignatius College Prep) with permission of Geoff Nunes.  Look for "iPad edition" comments.
+// 6.21i adds region fits (fit separate models to separate x ranges of one sheet) and export options for copied graphs;
+//   look for "6.21i" comments.
 document.getElementById("version").innerHTML = 'nPlot v'  + version;
 // TO DO LIST
 //
@@ -86,6 +88,35 @@ var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 var longPressFired = false;     // set when a long press opened a menu, so the click that follows is ignored
 var pendingImport = null;       // graph read from a file, waiting for the "erase current graph?" confirmation
 var lastFits = [null, null, null, null, null];   // most recent good fit on each sheet (used by Copy Slopes)
+var sheetPlotData = [null, null, null, null, null];  // x data each sheet was last plotted with (used by Copy Slopes)
+
+// iPad edition 6.21i: region fits (see "Subsection: Region fits" near the end of this file)
+var regions = [];               // {id, sheet (0-4), x1, x2 (data units), fit, result, text, panel}
+var activeRegion = -1;          // index into regions of the selected region, or -1 for "All points" (the whole sheet)
+var nextRegionId = 1;
+var addingRegion = false;       // waiting for the user to drag across the graph
+var regionDrag = null;          // {startPx, curPx} while a new region is being dragged out
+var regionEdgeDrag = null;      // {index, edge} while an edge of the selected region is being moved
+var lastPointerType = 'mouse';
+var regionColors = ['#D9480F', '#2B8A3E', '#7048E8', '#C2255C', '#1098AD', '#A07A00', '#5C7CFA', '#E8590C'];
+
+// iPad edition 6.21i: what goes into a copied / downloaded graph (see "Subsection: Graph export options")
+var exportOpts = {points: true, errorBars: true, sheetFit: true, regionCurves: true, regionNumbers: true,
+		  regionLines: false, regionShading: false, annotation: true, tangent: true, grid: true, title: true};
+try {
+    var savedExportOpts = JSON.parse(localStorage.getItem('nPlotExportOpts') || 'null');
+    if (savedExportOpts) {
+	Object.keys(exportOpts).forEach(function(k) {
+	    if (typeof savedExportOpts[k] === 'boolean') {
+		exportOpts[k] = savedExportOpts[k];
+	    }
+	});
+    }
+} catch (err) {}
+function exporting(option) {
+    // true when the graph is being drawn for export and the user turned this item off
+    return downloading && !exportOpts[option];
+}
 
 // Position of the cursor in the canvas and flags related to user interactions
 var mouseX = 0;
@@ -1059,27 +1090,35 @@ document.getElementById('fitList').addEventListener("mouseout", function(e) {
 //   takes two touches (lift once at the start point, then drag to the end point and lift again).  The tangent finder
 //   follows your finger as you drag along the curve.
 function canvasIsBusy() {
-    return tangentChecked || haveText || addingArrow || addingLine;
+    return tangentChecked || haveText || addingArrow || addingLine || addingRegion || activeRegion >= 0;
 }
 
 if (window.PointerEvent) {
     canvas1.addEventListener("pointermove", function(e) {
 	getMouse(e);
+	regionPointerMove(e);           // 6.21i: dragging out a region, or moving one of its edges
     });
     canvas1.addEventListener("pointerdown", function(e) {
+	lastPointerType = e.pointerType;
+	getMouse(e);
+	if (regionPointerDown(e)) {     // 6.21i: the press started or selected a region; nothing else to do
+	    try { canvas1.setPointerCapture(e.pointerId); } catch(err) {}
+	    return;
+	}
 	if (e.pointerType == 'mouse') {
-	    getMouse(e);
 	    dropText(e);
 	} else {
 	    if (canvasIsBusy()) {
 		try { canvas1.setPointerCapture(e.pointerId); } catch(err) {}
 	    }
-	    getMouse(e);
 	}
     });
     canvas1.addEventListener("pointerup", function(e) {
+	getMouse(e);
+	if (regionPointerUp(e)) {
+	    return;
+	}
 	if (e.pointerType != 'mouse') {
-	    getMouse(e);
 	    dropText(e);
 	}
     });
@@ -1134,7 +1173,7 @@ if (window.PointerEvent) {
 	    ydata[jj] = data.y;
 	    xerrs[jj] = data.xe;                              // and x and y error bars
 	    yerrs[jj] = data.ye;
-	    if (!showErrorBars) {                             // iPad edition: error bars hidden unless turned on in Preferences
+	    if (!showErrorBars || exporting('errorBars')) {   // iPad edition: error bars hidden unless turned on in Preferences
 		xerrs[jj] = xerrs[jj].map(function() { return 0; });
 		yerrs[jj] = yerrs[jj].map(function() { return 0; });
 	    }
@@ -1198,7 +1237,13 @@ if (window.PointerEvent) {
 	ymin = parseFloat(ylabels[0]);
 	ymax = parseFloat(ylabels[ylabels.length-1]);
 	theBox = {xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax};
-	placeTitle('t');                                  // draw the box for the plot, and place the titles and labels
+	var gridSetting = yesGrid;                        // 6.21i: export options can leave out the grid and the title
+	if (exporting('grid')) {
+	    yesGrid = false;
+	}
+	if (!exporting('title')) {
+	    placeTitle('t');                              // draw the box for the plot, and place the titles and labels
+	}
 	placeTitle('x');
 	placeLabels(xlabels, 'x');
 	if (xmin < 0) {
@@ -1209,7 +1254,9 @@ if (window.PointerEvent) {
 	if (ymin < 0) {
 	    addAxis(ymin, ymax, 'x');
 	}
+	yesGrid = gridSetting;
 	drawTheBox("black");
+	drawRegionBands(xmin, xmax);                      // 6.21i: shaded bands for the regions on the current sheet
 	madeGraph = true;
 	thereIsNoGraph = false;
     }
@@ -1232,9 +1279,11 @@ if (window.PointerEvent) {
 		    lastFits[jj] = {fit: chosenFit, a: results.a.slice(), afin: results.afin ? results.afin.slice() : [],
 				    x: xdata[jj].slice(0, npts[jj]), xScale: xScale, yScale: yScale,
 				    xmin: xmin, xmax: xmax, guessing: justGuessing};
-		    drawTheFit(chosenFit,xmin,xmax,ymin,ymax,results.a,results.afin,jj);
+		    if (!exporting('sheetFit')) {
+			drawTheFit(chosenFit,xmin,xmax,ymin,ymax,results.a,results.afin,jj);
+		    }
 		    if (jj == getSheetNumber(activeSheet)) {
-			if (tangentChecked) {
+			if (tangentChecked && activeRegion < 0 && !exporting('tangent')) {
  			    drawTheTangent(chosenFit,xmin,xmax,ymin,ymax,results.a,results.afin, xdata[jj], npts[jj]);
 			}
 			var rmse = Math.sqrt(results.chisq/degFree);
@@ -1248,8 +1297,10 @@ if (window.PointerEvent) {
 		    hideTheFit();
 		}
 	    }
+	    sheetPlotData[jj] = {x: xdata[jj].slice(0, npts[jj]), y: ydata[jj].slice(0, npts[jj])};
+	    fitSheetRegions(jj, xdata[jj], ydata[jj], npts[jj], xmin, xmax, ymin, ymax);   // 6.21i: region fits
 	    for (i=0; i<npts[jj]; i++) {                      // loop to plot the data points and error bars
-		if(yesPoints[jj]) {
+		if(yesPoints[jj] && !exporting('points')) {
 		    xp = toPixels(xdata[jj][i]/Math.pow(10,xScale), xmin, xmax, 'x');
 		    yp = toPixels(ydata[jj][i]/Math.pow(10,yScale), ymin, ymax, 'y');
 		    plotPoint(xp, yp, jj);
@@ -1282,7 +1333,13 @@ if (window.PointerEvent) {
 	    }
 	}
     }
-    drawAnnotation();
+    if (madeGraph) {
+	markRegionPoints();                               // 6.21i: rings on the selected region's points, region numbers
+	showActiveRegionResults();
+    }
+    if (!exporting('annotation')) {
+	drawAnnotation();
+    }
     drawCrosshair();
     INPUTS.forEach(function(elm) {
 	// This is the code that takes data out of session storage and populates the spreadsheet
@@ -1396,6 +1453,7 @@ function closeLinearize() {
 	}
 	if (xform != 'none') {
 	    dataLinearized = true;
+	    removeRegionsForSheet(-1, true);                // 6.21i: region x ranges no longer apply
 	}
     }
     document.getElementById("linearizeModal").style.display = "none";
@@ -1403,6 +1461,7 @@ function closeLinearize() {
 }
 
 function undoLinearize() {
+    removeRegionsForSheet(-1, true);                    // 6.21i: region x ranges no longer apply
     dataLinearized = false;
     document.getElementById("undoLinearizeButton").style.display = "none";
     transformationString = "";
@@ -1434,6 +1493,7 @@ function tradeData(swapLabelsToo) {
 	    }
 	}
     }
+    removeRegionsForSheet(getSheetNumber(activeSheet), true);   // 6.21i: swapped data makes the old x ranges meaningless
     if (swapLabelsToo) {
 	var temp1 = document.getElementById("xlabel").value;
 	var temp2 = document.getElementById("xunit").value;
@@ -1512,6 +1572,7 @@ function nParse(inString) {
 
 function clearData(sheetLetter, recalling) {
     // Erases the data from the spreadsheet.  Also erases the graph if the cleared sheet was the only one with data.
+    removeRegionsForSheet(getSheetNumber(sheetLetter));   // 6.21i
     INPUTS.forEach(function(elm) {
 	if (elm.id.charAt(1) == sheetLetter) {
 	    sessionStorage[elm.id] = "";
@@ -1534,6 +1595,7 @@ function clearData(sheetLetter, recalling) {
 
 function clearAllData() {
     // Erases the data from all 5 sheets and clears all the fitting and labeling info
+    removeRegionsForSheet(-1);                             // 6.21i: all regions
     INPUTS.forEach(function(elm) {
 	sessionStorage[elm.id] = "";
 	elm.value = "";
@@ -3219,7 +3281,7 @@ function getSelection (selector, selected, parent) {
 	selected = parent;
     }
     var selectorButtonImage = selector + 'ButtonImage';
-    var newButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
+    var newButtonImage = 'images/' + selected + '.png';
     document.getElementById(selectorButtonImage).src = newButtonImage;
     selectorDisplay(selector, 'hide');
     if (selector != 'dash') {
@@ -3233,11 +3295,11 @@ function getSelection (selector, selected, parent) {
 
 function updateSelectors() {
     var selected = sheetSymbols[getSheetNumber(activePrefSheet)];
-    var pointButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
+    var pointButtonImage = 'images/' + selected + '.png';
     document.getElementById("pointButtonImage").src = pointButtonImage;
 
     selected = sheetColors[getSheetNumber(activePrefSheet)];
-    var colorButtonImage = 'images/' + String(selected).toLowerCase() + '.png';
+    var colorButtonImage = 'images/' + selected + '.png';
     document.getElementById("colorButtonImage").src = colorButtonImage;
 
     var selected = Number(sheetDashes[getSheetNumber(activePrefSheet)]);
@@ -3343,7 +3405,17 @@ function changeModel(fitType) {
     if (chkPts == 0) {
 	fitType = 'none';
     }
-    sheetFitTypes[getSheetNumber(activeSheet)] = fitType;
+    if (activeRegion >= 0 && regions[activeRegion]) {
+	// 6.21i: a region is selected, so the model buttons set that region's model, not the whole sheet's
+	if (panelForFit(fitType) == 'expert') {
+	    showToast('Expert models can only be fit to a whole sheet. Tap <b>All points</b> first.', 5000);
+	    fitType = 'none';
+	}
+	regions[activeRegion].fit = fitType;
+	renderRegionBar();
+    } else {
+	sheetFitTypes[getSheetNumber(activeSheet)] = fitType;
+    }
     switch(activePanel) {
     case 'expert':
 	switch(fitType) {
@@ -3467,6 +3539,8 @@ function showGuessInputs(fitType) {
 }
 
 function setSheet(selectedSheet) {
+    activeRegion = -1;                            // 6.21i: a newly shown sheet starts on "All points"
+    addingRegion = false;
     activeSheet = selectedSheet;                  // activeSheet is global
     const mSheets = document.querySelectorAll(".miniSheet");
     mSheets.forEach(element => {
@@ -3522,6 +3596,7 @@ function setSheet(selectedSheet) {
     
     changeModel(sheetFitTypes[getSheetNumber(activeSheet)]);
     clearSaveName();
+    renderRegionBar();
     computeAll();
 }
 
@@ -3583,7 +3658,7 @@ function addFitText(idx) {
 	var fitText = fitDownload[idx];
     }
     var startXY = checkAnnLimits(mouseX, mouseY);
-    manageAnnotation('push', 0, startXY.x, startXY.y, 'fit', fitText, idx, sheetFitTypes[idx]);
+    manageAnnotation('push', 0, startXY.x, startXY.y, 'fit', fitText, idx, sourceFitType(idx));
     allButtonsGrey();
     document.getElementById("messageLine").innerHTML = "<b>Position text with mouse.  Click to finish.</b>";
     computeAll();
@@ -3821,8 +3896,8 @@ function handleDonePress() {
 	manageAnnotation('pop');
 	computeAll();
     }
-    for (var i = 0; i < 5; i++) {
-	sheetAnnoteStatus[i] = 0;
+    for (var key in sheetAnnoteStatus) {            // 6.21i: region fits have their own entries
+	sheetAnnoteStatus[key] = 0;
     }
     if (annotateWhat == 0) {
 	hideAnnotate();
@@ -3853,8 +3928,10 @@ function buildFitList() {
     var nFits = 0;
     var doneFits = 0;
     var alreadyAnnotated = false;
-    for (var i = 0; i < 5; i++) {                            // loop over the 5 sheets to see if there is a fit assigned
-	if (sheetFitTypes[i] != 'none') {
+    var sources = fitSources();                              // 6.21i: the 5 sheets plus any region fits
+    for (var si = 0; si < sources.length; si++) {            // loop over the sources to see if there is a fit assigned
+	var i = sources[si];
+	if (sourceFitType(i) != 'none' && sourceFitType(i) !== undefined) {
 	    if (sheetAnnoteStatus[i] >= 0) {                       // if there is a fit assigned, loop over the annotation
 		for (let j = 0; j < annotation.index; j++) { //   to see if this fit has already been annotated
 		    if (annotation.isFit[j] == 'fit') {
@@ -3885,9 +3962,9 @@ function buildFitList() {
 	return;
     } else if (nFits == 1) {
 	var whichOne = 0;
-	for (var i = 0; i < 5; i++) {
-	    if (sheetAnnoteStatus[i] == 1) {
-		whichOne = i;
+	for (var si = 0; si < sources.length; si++) {
+	    if (sheetAnnoteStatus[sources[si]] == 1) {
+		whichOne = sources[si];
 	    }
 	}
 	addFitText(whichOne);
@@ -3897,15 +3974,14 @@ function buildFitList() {
 	while (list.firstChild) {
 	    list.removeChild(list.firstChild);
 	}
-	for (var i = 0; i < 5; i++) {
+	for (var si = 0; si < sources.length; si++) {
+	    var i = sources[si];
 	    if (sheetAnnoteStatus[i] == 1) {
 		var node = document.createElement('li');
 		var sheetId = 'sht' + String(i);
 		node.setAttribute('id', sheetId);
-		var textnode = document.createTextNode("Sheet " + String(i+1));
-		node.appendChild(textnode);
+		node.textContent = sourceName(i);
 		list.appendChild(node);
-		document.getElementById(sheetId).innerHTML = 'Sheet <span>'+ String(i+1)+ '</span>';
 	    }
 	}
 	showFitList();
@@ -4090,7 +4166,7 @@ function drawAnnotation() {
 	    }
 	}
 	if (annotation.isFit[i] == "fit") {                                     // remove annotation if fit has dchanged
-	    if (sheetFitTypes[annotation.activeSheetNum[i]] != annotation.fitType[i]) {
+	    if (sourceFitType(annotation.activeSheetNum[i]) != annotation.fitType[i]) {   // 6.21i: sheets or regions
 		manageAnnotation('punchout', i);
 		i = i - 1;
 		continue;
@@ -4187,7 +4263,7 @@ function drawAnnotation() {
 
 function drawCrosshair() {
     // create/manage a crosshair cursor for more precise positioning of annotations
-    if (haveText || addingArrow || addingLine || debug) {
+    if (haveText || addingArrow || addingLine || addingRegion || debug) {
 	if ((mouseX > plotParams.xBord) && (mouseX < plotParams.xWidth) && (mouseY > plotParams.yBord) && (mouseY < plotParams.yWidth)) {
 	    ctx.lineWidth = 1;
 	    ctx.strokeStyle = "black";
@@ -5178,6 +5254,12 @@ function downloadGraph(openInTab) {
 		document.getElementById("clipConfirm").style.display = "block";
 		setTimeout(function() {
 		    document.getElementById("clipConfirm").style.display = "none";
+		    var tipShown = false;
+		    try { tipShown = localStorage.getItem('nPlotExportTip') == 'shown'; } catch (err) {}
+		    if (!tipShown) {             // 6.21i: tell people once where the export options are
+			showToast('Tip: press and hold <b>Graph to Clipboard</b> to choose what the copied graph includes.', 6000);
+			try { localStorage.setItem('nPlotExportTip', 'shown'); } catch (err) {}
+		    }
 		}, 2000);
 	    };
 	    const clipFallback = (err) => {
@@ -5221,6 +5303,11 @@ function downloadFit() {
     if (sheetFitTypes[4] != 'none' && sheetFitTypes[4] != 'exactProportion') {
 	downloadText = downloadText + 'Curve 5:\n' + fitDownload[4] + blankLine;
     }
+    regions.forEach(function(r) {                            // 6.21i: region fits too
+	if (r.text) {
+	    downloadText = downloadText + 'Curve ' + (r.sheet + 1) + ', Region ' + regionNumber(r) + ':\n' + r.text + blankLine;
+	}
+    });
     var blob = new Blob([downloadText], {type: 'text/csv'});
     if(window.navigator.msSaveOrOpenBlob) {                   // special for Windows Navigator
         window.navigator.msSaveBlob(blob, "fit.txt");
@@ -6211,7 +6298,7 @@ function copyTextToClipboard(text, successMessage) {
     try {
 	if (navigator.clipboard && navigator.clipboard.writeText) {
 	    navigator.clipboard.writeText(text).then(function() {
-		showToast(successMessage);
+		showToast(successMessage, 6000);
 	    }, function() {
 		showCopyText(text);
 	    });
@@ -6247,38 +6334,70 @@ function formatNumber(value) {
 // Subsection:  Copy Slopes **************************************************************************************************
 //
 function copySlopes() {
-    // Copy the slope of the fit at every data point on the current sheet, as two tab-separated columns (x, slope).
+    // Copy the slope of the fit at every data point, as two tab-separated columns (x, slope), in real data units.
     // Paste into a spreadsheet, or into an empty nPlot graph to plot slope vs. x (for example v vs. t from x vs. t).
-    // Values are in real data units (the axis scale factor, if any, is removed).
-    var tangentModels = ['squareLaw', 'quadratic', 'inverse', 'inverseSquare', 'powerLaw', 'expDecay', 'root', 'inverseRoot'];
+    // 6.21i: with a region selected, only that region's points are copied.  With regions on the sheet and "All points"
+    //   selected, each point uses the fit of the region it is in (left-most region at a shared boundary), so a
+    //   piecewise position graph turns into one velocity table.
     var sheetNum = getSheetNumber(activeSheet);
-    var fitInfo = lastFits[sheetNum];
-    if (!fitInfo || sheetFitTypes[sheetNum] == 'none') {
+    var selected = regions[activeRegion];
+    var fitted = sheetRegions(sheetNum).filter(function(r) { return r.result; });
+    var sheetFit = (sheetFitTypes[sheetNum] != 'none') ? lastFits[sheetNum] : null;
+    var pairs = [];
+    var source = '';
+    var leftOut = 0;
+    var addRow = function(fitInfo, xValue) {
+	var slope = slopeOf(fitInfo.fit, xValue / Math.pow(10, fitInfo.xScale), fitInfo.a, fitInfo.afin) *
+	    Math.pow(10, fitInfo.yScale - fitInfo.xScale);
+	if (isFinite(slope)) {
+	    pairs.push([xValue, slope]);
+	}
+    };
+    if (selected) {
+	if (!selected.result) {
+	    showToast('Choose a model for Region ' + regionNumber(selected) + ' first.', 4500);
+	    return;
+	}
+	selected.result.x.forEach(function(x) { addRow(selected.result, x); });
+	source = ' from Region ' + regionNumber(selected);
+    } else if (fitted.length > 0) {
+	var data = sheetPlotData[sheetNum];
+	if (data) {
+	    data.x.forEach(function(x) {
+		var home = fitted.find(function(r) { return x >= regionLow(r) && x <= regionHigh(r); });
+		if (home) {
+		    addRow(home.result, x);
+		} else if (sheetFit) {
+		    addRow(sheetFit, x);
+		} else {
+		    leftOut++;
+		}
+	    });
+	}
+	source = ' using the region fits';
+    } else if (sheetFit) {
+	sheetFit.x.forEach(function(x) { addRow(sheetFit, x); });
+    } else {
 	showToast('<b>Copy Slopes</b> needs a fit on the current sheet. Choose a model first.', 4500);
 	return;
     }
-    if (tangentModels.indexOf(fitInfo.fit) < 0) {
-	showToast('<b>Copy Slopes</b> works with the curved models (Square Law, Quadratic, Inverse, Square Root, ' +
-		  'Power Law, Exponential...). For a straight-line fit, the slope is the same everywhere: it is <i>A</i>.', 6000);
+    if (pairs.length == 0) {
+	showToast('<b>Copy Slopes</b> works with the Basic and Advanced models, not the Expert ones.', 5000);
 	return;
     }
-    var xFactor = Math.pow(10, fitInfo.xScale);
-    var slopeFactor = Math.pow(10, fitInfo.yScale - fitInfo.xScale);
-    var lines = [];
-    for (var i = 0; i < fitInfo.x.length; i++) {
-	var xValue = fitInfo.x[i];
-	var slope = calcSlope(fitInfo.fit, xValue / xFactor, fitInfo.a, fitInfo.afin) * slopeFactor;
-	if (isFinite(slope)) {
-	    lines.push(formatNumber(xValue) + '\t' + formatNumber(slope));
-	}
+    // round-off from a flat fit gives slopes like 1.4e-17: show those as 0
+    var biggest = Math.max.apply(null, pairs.map(function(p) { return Math.abs(p[1]); }));
+    var lines = pairs.map(function(p) {
+	var slope = (Math.abs(p[1]) <= 1e-9 * biggest || Math.abs(p[1]) < 1e-14) ? 0 : p[1];
+	return formatNumber(p[0]) + '\t' + formatNumber(slope);
+    });
+    var message = 'Copied ' + lines.length + ' (<i>x</i>, slope) pairs' + source + '. Paste them into a spreadsheet, ' +
+	'or into an empty nPlot graph to plot slope vs. <i>x</i>.';
+    if (leftOut > 0) {
+	message = message + '<br><b>' + leftOut + (leftOut == 1 ? ' point was' : ' points were') +
+	    ' not inside any region and ' + (leftOut == 1 ? 'was' : 'were') + ' left out.</b>';
     }
-    if (lines.length == 0) {
-	showToast('There were no slopes to copy.');
-	return;
-    }
-    copyTextToClipboard(lines.join('\n') + '\n',
-			'Copied ' + lines.length + ' (<i>x</i>, slope) pairs. Paste them into a spreadsheet, or into an empty ' +
-			'nPlot graph to plot slope vs. <i>x</i>.');
+    copyTextToClipboard(lines.join('\n') + '\n', message);
 }
 
 function copySheetData() {
@@ -6373,6 +6492,9 @@ function buildGraphObject() {
 	    originalXLabel: savedXTitle,
 	    originalXUnits: savedXUnit
 	},
+	regions: regions.map(function(r) {                 // 6.21i
+	    return {sheet: getSheetLetter(r.sheet), x1: r.x1, x2: r.x2, fit: r.fit, id: r.id};
+	}),
 	annotation: {
 	    text: annotation.text.slice(0, annotation.index),
 	    x: annotation.x.slice(0, annotation.index),
@@ -6508,6 +6630,22 @@ function applyImportedGraph(graph) {
 	savedXUnit = lin.originalXUnits || '';
     }
 
+    if (Array.isArray(graph.regions)) {                     // 6.21i: region fits
+	graph.regions.forEach(function(r) {
+	    if (!/^[A-E]$/.test(String(r.sheet)) || !isFinite(Number(r.x1)) || !isFinite(Number(r.x2))) {
+		return;
+	    }
+	    var id = Math.max(1, Math.floor(Number(r.id)) || nextRegionId);
+	    if (regions.some(function(q) { return q.id == id; })) {
+		id = nextRegionId;
+	    }
+	    nextRegionId = Math.max(nextRegionId, id + 1);
+	    var fit = (importableFits.indexOf(r.fit) >= 0 && panelForFit(r.fit) != 'expert') ? r.fit : 'none';
+	    regions.push({id: id, sheet: getSheetNumber(String(r.sheet)), x1: Number(r.x1), x2: Number(r.x2), fit: fit,
+			  result: null, text: '', panel: null});
+	});
+    }
+
     var ann = graph.annotation || {};
     if (Array.isArray(ann.text) && ann.text.length > 0) {
 	var n = ann.text.length;
@@ -6542,6 +6680,683 @@ function applyImportedGraph(graph) {
     }
     showToast(message, 4500);
 }
+
+// Subsection:  Region fits (6.21i) ****************************************************************************************
+// A region is a range of x values on one sheet.  Each region gets its own model, fitted only to the points inside the
+//   range, and its own curve, drawn only across the range.  The sheet's own ("All points") model is unaffected.
+//   Typical use: a long video-analysis position vs. time graph that is linear here, quadratic there, and so on.
+//   Points exactly on a shared boundary belong to both regions.
+//
+var regionTangentModels = ['squareLaw', 'quadratic', 'inverse', 'inverseSquare', 'powerLaw', 'expDecay', 'root', 'inverseRoot'];
+
+function regionKey(region) {
+    // regions are identified in the annotation code by 100 + id (sheets are 0-4)
+    return 100 + region.id;
+}
+
+function regionFromKey(key) {
+    for (var i = 0; i < regions.length; i++) {
+	if (regionKey(regions[i]) == key) {
+	    return regions[i];
+	}
+    }
+    return null;
+}
+
+function sourceFitType(key) {
+    // model of a sheet (key 0-4) or of a region (key >= 100); undefined if the region no longer exists
+    key = Number(key);
+    if (key >= 100) {
+	var region = regionFromKey(key);
+	return region ? (region.result ? region.fit : 'none') : undefined;
+    }
+    return sheetFitTypes[key];
+}
+
+function sourceName(key) {
+    key = Number(key);
+    if (key >= 100) {
+	var region = regionFromKey(key);
+	return region ? 'Sheet ' + (region.sheet + 1) + ', Region ' + regionNumber(region) : 'Region';
+    }
+    return 'Sheet ' + (key + 1);
+}
+
+function fitSources() {
+    // all the things that can have a fit annotation: the five sheets, then every region
+    var keys = [0, 1, 2, 3, 4];
+    regions.forEach(function(r) {
+	keys.push(regionKey(r));
+    });
+    keys.forEach(function(k) {
+	if (sheetAnnoteStatus[k] === undefined) {
+	    sheetAnnoteStatus[k] = 0;
+	}
+    });
+    return keys;
+}
+
+function sheetRegions(sheetNum) {
+    // the regions on one sheet, left to right
+    return regions.filter(function(r) { return r.sheet == sheetNum; })
+	.sort(function(a, b) { return Math.min(a.x1, a.x2) - Math.min(b.x1, b.x2); });
+}
+
+function regionNumber(region) {
+    return sheetRegions(region.sheet).indexOf(region) + 1;
+}
+
+function regionColor(region) {
+    return regionColors[(region.id - 1) % regionColors.length];
+}
+
+function regionLow(region) {
+    return Math.min(region.x1, region.x2);
+}
+
+function regionHigh(region) {
+    return Math.max(region.x1, region.x2);
+}
+
+function removeRegionsForSheet(sheetNum, announce) {
+    // sheetNum -1 removes every region
+    var before = regions.length;
+    regions = regions.filter(function(r) { return sheetNum >= 0 && r.sheet != sheetNum; });
+    activeRegion = -1;
+    addingRegion = false;
+    regionDrag = null;
+    regionEdgeDrag = null;
+    if (announce && regions.length < before) {
+	showToast('The regions were removed, because the x values changed.', 4000);
+    }
+    renderRegionBar();
+}
+
+function fitSheetRegions(sheetNum, xdata, ydata, npts, xmin, xmax, ymin, ymax) {
+    // fit and draw every region on one sheet (called from computeAll, before the data points are drawn)
+    var letter = getSheetLetter(sheetNum);
+    var savedFitInfo = selectedFitInfo;
+    sheetRegions(sheetNum).forEach(function(region) {
+	region.result = null;
+	region.text = '';
+	region.panel = null;
+	region.nPoints = 0;
+	var lo = regionLow(region);
+	var hi = regionHigh(region);
+	var xs = [];
+	var ys = [];
+	for (var i = 0; i < npts; i++) {
+	    if (xdata[i] >= lo && xdata[i] <= hi) {
+		xs.push(xdata[i]);
+		ys.push(ydata[i]);
+	    }
+	}
+	region.nPoints = xs.length;
+	var fit = region.fit;
+	if (fit == 'none' || panelForFit(fit) == 'expert' || xs.length < 2 || (fit == 'quadratic' && xs.length < 3)) {
+	    return;
+	}
+	var info = setFitParameters(fit, letter);
+	selectedFitInfo = info;
+	var degFree = info.DOF - (countPoints(letter) - xs.length);   // same model, fewer points
+	var results = doTheFit(fit, xs, ys, xs.length, info.ia);
+	if (!results.good) {
+	    return;
+	}
+	region.result = {fit: fit, a: results.a.slice(), afin: results.afin ? results.afin.slice() : [], x: xs, y: ys,
+			 xScale: xScale, yScale: yScale};
+	var rmse = degFree > 0 ? Math.sqrt(results.chisq / degFree) : 0;
+	// reportTheFit writes to the front panel and to fitDownload[sheet]; borrow it, then put everything back
+	var ids = ['Avalue', 'Bvalue', 'Cvalue', 'Dvalue', 'rmseValue'];
+	var saved = ids.map(function(id) { return document.getElementById(id).innerHTML; });
+	var savedDownload = fitDownload[sheetNum];
+	reportTheFit(fit, results.a, results.afin, rmse, results.covar, letter);
+	region.panel = ids.map(function(id) { return document.getElementById(id).innerHTML; });
+	region.text = fitDownload[sheetNum];
+	fitDownload[sheetNum] = savedDownload;
+	ids.forEach(function(id, k) { document.getElementById(id).innerHTML = saved[k]; });
+	fitDownload[regionKey(region)] = 'Region ' + regionNumber(region) + ' - ' + region.text;
+	if (!exporting('regionCurves')) {
+	    drawRegionCurve(region, xmin, xmax, ymin, ymax);
+	}
+	if (sheetNum == getSheetNumber(activeSheet) && regions[activeRegion] === region && tangentChecked &&
+	    !exporting('tangent')) {
+	    drawTheTangent(fit, xmin, xmax, ymin, ymax, results.a, results.afin, xs, xs.length);
+	}
+    });
+    selectedFitInfo = savedFitInfo;
+}
+
+function drawRegionCurve(region, xmin, xmax, ymin, ymax) {
+    // draw a region's fitted curve across that region only
+    var lo = Math.max(regionLow(region) / Math.pow(10, xScale), xmin);
+    var hi = Math.min(regionHigh(region) / Math.pow(10, xScale), xmax);
+    if (hi <= lo) {
+	return;
+    }
+    var nSteps = 300;
+    ctx.save();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = regionColor(region);
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    var penDown = false;
+    for (var i = 0; i <= nSteps; i++) {
+	var xc = lo + (hi - lo) * i / nSteps;
+	var yc = fitFunction(region.result.fit, xc, region.result.a, region.result.afin);
+	var xp = toPixels(xc, xmin, xmax, 'x');
+	var yp = toPixels(yc, ymin, ymax, 'y');
+	if (isFinite(yp) && yp >= plotParams.yBord && yp <= plotParams.yWidth) {
+	    if (penDown) {
+		ctx.lineTo(xp, yp);
+	    } else {
+		ctx.moveTo(xp, yp);
+		penDown = true;
+	    }
+	} else {
+	    penDown = false;
+	}
+    }
+    ctx.stroke();
+    ctx.restore();
+}
+
+function regionPixels(region) {
+    // left and right edges of a region in canvas pixels
+    var a = toPixels(regionLow(region) / Math.pow(10, xScale), theBox.xmin, theBox.xmax, 'x');
+    var b = toPixels(regionHigh(region) / Math.pow(10, xScale), theBox.xmin, theBox.xmax, 'x');
+    return {left: Math.max(a, plotParams.xBord), right: Math.min(b, plotParams.xWidth)};
+}
+
+function drawRegionBands(xmin, xmax) {
+    // shaded bands and boundary lines for the current sheet's regions (drawn under the data and curves)
+    var sheetNum = getSheetNumber(activeSheet);
+    var top = plotParams.yBord;
+    var height = plotParams.yWidth - plotParams.yBord;
+    ctx.save();
+    sheetRegions(sheetNum).forEach(function(region) {
+	var px = regionPixels(region);
+	if (px.right <= px.left) {
+	    return;
+	}
+	var selected = (regions[activeRegion] === region) && !downloading;
+	if (!exporting('regionShading')) {
+	    ctx.globalAlpha = selected ? 0.22 : 0.11;
+	    ctx.fillStyle = regionColor(region);
+	    ctx.fillRect(px.left, top, px.right - px.left, height);
+	    ctx.globalAlpha = 1;
+	}
+	if (!exporting('regionLines')) {
+	    ctx.strokeStyle = regionColor(region);
+	    ctx.lineWidth = selected ? 2 : 1;
+	    ctx.setLineDash([5, 4]);
+	    ctx.beginPath();
+	    ctx.moveTo(px.left, top);
+	    ctx.lineTo(px.left, top + height);
+	    ctx.moveTo(px.right, top);
+	    ctx.lineTo(px.right, top + height);
+	    ctx.stroke();
+	    ctx.setLineDash([]);
+	}
+	if (selected) {                                   // grab handles on the selected region's edges
+	    ctx.fillStyle = regionColor(region);
+	    [px.left, px.right].forEach(function(x) {
+		ctx.fillRect(x - 4, top + height / 2 - 18, 8, 36);
+	    });
+	}
+    });
+    if (regionDrag) {                                     // a region being dragged out
+	var a = Math.max(Math.min(regionDrag.startPx, regionDrag.curPx), plotParams.xBord);
+	var b = Math.min(Math.max(regionDrag.startPx, regionDrag.curPx), plotParams.xWidth);
+	ctx.globalAlpha = 0.25;
+	ctx.fillStyle = regionColors[(nextRegionId - 1) % regionColors.length];
+	ctx.fillRect(a, top, b - a, height);
+	ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+}
+
+function markRegionPoints() {
+    // region numbers along the top of the graph, and rings around the selected (or highlighted) region's points
+    var sheetNum = getSheetNumber(activeSheet);
+    ctx.save();
+    sheetRegions(sheetNum).forEach(function(region) {
+	var px = regionPixels(region);
+	if (px.right <= px.left) {
+	    return;
+	}
+	if (!exporting('regionNumbers')) {
+	    // 6.21i: put the number at the top of the band, or at the bottom if the data or curve is up there,
+	    //   and outline it in the background color so it stays readable over grid lines and curves
+	    var labelX = (px.left + px.right) / 2;
+	    var labelY = plotParams.yBord + 18;
+	    if (regionCrowdsTop(region, sheetNum)) {
+		labelY = plotParams.yWidth - 8;
+	    }
+	    ctx.font = 'bold 15px Arial';
+	    ctx.textAlign = 'center';
+	    ctx.lineJoin = 'round';
+	    ctx.lineWidth = 5;
+	    ctx.strokeStyle = downloading ? '#FFFFFF' : backgroundColor;
+	    ctx.strokeText(String(regionNumber(region)), labelX, labelY);
+	    ctx.fillStyle = regionColor(region);
+	    ctx.fillText(String(regionNumber(region)), labelX, labelY);
+	}
+	var ringed = !downloading && (regions[activeRegion] === region || hiLitePoints == regionKey(region));
+	if (ringed && sheetPlotData[sheetNum]) {
+	    ctx.strokeStyle = hiLitePoints == regionKey(region) ? hiLiteColor : regionColor(region);
+	    ctx.lineWidth = 2;
+	    var data = sheetPlotData[sheetNum];
+	    for (var i = 0; i < data.x.length; i++) {
+		if (data.x[i] >= regionLow(region) && data.x[i] <= regionHigh(region)) {
+		    var xp = toPixels(data.x[i] / Math.pow(10, xScale), theBox.xmin, theBox.xmax, 'x');
+		    var yp = toPixels(data.y[i] / Math.pow(10, yScale), theBox.ymin, theBox.ymax, 'y');
+		    ctx.beginPath();
+		    ctx.arc(xp, yp, 8, 0, 2 * Math.PI);
+		    ctx.stroke();
+		}
+	    }
+	}
+    });
+    ctx.restore();
+}
+
+function regionCrowdsTop(region, sheetNum) {
+    // true if a data point (or the region's curve) inside the region comes within ~35 px of the top of the graph
+    var limit = plotParams.yBord + 35;
+    var data = sheetPlotData[sheetNum];
+    if (data) {
+	for (var i = 0; i < data.x.length; i++) {
+	    if (data.x[i] >= regionLow(region) && data.x[i] <= regionHigh(region)) {
+		if (toPixels(data.y[i] / Math.pow(10, yScale), theBox.ymin, theBox.ymax, 'y') < limit) {
+		    return true;
+		}
+	    }
+	}
+    }
+    if (region.result) {
+	var lo = regionLow(region) / Math.pow(10, xScale);
+	var hi = regionHigh(region) / Math.pow(10, xScale);
+	for (var k = 0; k <= 40; k++) {
+	    var yc = fitFunction(region.result.fit, lo + (hi - lo) * k / 40, region.result.a, region.result.afin);
+	    if (toPixels(yc, theBox.ymin, theBox.ymax, 'y') < limit) {
+		return true;
+	    }
+	}
+    }
+    return false;
+}
+
+function snapRegionEdges(region) {
+    // 6.21i: an edge dropped close to a neighboring region's edge, or close to the first or last data point, snaps to
+    //   it, so neighboring regions share a boundary and no data point falls into a gap between regions.
+    var tolerance = (lastPointerType == 'mouse') ? 10 : 24;     // pixels
+    var targets = [];
+    sheetRegions(region.sheet).forEach(function(other) {
+	if (other !== region) {
+	    targets.push(regionLow(other), regionHigh(other));
+	}
+    });
+    var data = sheetPlotData[region.sheet];
+    if (data && data.x.length > 0) {
+	targets.push(Math.min.apply(null, data.x), Math.max.apply(null, data.x));
+    }
+    ['x1', 'x2'].forEach(function(edge) {
+	var best = null;
+	var bestDistance = tolerance;
+	targets.forEach(function(t) {
+	    var d = regionPixelsWidth(region[edge], t);
+	    if (d <= bestDistance) {
+		best = t;
+		bestDistance = d;
+	    }
+	});
+	if (best !== null) {
+	    region[edge] = best;
+	}
+    });
+    if (region.x1 > region.x2) {
+	var swap = region.x1;
+	region.x1 = region.x2;
+	region.x2 = swap;
+    }
+}
+
+function showActiveRegionResults() {
+    // with a region selected, the front-panel results show that region's fit
+    var region = regions[activeRegion];
+    if (!region || justGuessing) {
+	return;
+    }
+    var ids = ['Avalue', 'Bvalue', 'Cvalue', 'Dvalue', 'rmseValue'];
+    if (region.panel) {
+	ids.forEach(function(id, k) { document.getElementById(id).innerHTML = region.panel[k]; });
+    } else {
+	hideTheFit();
+    }
+}
+
+function pixelToX(px) {
+    // canvas x pixel to an x data value (in data units, as used for fitting)
+    px = Math.max(plotParams.xBord, Math.min(plotParams.xWidth, px));
+    return toValue(px, theBox.xmin, theBox.xmax, 'x') * Math.pow(10, xScale);
+}
+
+function regionPointerDown(e) {
+    // returns true if this press belongs to the region tools
+    if (!madeGraph || haveText || addingArrow || addingLine) {
+	return false;
+    }
+    if (addingRegion) {
+	regionDrag = {startPx: mouseX, curPx: mouseX};
+	computeAll();
+	return true;
+    }
+    var sheetNum = getSheetNumber(activeSheet);
+    var tolerance = (e.pointerType == 'mouse') ? 8 : 22;
+    var selected = regions[activeRegion];
+    if (selected && selected.sheet == sheetNum) {
+	var px = regionPixels(selected);
+	var dLeft = Math.abs(mouseX - px.left);
+	var dRight = Math.abs(mouseX - px.right);
+	if (Math.min(dLeft, dRight) <= tolerance) {
+	    var lowIsX1 = selected.x1 <= selected.x2;
+	    var edge = dLeft <= dRight ? (lowIsX1 ? 'x1' : 'x2') : (lowIsX1 ? 'x2' : 'x1');
+	    regionEdgeDrag = {index: activeRegion, edge: edge};
+	    return true;
+	}
+    }
+    if (tangentChecked) {
+	return false;
+    }
+    // a tap inside a band selects that region (the innermost if bands overlap)
+    var hits = sheetRegions(sheetNum).filter(function(r) {
+	var p = regionPixels(r);
+	return mouseX >= p.left && mouseX <= p.right && mouseY >= plotParams.yBord && mouseY <= plotParams.yWidth;
+    });
+    if (hits.length > 0) {
+	hits.sort(function(a, b) { return (regionHigh(a) - regionLow(a)) - (regionHigh(b) - regionLow(b)); });
+	if (regions[activeRegion] !== hits[0]) {
+	    selectRegion(regions.indexOf(hits[0]));
+	    return true;
+	}
+    }
+    return false;
+}
+
+function regionPointerMove(e) {
+    if (regionDrag) {
+	regionDrag.curPx = mouseX;
+	computeAll();
+    } else if (regionEdgeDrag) {
+	var region = regions[regionEdgeDrag.index];
+	if (region) {
+	    region[regionEdgeDrag.edge] = pixelToX(mouseX);
+	    computeAll();
+	}
+    } else if (e.pointerType == 'mouse' && regions[activeRegion] && !haveText && !addingArrow && !addingLine) {
+	var px = regionPixels(regions[activeRegion]);
+	var near = Math.min(Math.abs(mouseX - px.left), Math.abs(mouseX - px.right)) <= 8;
+	canvas1.style.cursor = near ? 'ew-resize' : 'default';
+    }
+}
+
+function regionPointerUp(e) {
+    if (regionDrag) {
+	var a = pixelToX(regionDrag.startPx);
+	var b = pixelToX(regionDrag.curPx);
+	regionDrag = null;
+	addingRegion = false;
+	document.getElementById('newRegionButton').classList.remove('regionButtonActive');
+	if (regionPixelsWidth(a, b) < 6) {
+	    showToast('That region was too narrow. Tap <b>+ Region</b> and drag across the part of the graph you want.', 4500);
+	    computeAll();
+	    return true;
+	}
+	var region = {id: nextRegionId++, sheet: getSheetNumber(activeSheet), x1: Math.min(a, b), x2: Math.max(a, b),
+		      fit: 'none', result: null, text: '', panel: null};
+	snapRegionEdges(region);
+	regions.push(region);
+	selectRegion(regions.length - 1);
+	showToast('Region ' + regionNumber(region) + ': <i>x</i> = ' + formatNumber(region.x1) + ' to ' +
+		  formatNumber(region.x2) + ' (' + region.nPoints + ' points). Now choose its model.', 5000);
+	return true;
+    }
+    if (regionEdgeDrag) {
+	if (regions[regionEdgeDrag.index]) {
+	    snapRegionEdges(regions[regionEdgeDrag.index]);
+	}
+	regionEdgeDrag = null;
+	renderRegionBar();
+	computeAll();
+	return true;
+    }
+    return false;
+}
+
+function regionPixelsWidth(a, b) {
+    var pa = toPixels(a / Math.pow(10, xScale), theBox.xmin, theBox.xmax, 'x');
+    var pb = toPixels(b / Math.pow(10, xScale), theBox.xmin, theBox.xmax, 'x');
+    return Math.abs(pb - pa);
+}
+
+function startNewRegion() {
+    if (!madeGraph) {
+	showToast('Enter some data and label both axes first.');
+	return;
+    }
+    if (addingRegion) {                                   // second tap cancels
+	addingRegion = false;
+	document.getElementById('newRegionButton').classList.remove('regionButtonActive');
+	computeAll();
+	return;
+    }
+    addingRegion = true;
+    document.getElementById('newRegionButton').classList.add('regionButtonActive');
+    showToast('Drag across the graph to mark the region you want to fit.', 4000);
+}
+
+function selectRegion(index) {
+    // index -1 means "All points" (the sheet's own model)
+    activeRegion = (index >= 0 && regions[index]) ? index : -1;
+    var fit = activeRegion >= 0 ? regions[activeRegion].fit : sheetFitTypes[getSheetNumber(activeSheet)];
+    syncModelButtons(fit);
+    renderRegionBar();
+    computeAll();
+}
+
+function deleteRegion(index) {
+    var region = regions[index];
+    if (!region) {
+	return;
+    }
+    regions.splice(index, 1);
+    selectRegion(-1);
+}
+
+function syncModelButtons(fit) {
+    // show the right Models tab and check the right model button, without changing any model
+    var radioIds = {noRelation: 'noRelation', exactProportion: 'yEqualsX', proportional: 'yEqualsAX', linear: 'fitLinear',
+		    squareLaw: 'fitSquare', quadratic: 'fitQuadratic', inverse: 'fitInverse', inverseSquare: 'fitInverseSquare',
+		    root: 'fitSquareRoot', inverseRoot: 'fitInvSqrRoot', powerLaw: 'fitPowerLaw', expDecay: 'fitExponential',
+		    log: 'fitLogarithm', cosine: 'fitCosine', dampedCosine: 'fitDampedCosine', relaxation: 'fitRelaxation',
+		    gaussian: 'fitGaussian'};
+    var panel = (fit == 'none' || fit === undefined) ? activePanel : panelForFit(fit);
+    if (panel == 'expert' && activeRegion >= 0) {
+	panel = 'basic';
+    }
+    document.querySelectorAll('.modelsDiv').forEach(function(el) { el.style.display = 'none'; });
+    document.querySelectorAll('.modelButton').forEach(function(el) { el.style.backgroundColor = backgroundColor; });
+    var divId = {basic: 'basicModelsDiv', advanced: 'advancedModelsDiv', expert: 'expertModelsDiv'}[panel];
+    var tabId = {basic: 'basicModelsTab', advanced: 'advancedModelsTab', expert: 'expertModelsTab'}[panel];
+    document.getElementById(divId).style.display = 'block';
+    document.getElementById(tabId).style.backgroundColor = selectedColor;
+    document.getElementById('tangentFinding').style.display = (panel == 'expert') ? 'none' : 'flex';
+    activePanel = panel;
+    justGuessing = (panel == 'expert');
+    var noneId = {basic: 'fitNone', advanced: 'advFitNone', expert: 'expFitNone'}[panel];
+    document.getElementById(radioIds[fit] || noneId).checked = true;
+    if (panel != 'expert') {
+	showGuessInputs('none');
+    }
+}
+
+function renderRegionBar() {
+    // the row of region buttons under the fit results: + Region, All points, 1, 2, 3, ...
+    var bar = document.getElementById('regionChips');
+    if (!bar) {
+	return;
+    }
+    bar.innerHTML = '';
+    var sheetNum = getSheetNumber(activeSheet);
+    var list = sheetRegions(sheetNum);
+    var all = document.createElement('button');
+    all.className = 'regionChip' + (activeRegion < 0 ? ' regionChipSelected' : '');
+    all.textContent = 'All points';
+    all.title = 'Fit the whole sheet';
+    all.addEventListener('click', function() { selectRegion(-1); });
+    bar.appendChild(all);
+    list.forEach(function(region) {
+	var chip = document.createElement('button');
+	var selected = regions[activeRegion] === region;
+	chip.className = 'regionChip' + (selected ? ' regionChipSelected' : '');
+	chip.style.borderColor = regionColor(region);
+	chip.style.color = selected ? '#FFFFFF' : regionColor(region);
+	if (selected) {
+	    chip.style.backgroundColor = regionColor(region);
+	}
+	chip.title = 'Region ' + regionNumber(region) + ' (' + modelName(region.fit) + ')';
+	chip.textContent = String(regionNumber(region));
+	chip.addEventListener('click', function(e) {
+	    if (e.target.classList.contains('regionDelete')) {
+		deleteRegion(regions.indexOf(region));
+	    } else {
+		selectRegion(regions.indexOf(region));
+	    }
+	});
+	if (selected) {
+	    var del = document.createElement('span');
+	    del.className = 'regionDelete';
+	    del.title = 'Delete this region';
+	    del.innerHTML = '&times;';
+	    chip.appendChild(del);
+	}
+	bar.appendChild(chip);
+    });
+}
+
+function modelName(fit) {
+    var names = {none: 'no model yet', noRelation: 'No Relation', exactProportion: 'Exactly Proportional',
+		 proportional: 'Proportional', linear: 'Linear', squareLaw: 'Square Law', quadratic: 'Quadratic',
+		 inverse: 'Inverse', inverseSquare: 'Inverse Square', root: 'Square Root', inverseRoot: 'Inverse Square Root',
+		 powerLaw: 'Power Law', expDecay: 'Exponential', log: 'Logarithmic'};
+    return names[fit] || fit;
+}
+
+function slopeOf(fit, xScaled, a, afin) {
+    // slope of a fit in scaled units (like calcSlope, plus the straight-line and logarithmic models)
+    switch (fit) {
+    case 'linear':
+    case 'proportional':
+	return a[1];
+    case 'exactProportion':
+	return 1;
+    case 'noRelation':
+	return 0;
+    case 'log':
+	return a[1] / xScaled;
+    default:
+	if (regionTangentModels.indexOf(fit) >= 0) {
+	    return calcSlope(fit, xScaled, a, afin);
+	}
+	return NaN;
+    }
+}
+
+// Subsection:  Graph export options (6.21i) ********************************************************************************
+// Tapping Graph to Clipboard copies with the last choices.  Press and hold it (or use Options... in its menu) to choose what
+//   the copied, downloaded, or new-tab graph includes.  The choices are remembered in this browser.
+//
+var exportOptionLabels = [
+    ['points', 'Data points'],
+    ['errorBars', 'Error bars (when shown)'],
+    ['sheetFit', 'Whole-sheet fit curve'],
+    ['regionCurves', 'Region fit curves'],
+    ['regionNumbers', 'Region numbers'],
+    ['regionLines', 'Region boundary lines'],
+    ['regionShading', 'Region shading'],
+    ['annotation', 'Fit results, notes & arrows'],
+    ['tangent', 'Tangent line'],
+    ['grid', 'Grid'],
+    ['title', 'Title']
+];
+
+function showExportOptions() {
+    var list = document.getElementById('exportOptionList');
+    list.innerHTML = '';
+    exportOptionLabels.forEach(function(item) {
+	var label = document.createElement('label');
+	label.className = 'exportOption';
+	var box = document.createElement('input');
+	box.type = 'checkbox';
+	box.id = 'exportOpt_' + item[0];
+	box.checked = exportOpts[item[0]];
+	box.addEventListener('change', function() {
+	    exportOpts[item[0]] = box.checked;
+	    try { localStorage.setItem('nPlotExportOpts', JSON.stringify(exportOpts)); } catch (err) {}
+	});
+	label.appendChild(box);
+	label.appendChild(document.createTextNode(' ' + item[1]));
+	list.appendChild(label);
+    });
+    document.getElementById('exportOptionsModal').style.display = 'block';
+}
+
+function hideExportOptions() {
+    document.getElementById('exportOptionsModal').style.display = 'none';
+}
+
+function exportGraphImageURL() {
+    // the graph exactly as it would be copied, as a PNG data URL
+    downloading = true;
+    computeAll();
+    var url = canvas1.toDataURL('image/png');
+    downloading = false;
+    computeAll();
+    return url;
+}
+
+document.getElementById('newRegionButton').addEventListener('click', function() {
+    startNewRegion();
+});
+
+document.getElementById('exportCopyButton').addEventListener('click', function() {
+    hideExportOptions();
+    withDownloadSetting(false, function() { downloadGraph(false); });
+});
+
+document.getElementById('exportDownloadButton').addEventListener('click', function() {
+    hideExportOptions();
+    withDownloadSetting(true, function() { downloadGraph(false); });
+});
+
+document.getElementById('exportTabButton').addEventListener('click', function() {
+    hideExportOptions();
+    downloadGraph(true);
+});
+
+document.getElementById('exportPhotosButton').addEventListener('click', function() {
+    hideExportOptions();
+    if (!thereIsNoGraph) {
+	showGraphImage(exportGraphImageURL());
+    }
+});
+
+document.getElementById('exportDoneButton').addEventListener('click', function() {
+    hideExportOptions();
+});
+
+renderRegionBar();
 
 // Subsection:  Press-and-hold menus ****************************************************************************************
 // Keyboard-free versions of the ctrl-click / shift-click shortcuts.  Press and hold (or right-click) a button to get a
@@ -6674,6 +7489,7 @@ if (window.PointerEvent) {
     });
     attachLongPress('downloadImageButton', function() {
 	return [
+	    {label: '<b>Choose what the graph includes&hellip;</b>', action: showExportOptions},
 	    {label: 'Copy graph to clipboard', action: function() {
 		withDownloadSetting(false, function() { downloadGraph(false); });
 	    }},
@@ -6685,12 +7501,7 @@ if (window.PointerEvent) {
 		if (thereIsNoGraph) {
 		    return;
 		}
-		downloading = true;
-		computeAll();
-		var url = canvas1.toDataURL('image/png');
-		downloading = false;
-		computeAll();
-		showGraphImage(url);
+		showGraphImage(exportGraphImageURL());
 	    }}
 	];
     });
@@ -6821,7 +7632,16 @@ function checkSettings() {
 }
 
 async function checkVersion() {
-    var updateBody ='<p class="upara"><b>New in the iPad edition (6.20i):</b></p>' +
+    var updateBody ='<p class="upara"><b>New in 6.22i:</b></p>' +
+	'<p class="upara">Region edges snap to a neighboring region and to the first and last data points, so no point is left in a gap.</p>' +
+	'<p class="upara">Region numbers stay readable, and move to the bottom of the graph when the data reaches the top.</p>' +
+	'<br>' +
+	'<p class="upara"><b>New in 6.21i:</b></p>' +
+	'<p class="upara">Region fits: tap + Region, drag across part of the graph, and fit a separate model to just that part.</p>' +
+	'<p class="upara">Copy Slopes works with regions, so a piecewise position graph becomes one velocity table.</p>' +
+	'<p class="upara">Press and hold Graph to Clipboard to choose what the copied graph includes.</p>' +
+	'<br>' +
+	'<p class="upara"><b>New in the iPad edition (6.20i):</b></p>' +
 	'<p class="upara">Works with touch: drag a finger on the graph to place notes and arrows or move the tangent finder.</p>' +
 	'<p class="upara">No keyboard? Press and hold Clear Data, Swap x &amp; y, Save Graph, or Graph to Clipboard for more options.</p>' +
 	'<p class="upara">Save a graph to a file, and open it again later, from the Recall Graph panel.</p>' +
