@@ -3281,7 +3281,7 @@ function getSelection (selector, selected, parent) {
 	selected = parent;
     }
     var selectorButtonImage = selector + 'ButtonImage';
-    var newButtonImage = 'images/' + selected + '.png';
+    var newButtonImage = ('images/' + selected + '.png').toLowerCase();   // 6.22i: all file names are lower case
     document.getElementById(selectorButtonImage).src = newButtonImage;
     selectorDisplay(selector, 'hide');
     if (selector != 'dash') {
@@ -3295,11 +3295,11 @@ function getSelection (selector, selected, parent) {
 
 function updateSelectors() {
     var selected = sheetSymbols[getSheetNumber(activePrefSheet)];
-    var pointButtonImage = 'images/' + selected + '.png';
+    var pointButtonImage = ('images/' + selected + '.png').toLowerCase();
     document.getElementById("pointButtonImage").src = pointButtonImage;
 
     selected = sheetColors[getSheetNumber(activePrefSheet)];
-    var colorButtonImage = 'images/' + selected + '.png';
+    var colorButtonImage = ('images/' + selected + '.png').toLowerCase();
     document.getElementById("colorButtonImage").src = colorButtonImage;
 
     var selected = Number(sheetDashes[getSheetNumber(activePrefSheet)]);
@@ -3309,7 +3309,7 @@ function updateSelectors() {
     } else {
 	var selectedText = selected.toString();
     }
-    var dashButtonImage = 'images/dash' + selectedText + '.png';
+    var dashButtonImage = ('images/dash' + selectedText + '.png').toLowerCase();
     document.getElementById("dashButtonImage").src = dashButtonImage;
 }
 

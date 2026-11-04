@@ -433,6 +433,38 @@
  	document.getElementById("settingsDone").style.marginTop = "20px";
      }
  }
+@@ -3077,7 +3281,7 @@
+ 	selected = parent;
+     }
+     var selectorButtonImage = selector + 'ButtonImage';
+-    var newButtonImage = 'images/' + selected + '.png';
++    var newButtonImage = ('images/' + selected + '.png').toLowerCase();   // 6.22i: all file names are lower case
+     document.getElementById(selectorButtonImage).src = newButtonImage;
+     selectorDisplay(selector, 'hide');
+     if (selector != 'dash') {
+@@ -3091,11 +3295,11 @@
+ 
+ function updateSelectors() {
+     var selected = sheetSymbols[getSheetNumber(activePrefSheet)];
+-    var pointButtonImage = 'images/' + selected + '.png';
++    var pointButtonImage = ('images/' + selected + '.png').toLowerCase();
+     document.getElementById("pointButtonImage").src = pointButtonImage;
+ 
+     selected = sheetColors[getSheetNumber(activePrefSheet)];
+-    var colorButtonImage = 'images/' + selected + '.png';
++    var colorButtonImage = ('images/' + selected + '.png').toLowerCase();
+     document.getElementById("colorButtonImage").src = colorButtonImage;
+ 
+     var selected = Number(sheetDashes[getSheetNumber(activePrefSheet)]);
+@@ -3105,7 +3309,7 @@
+     } else {
+ 	var selectedText = selected.toString();
+     }
+-    var dashButtonImage = 'images/dash' + selectedText + '.png';
++    var dashButtonImage = ('images/dash' + selectedText + '.png').toLowerCase();
+     document.getElementById("dashButtonImage").src = dashButtonImage;
+ }
+ 
 @@ -3201,7 +3405,17 @@
      if (chkPts == 0) {
  	fitType = 'none';
@@ -1999,27 +2031,31 @@
  	<title>nPlot</title>
  	<meta name="description" content="Browser based graphing and data analysis for science students">
  	<meta name="keywords" content="graphing, plotting, data, data analysis, curve fitting, physics, chemistry, high school, 
-@@ -12,16 +14,15 @@
+@@ -10,18 +12,18 @@
+ 				       tangent finder, teaching, instruction, lab report, modeling instruction">
+ 
  	<!-- HEY!!!!  UPDATE THE CSS VERSION NUMBER EVERY TIME YOU MAKE A CHANGE -->
++	<!-- 6.22i: every file name is lower case, because web servers treat nPlot.css and nplot.css as different files -->
  	<link rel = "stylesheet"
  	      type = "text/css"
 -	      href = "nPlot.css?version=6.20" />
-+	      href = "nPlot.css?version=6.22i" />
++	      href = "nplot.css?version=6.22i" />
      </head>
      <body>
  	<div id="mainContainer">
  	    <div id="leftPanel">
  		<div id="logoPanel">
- 		    <img src="images/nPlotOnly.png">
+-		    <img src="images/nPlotOnly.png">
 -		    <a href="../index.html" target="_blank">
 -			<img src="images/noragulfaLogo.png">
 -		    </a>
++		    <img src="images/nplotonly.png">
 +		    <!-- iPad edition: noragulfa.com logo replaced by a link to CalacAttack.com; Geoff's credit and link are in the About box -->
 +		    <a id="homeLink" href="https://calacattack.com" target="_blank">CalacAttack.com</a>
  		</div>
  		<div id="miniSheetPanel">
  		    <div id="sheetButtons">
-@@ -226,6 +227,11 @@
+@@ -226,6 +228,11 @@
  		    </div>
  		    <hr>
  		</div>
@@ -2031,7 +2067,7 @@
  		<div id="tangentFinding">
  		    <div id="tangentControls">
  			<div>
-@@ -240,6 +246,9 @@
+@@ -240,6 +247,9 @@
  				<span class="radioMark"></span>
  			    </label>
  			</div>
@@ -2041,7 +2077,7 @@
  		    </div>
  		    <div id="slopeResults">
  			<span id="xValue" class="mathClass"><i>x</i> value = 0.123456</span>
-@@ -263,6 +272,12 @@
+@@ -263,6 +273,12 @@
  		<div id="whyThisDiv">
  		    <span id="closeSideModal">&times</span>
  		</div>
@@ -2054,7 +2090,7 @@
  		<ul id="savedGraphList">
  		    <li>a graph with a long name</li>
  		    <li>another graph</li>
-@@ -366,6 +381,17 @@
+@@ -366,6 +382,17 @@
  		    </tr>
  		    <tr>
  			<td>
@@ -2072,7 +2108,49 @@
  			    <label class="radioButton"> Scale w&sol; Error Bars
  				<input type="radio" id="includeBars" checked>
  				<span class="radioMark" style="bottom: 5px"></span>
-@@ -540,7 +566,7 @@
+@@ -488,13 +515,13 @@
+ 			    <span id="circle" class="selectorItem"><img src="images/circle.png"></span>
+ 			    <span id="square" class="selectorItem"><img src="images/square.png"></span>
+ 			    <span id="diamond" class="selectorItem"><img src="images/diamond.png"></span>
+-			    <span id="triUp" class="selectorItem"><img src="images/triUp.png"></span>
+-			    <span id="triDown" class="selectorItem"><img src="images/triDown.png"></span>
+-			    <span id="opeCircle" class="selectorItem"><img src="images/opeCircle.png"></span>
+-			    <span id="opeSquare" class="selectorItem"><img src="images/opeSquare.png"></span>
+-			    <span id="opeDiamond" class="selectorItem"><img  src="images/opeDiamond.png"></span>
+-			    <span id="opeTriUp" class="selectorItem"><img src="images/opeTriUp.png"></span>
+-			    <span id="opeTriDown" class="selectorItem"><img src="images/opeTriDown.png"></span>
++			    <span id="triUp" class="selectorItem"><img src="images/triup.png"></span>
++			    <span id="triDown" class="selectorItem"><img src="images/tridown.png"></span>
++			    <span id="opeCircle" class="selectorItem"><img src="images/opecircle.png"></span>
++			    <span id="opeSquare" class="selectorItem"><img src="images/opesquare.png"></span>
++			    <span id="opeDiamond" class="selectorItem"><img  src="images/opediamond.png"></span>
++			    <span id="opeTriUp" class="selectorItem"><img src="images/opetriup.png"></span>
++			    <span id="opeTriDown" class="selectorItem"><img src="images/opetridown.png"></span>
+ 			    <span id="cross" class="selectorItem"><img src="images/cross.png"></span>
+ 			    <span id="ex" class="selectorItem"><img src="images/ex.png"></span>
+ 			    <span id="star" class="selectorItem"><img src="images/star.png"></span>
+@@ -505,14 +532,14 @@
+ 			    Curve color:
+ 			</div>
+ 			<div id="colorSelectorButton" class="selectorButton">
+-			    <img id="colorButtonImage" src="images/npColor1.png">
++			    <img id="colorButtonImage" src="images/npcolor1.png">
+ 			</div>
+  			<div id="colorSelectorContent" class="selectorContent">
+-			    <span id="npColor1" class="selectorItem"><img src="images/npColor1.png"></span>
+-			    <span id="npColor2" class="selectorItem"><img src="images/npColor2.png"></span>
+-			    <span id="npColor3" class="selectorItem"><img src="images/npColor3.png"></span>
+-			    <span id="npColor4" class="selectorItem"><img src="images/npColor4.png"></span>
+-			    <span id="npColor5" class="selectorItem"><img src="images/npColor5.png"></span>
++			    <span id="npColor1" class="selectorItem"><img src="images/npcolor1.png"></span>
++			    <span id="npColor2" class="selectorItem"><img src="images/npcolor2.png"></span>
++			    <span id="npColor3" class="selectorItem"><img src="images/npcolor3.png"></span>
++			    <span id="npColor4" class="selectorItem"><img src="images/npcolor4.png"></span>
++			    <span id="npColor5" class="selectorItem"><img src="images/npcolor5.png"></span>
+ 			    <span id="black" class="selectorItem"><img src="images/black.png"></span>
+ 			    <span id="red" class="selectorItem"><img src="images/red.png"></span>
+ 			    <span id="green" class="selectorItem"><img src="images/green.png"></span>
+@@ -540,7 +567,7 @@
  		    <div id="settingsBlather">
  			Most settings are saved in the browser cache.  They will
  			revert to their default values if the browser cache is cleared. 
@@ -2081,7 +2159,7 @@
  		    </div>
  		</div>
  		<div id="settingsDone">
-@@ -591,9 +617,9 @@
+@@ -591,9 +618,9 @@
  	<div id="annotateModal" class="modalNoClose">
  	    <div id="annotateModalContent" class="modal-content">
  		<div>
@@ -2093,7 +2171,7 @@
  		    <p id="messageLine">This is the message line.&nbsp;</p>
  		</div>
  		<div>
-@@ -676,6 +702,7 @@
+@@ -676,6 +703,7 @@
  		    <li><a href="#foobar" class="TOC">Choosing a Model</a></li>
  		    <li><a href="#multiple" class="TOC">Graphing Multiple Data Sets</a></li>
  		    <li><a href="#preferences" class="TOC">Changing How the Graph Looks (Preferences)</a></li>
@@ -2101,7 +2179,7 @@
  		    <li><a href="#tangent" class="TOC">Using the Tangent Finder</a></li>
  		    <li><a href="#annote" class="TOC">Annotating Your Graph</a></li>
  		    <li><a href="#saving" class="TOC">Saving &amp; Recalling Your Graphs</a></li>
-@@ -705,7 +732,8 @@
+@@ -705,7 +733,8 @@
  		<p><b>Swapping Columns - </b>If you discover that you have accidentally typed your <i>y</i> data into the <i>x</i>
  		    column, just click the &quot;Swap x &amp; y&quot; button.  If you have any entries in the
  		    uncertainty columns, they will be swapped too.  Holding down the control key while you press the swap button
@@ -2111,7 +2189,7 @@
  		<p><b>Using Formulas - </b>The indvidual cells understand math. If you enter 2+2, or 2*2, or 2**2, or 2&Hat;2,
  		    or 24/6, or 6-2, or 16&Hat;.5 the cell contents will be displayed as the number 4.  The value is computed
  		    using the standard conventions for the order of operations.  Placing the cursor in a cell recovers the
-@@ -716,11 +744,13 @@
+@@ -716,11 +745,13 @@
  		<p><b>Clearing Your Data - </b>Clicking the Clear Data button will clear the contents of the currently displayed
  		    spreadsheet.  Holding down the control key while clicking it will clear all the sheets at once, as well as
  		    all the axis labeling and annotation.  If you have selected a portion of your data, hitting the delete key
@@ -2127,7 +2205,7 @@
  		<div class ="userManualHeading">
  		    <div id="scaling" class="userManualSection">
  			Labeling and Scaling the Axes
-@@ -802,6 +832,8 @@
+@@ -802,6 +833,8 @@
  		    sheets.  The data is still there, and you can even fit a model to it, but the data points don't appear on
  		    the plot. For why you might want to do this, see the <a href="#philosophy" class="inHelpLink">Philosophy</a>
  		    section.</p>
@@ -2136,7 +2214,7 @@
  		<p><b>Scale With Error Bars - </b>If you have error bars on your data points, the graph will be scaled so those bars
  		    are fully shown.  If you de-select this option, then the scaling will be calculated using only your data points,
  		    and the error bars may be clipped.</p>
-@@ -821,14 +853,46 @@
+@@ -821,14 +854,46 @@
  		    significant figures.</p>
  		<p><b>Suppress Uncertainties - </b>If selected, this control will cause fitting parameters to be shown without
  		    their uncertainties.  This may be less confusing for some students, but it also robs them of key information
@@ -2185,7 +2263,7 @@
  		    <div id="tangent" class="userManualSection">
  			Using the Tangent Finder
  		    </div>
-@@ -842,6 +906,13 @@
+@@ -842,6 +907,13 @@
  		    appear just below the tangent finder controls.  The finder operates on whichever of the five sheets has been
  		    selected.  If you want to include a tangent in your downloaded graph, slide the mouse off the top or bottom
  		    edge of the graph at the desired x-value.</p>
@@ -2199,7 +2277,7 @@
  		<div class ="userManualHeading">
  		    <div id="annote" class="userManualSection">
  			Annotating Your Graph
-@@ -900,11 +971,19 @@
+@@ -900,11 +972,19 @@
  		    your browser.  Click on a name in that list and the graph and data will be restored exactly as they were
  		    when you saved them.  If nPlot detects that there is already data in the spreadsheet, it will ask before
  		    replacing your current graph with the recalled one.</p>
@@ -2221,7 +2299,7 @@
  		<div class ="userManualHeading">
  		    <div id="download" class="userManualSection">
  			Pasting or Printing Your Graph
-@@ -921,7 +1000,14 @@
+@@ -921,7 +1001,14 @@
  		<p><b>Open in a Tab - </b>This option is designed for making a quick hard copy that you can tape into a real (made
  		    from paper!) lab notebook.  Hold down the control key and the &quot;Graph to Clipboard&quot; button changes to
  		    the &quot;Graph in New Tab&quot; button.  Click this button and your graph will appear by itself in a new tab.
@@ -2237,7 +2315,7 @@
  		<p><b>Download an Image - </b>If you check the &quot;Yes, download&quot; radio button in the Preferences menu, then
  		    the &quot;Graph to Clipboard&quot; button changes to the &quot;Download Graph&quot; button.  Clicking it will
  		    download your graph as a graphics file (named using your axis labels as
-@@ -1043,6 +1129,41 @@
+@@ -1043,6 +1130,41 @@
  	    </div>
  	</div>
  
@@ -2279,7 +2357,7 @@
  	<div id="aboutModal" class="modal">
  	    <div id="aboutContent" class="modal-content">
  		<span id="aboutClose" class="close">&times;</span>
-@@ -1054,7 +1175,31 @@
+@@ -1054,7 +1176,31 @@
  		<p>The fitting routines are adapted from Press, Teukolsky, et al., <i>Numerical Recipes.</i>
  		    The data grid was adapted from
  		    <a href="http://jsfiddle.net/ondras/hYfN3/" target="_blank" class="linked">code by Ondřej Žára.</a>  Everything else is my fault.</p>
@@ -2312,7 +2390,7 @@
  		<p class="change"><b>New Feature: </b>Button and pop-up dialog to allow linearization of data.</p>
  		<p class="change"><b>New Feature: </b>Fit to a logarithmic function has been added to the Advanced Models.</p>
 --- original/nPlot.css
-+++ ipad/nPlot.css
++++ ipad/nplot.css
 @@ -1,8 +1,9 @@
  /* REMEMBER TO UPDATE THE VERSION NUMBER IN THE HTML FILE!!!  */
 +/* iPad edition (6.20i) changes are marked "iPad edition" and collected at the end of this file. */

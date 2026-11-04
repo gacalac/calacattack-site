@@ -4,12 +4,13 @@ A fork of nPlot 6.20 by Geoff Nunes (https://noragulfa.com/nPlot/), adapted for 
 
 ## Install
 
-Upload this whole folder (index.html, nplot.js, nPlot.css, images/) to the web server, for example `calacattack.com/nplot/`. The site must be served over **https**, because Safari only allows clipboard access on secure pages.
+Upload this whole folder (index.html, nplot.js, nplot.css, images/) to the web server, for example `calacattack.com/nplot/`. The site must be served over **https**, because Safari only allows clipboard access on secure pages.
 
 **Font:** nPlot uses the Bahnschrift font, which Geoff serves from `noragulfa.com/fonts/`. That file is not included here. Without it, the page falls back to DIN Alternate on iPads and to the system sans-serif elsewhere, and the layout still fits. Bahnschrift is a Microsoft font, so check its license before you copy it to `fonts/bahnschrift.ttf` next to index.html.
 
 ## New in 6.22i
 
+- Every file name is now lower case (`nplot.css`, `images/npcolor1.png`, ...). Web servers treat `nPlot.css` and `nplot.css` as different files, so a tool that changes the case of a name while uploading used to break the page. Keep the names lower case when you upload.
 - Region edges snap to a neighboring region's edge, or to the first or last data point, when dropped close by (10 px with a mouse, 24 px with a finger). Neighboring regions then share a boundary and no point falls in a gap.
 - Region numbers have a background-colored outline, and move to the bottom of the graph when the region's data or curve reaches the top.
 - Copy Slopes shows round-off values such as 1.4e-17 as 0, and tells you how many points weren't inside any region.
