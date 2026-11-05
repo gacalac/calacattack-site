@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Force Diagrams Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: lab-notebook reading column + sticky annotation log; the dashed system boundary is the recurring motif */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --ink:#172031; --muted:#586379; --line:#d3d9e3; --faint:#b8c1cf;
+  --accent:#2445d4; --accent-ink:#ffffff; --sys:#0b8584; --sys-tint:rgba(11,133,132,.08);
+  --good:#1b7a3a; --good-bg:#e3f4e8; --bad:#b4232f; --bad-bg:#fbe7e9;
+  --a-know:#c9ebcf; --a-imp:#ffe27a; --a-q:#e2d3ff; --a-voc:#cfe2ff;
+  --a-know-ink:#1b6a32; --a-imp-ink:#8a6400; --a-q-ink:#5b3aa6; --a-voc-ink:#1f4fa8;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151f; --surface:#182031; --ink:#e7ebf3; --muted:#9aa5ba; --line:#2b3549; --faint:#47536b;
+  --accent:#7d97ff; --accent-ink:#0d1220; --sys:#3fc9c4; --sys-tint:rgba(63,201,196,.09);
+  --good:#6fd18f; --good-bg:#16301f; --bad:#ff8a93; --bad-bg:#3a1c21;
+  --a-know:#1f4b2b; --a-imp:#5b4a0e; --a-q:#3d2e64; --a-voc:#1c3a66;
+  --a-know-ink:#8fe0a6; --a-imp-ink:#ffd65c; --a-q-ink:#c9b2ff; --a-voc-ink:#9cc1ff;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151f; --surface:#182031; --ink:#e7ebf3; --muted:#9aa5ba; --line:#2b3549; --faint:#47536b;
+  --accent:#7d97ff; --accent-ink:#0d1220; --sys:#3fc9c4; --sys-tint:rgba(63,201,196,.09);
+  --good:#6fd18f; --good-bg:#16301f; --bad:#ff8a93; --bad-bg:#3a1c21;
+  --a-know:#1f4b2b; --a-imp:#5b4a0e; --a-q:#3d2e64; --a-voc:#1c3a66;
+  --a-know-ink:#8fe0a6; --a-imp-ink:#ffd65c; --a-q-ink:#c9b2ff; --a-voc-ink:#9cc1ff;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1160px;margin:0 auto}
+
+header.top{padding-block:36px 22px;display:grid;gap:14px}
+.top .lede{max-width:62ch;color:var(--muted);font-size:1.05rem}
+.ident{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end}
+.ident label{display:grid;gap:2px;font-size:.8rem;color:var(--muted)}
+.ident input{font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0;width:min(260px,100%)}
+.ident input.short{width:90px}
+
+.toolbar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.toolbar .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tagbtn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font-size:.92rem;transition:transform .12s}
+.tagbtn .sym{font-family:var(--f-mono);font-weight:500;width:1.3em;height:1.3em;display:inline-grid;place-items:center;border-radius:50%;font-size:.85rem}
+.tagbtn[data-tag="know"] .sym{background:var(--a-know);color:var(--a-know-ink)}
+.tagbtn[data-tag="imp"] .sym{background:var(--a-imp);color:var(--a-imp-ink)}
+.tagbtn[data-tag="q"] .sym{background:var(--a-q);color:var(--a-q-ink)}
+.tagbtn[data-tag="voc"] .sym{background:var(--a-voc);color:var(--a-voc-ink)}
+.tagbtn:disabled{opacity:.5;cursor:not-allowed}
+.toolbar.live .tagbtn:not(:disabled){border-color:var(--accent)}
+.toolbar.live .tagbtn:not(:disabled):hover{transform:translateY(-1px)}
+.toolbar .hint{font-size:.85rem;color:var(--muted);flex:1 1 220px;min-width:0}
+.goal{display:flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:.8rem;margin-left:auto}
+.goal a{color:var(--accent);text-decoration:none;white-space:nowrap}
+.goal .bar{width:70px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.goal .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:32px}
+@media (min-width:1060px){.grid{grid-template-columns:minmax(0,1fr) 320px}}
+article{min-width:0;max-width:70ch;display:grid;gap:18px}
+article section{display:grid;gap:14px}
+article section + section{margin-top:22px}
+.reading [data-p]{scroll-margin-top:120px}
+.reading ol{margin:0;padding-left:1.4em;display:grid;gap:12px}
+.reading li::marker{font-family:var(--f-mono);color:var(--muted);font-size:.85em}
+.term{font-weight:700}
+.footer-note{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);margin-top:30px}
+
+mark.ann{color:inherit;border-radius:3px;padding:0 1px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+mark.t-know{background:var(--a-know)} mark.t-imp{background:var(--a-imp)} mark.t-q{background:var(--a-q)} mark.t-voc{background:var(--a-voc)}
+mark.ann.first::before{font-family:var(--f-mono);font-size:.68em;font-weight:500;vertical-align:super;margin-right:2px}
+mark.t-know.first::before{content:"✓";color:var(--a-know-ink)} mark.t-imp.first::before{content:"!";color:var(--a-imp-ink)}
+mark.t-q.first::before{content:"?";color:var(--a-q-ink)} mark.t-voc.first::before{content:"★";color:var(--a-voc-ink)}
+mark.ann.flash{outline:2px solid var(--accent)}
+
+aside.log{min-width:0}
+@media (min-width:1060px){aside.log .inner{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 84px);max-height:calc(100vh - 110px);overflow:auto}}
+.log .inner{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.log .empty{color:var(--muted);font-size:.9rem}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tally div{text-align:center;border-radius:8px;padding:6px 0;font-family:var(--f-mono);font-size:.8rem;border:1px solid var(--line)}
+.tally div.met{border-color:var(--good);color:var(--good)}
+.entries{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.entry{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}
+.entry .q{font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:baseline}
+.entry .q button{background:none;border:0;padding:0;color:inherit;text-align:left;font-style:italic}
+.chip{flex:none;font-family:var(--f-mono);font-size:.75rem;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%}
+.chip.t-know{background:var(--a-know);color:var(--a-know-ink)} .chip.t-imp{background:var(--a-imp);color:var(--a-imp-ink)}
+.chip.t-q{background:var(--a-q);color:var(--a-q-ink)} .chip.t-voc{background:var(--a-voc);color:var(--a-voc-ink)}
+.entry textarea{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;resize:vertical;min-height:2.4em;width:100%}
+.entry .rm{justify-self:end;background:none;border:0;color:var(--muted);font-size:.78rem;text-decoration:underline}
+
+.key{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
+.key ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;font-size:.92rem}
+.key li{display:flex;gap:8px;align-items:baseline}
+
+.check{border:1.5px dashed var(--sys);background:var(--sys-tint);border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+.check .eyebrow{color:var(--sys)}
+.check .opts{display:grid;gap:6px}
+.check .opt{text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.95rem}
+.check .opt:hover{border-color:var(--sys)}
+.check .opt.right{border-color:var(--good);background:var(--good-bg)}
+.check .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.fb{font-size:.92rem}
+.fb.good{color:var(--good)} .fb.bad{color:var(--bad)}
+
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
+.lab svg{width:100%;height:auto;max-width:520px;display:block;margin:0 auto;touch-action:manipulation}
+.presets,.scen-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem}
+.pill[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pill .done{color:var(--good);font-weight:700}
+.pill[aria-pressed="true"] .done{color:inherit}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;font-size:.9rem}
+.readout div{border-radius:10px;padding:8px 10px;border:1px solid var(--line)}
+.readout b{display:block;font-family:var(--f-mono);font-weight:500;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.readout .x b{color:var(--sys)} .readout .in b{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.legend .lx::before{border-color:var(--sys)} .legend .li::before{border-color:var(--muted)} .legend .lb::before{border:2px dashed var(--sys);height:10px;border-radius:3px}
+
+.node circle{fill:var(--surface);stroke:var(--ink);stroke-width:2;transition:stroke .15s}
+.node text{fill:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.clickable .node{cursor:pointer}
+.clickable .node:hover circle{stroke:var(--accent)}
+.node.sel circle{stroke:var(--accent);stroke-width:4}
+.node.insys circle{fill:var(--sys-tint);stroke:var(--sys)}
+.node:focus{outline:none} .node:focus-visible circle{stroke:var(--accent);stroke-width:4}
+.ln{stroke-width:3;fill:none}
+.ln.neutral{stroke:var(--ink)} .ln.cross{stroke:var(--sys);stroke-width:4} .ln.internal{stroke:var(--muted)} .ln.outside{stroke:var(--faint)}
+.ln.picked{stroke:var(--accent);stroke-width:5}
+.hit{stroke:transparent;stroke-width:22;fill:none;cursor:pointer}
+.hit:focus{outline:none} .hit:focus-visible{stroke:var(--accent);stroke-opacity:.25}
+.boundary{fill:var(--sys-tint);stroke:var(--sys);stroke-width:2;stroke-dasharray:8 6}
+.blabel{fill:var(--sys);font-family:var(--f-mono);font-size:11px;letter-spacing:.08em}
+.tip{font-size:.85rem;color:var(--muted)}
+.fig{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px}
+.fig svg{width:100%;height:auto;max-width:480px;display:block;margin:0 auto}
+.fig figcaption{font-size:.85rem;color:var(--muted)}
+.fig .halo{fill:var(--a-imp);opacity:.8}
+.fig .leader{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+.fig .callout{fill:var(--accent);font-family:var(--f-body);font-size:13px;font-weight:700}
+.fig .sub{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.note{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:grid;gap:4px;margin-left:1.4em}
+.law{background:var(--a-voc);border-radius:14px;padding:14px 16px;display:grid;gap:6px}
+.law .eyebrow{color:var(--a-voc-ink);font-weight:500}
+.hl{background:var(--a-imp);border-radius:3px;padding:0 3px}
+
+.practice .scenario{display:grid;gap:4px}
+.steps{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--f-mono);font-size:.75rem}
+.steps span{padding:3px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.steps span.on{border-color:var(--accent);color:var(--accent)}
+.steps span.ok{border-color:var(--good);color:var(--good)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400}
+
+.wrapup textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:90px}
+.status{display:grid;gap:4px;font-size:.92rem}
+.status .ok{color:var(--good)} .status .no{color:var(--muted)}
+.teacher{margin-top:8px;font-size:.85rem;color:var(--muted)}
+.teacher summary{cursor:pointer}
+.vgrid{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:8px}
+.vgrid label{display:grid;gap:2px;font-size:.78rem}
+.vgrid input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:150px}
+.done-screen{position:fixed;inset:0;z-index:100;background:var(--bg);overflow:auto;
+  padding-top:max(16px, env(safe-area-inset-top, 0px));padding-bottom:max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.ds-card{position:relative;max-width:900px;margin:0 auto;background:var(--surface);border:2px dashed var(--sys);border-radius:20px;padding:22px clamp(16px,3vw,32px);display:grid;gap:16px}
+.ds-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.ds-head h2{font-size:1.8rem}
+.ds-badge{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.6rem;font-weight:700;background:var(--good-bg);color:var(--good);flex:none}
+.done-screen.incomplete .ds-badge{background:var(--bad-bg);color:var(--bad)}
+.done-screen.incomplete #dsTitle{color:var(--bad)}
+.ds-clock{margin-left:auto;display:grid;text-align:right;font-family:var(--f-mono);font-size:.95rem;font-variant-numeric:tabular-nums}
+.ds-who{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;font-family:var(--f-display);font-weight:800}
+#dsName{font-size:clamp(1.8rem,5vw,2.8rem);letter-spacing:-.02em;line-height:1.1;overflow-wrap:anywhere}
+#dsPeriod{font-size:1.3rem;color:var(--muted)}
+.ds-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.ds-stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px}
+.ds-stat b{font-family:var(--f-display);font-size:1.8rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.ds-stat.miss b{color:var(--bad)}
+.ds-stat small{color:var(--muted);font-size:.8rem}
+.ds-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.ds-block{display:grid;gap:4px;align-content:start;min-width:0}
+.ds-block p{font-size:.95rem;font-style:italic;overflow-wrap:anywhere}
+.ds-block ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:.88rem}
+.ds-block li{overflow-wrap:anywhere}
+.ds-foot{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;border-top:1px solid var(--line);padding-top:14px}
+.ds-foot > div{display:grid}
+.ds-code{font-family:var(--f-mono);font-size:1.5rem;letter-spacing:.08em;color:var(--sys)}
+.ds-foot .tip{flex:1 1 260px}
+.ds-water{position:fixed;inset:0;pointer-events:none;z-index:101;background-repeat:repeat}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;max-width:min(92vw,460px);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Read 2 additions */
+.notation{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+.notation .big{font-family:var(--f-display);font-size:2.4rem;font-weight:800;line-height:1}
+.notation .big sub{font-size:.5em;font-family:var(--f-mono);font-weight:500}
+.notation .parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:.9rem}
+.notation .parts div{border-radius:10px;padding:8px 10px;background:var(--bg)}
+.notation .parts b{font-family:var(--f-mono);font-weight:500;color:var(--accent)}
+.flab{white-space:nowrap}
+.vec{position:relative;display:inline-block;font-style:italic;font-weight:700}
+.vec::before{content:"→";position:absolute;left:55%;top:-.72em;transform:translateX(-50%);font-size:.72em;font-style:normal;line-height:1}
+.flab sub{font-style:italic;font-size:.72em}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.fpanel{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:6px;align-content:start;min-width:0}
+.fpanel svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto}
+.frows{display:grid;gap:0}
+.frow{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-block:8px}
+.frow .fl{display:grid;min-width:0;flex:1 1 160px}
+.frow .fl small{color:var(--muted);font-size:.82rem}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--bg);color:var(--ink);padding:5px 10px;font-size:.9rem;min-width:40px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.qrow{display:grid;gap:6px}
+.farrow{stroke:var(--accent);stroke-width:3.5}
+.flabel{fill:var(--accent);font-family:var(--f-body);font-weight:700;font-size:16px}
+.flabel{font-style:italic}
+.flabel tspan{font-size:12px;font-weight:400}
+.flabel tspan.fF{font-size:17px;font-weight:700}
+.vecarrow{stroke:var(--accent);stroke-width:1.4}
+.vel{stroke:var(--muted);stroke-width:2.5;stroke-dasharray:6 4}
+.vlabel{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.dot{fill:var(--ink)}
+.floor{stroke:var(--ink);stroke-width:2.5}
+.floorfill{fill:var(--line)}
+.ball{fill:var(--faint);stroke:var(--ink);stroke-width:2}
+.hole{fill:var(--surface);stroke:var(--ink);stroke-width:1}
+.speed{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+.cdot{fill:var(--ink);stroke:var(--surface);stroke-width:2.5}
+.mmdot{fill:var(--ink)}
+.mmarrow{stroke:var(--muted);stroke-width:2}
+.mmlabel{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.figrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.figrow > div{display:grid;gap:4px;justify-items:center;text-align:center}
+.figrow h4{margin:0;font-family:var(--f-mono);font-weight:500;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.vidlink{color:var(--accent)}
+.reading ul.blist{margin:0;padding-left:1.4em;display:grid;gap:12px}
+.velv{stroke:var(--ink);stroke-width:2.5}
+.vtext{fill:var(--ink);font-family:var(--f-body);font-size:13px;font-weight:700}
+.bookfig{width:100%;max-width:220px;height:auto;display:block;margin:0 auto}
+.book{fill:var(--a-voc);stroke:var(--ink);stroke-width:2}
+.bookline{stroke:var(--ink);stroke-width:1.2}
+.redarrow{stroke:var(--bad);stroke-width:4}
+.bluearrow{stroke:var(--accent);stroke-width:3.5}
+#figRest,#figMove,#figPush,#figBrake{max-width:460px}
+#figRestFD{max-width:360px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">Unit 1 · Reading · Forces &amp; Motion</span>
+  <h1>Read 2: Force Diagrams</h1>
+  <p class="lede">Read and annotate as you go. Along the way you'll answer quick checkpoints and build force diagrams yourself. Your work saves in this browser. When you finish, you'll get a completion screen to screenshot and turn in on Canvas.</p>
+  <div class="ident">
+    <label for="stuName">Name<input id="stuName" autocomplete="name"></label>
+    <label for="stuPeriod">Period<input id="stuPeriod" class="short"></label>
+  </div>
+</header>
+
+<div class="toolbar" id="toolbar">
+  <div class="row">
+    <button class="tagbtn" data-tag="know" disabled><span class="sym">✓</span>Knew this</button>
+    <button class="tagbtn" data-tag="imp" disabled><span class="sym">!</span>Important</button>
+    <button class="tagbtn" data-tag="q" disabled><span class="sym">?</span>Confused</button>
+    <button class="tagbtn" data-tag="voc" disabled><span class="sym">★</span>Key term</button>
+    <span class="hint" id="tbHint">Select words in the reading, then tap a symbol.</span>
+    <span class="goal"><span id="goalTxt">0 / 6</span><span class="bar"><i id="goalBar"></i></span><a href="#log">Log ↓</a></span>
+  </div>
+</div>
+
+<div class="grid">
+<article class="reading" id="reading">
+
+  <div class="key">
+    <span class="eyebrow">How to annotate</span>
+    <ul>
+      <li><span class="chip t-know">✓</span>I already knew this</li>
+      <li><span class="chip t-imp">!</span>New or important idea</li>
+      <li><span class="chip t-q">?</span>I'm confused or have a question</li>
+      <li><span class="chip t-voc">★</span>Key vocabulary word</li>
+    </ul>
+    <p class="tip">Goal: at least 6 annotations, with every symbol used at least once. Give each one a short note in your log: what you think it means, or what your question is.</p>
+  </div>
+
+  <section>
+    <h2>Force diagrams and interaction diagrams</h2>
+    <p data-p="r1">A proper <span class="term">force diagram</span> (also called a <span class="term">free body diagram</span>, or FBD) will include the following elements:</p>
+    <ul class="blist">
+      <li data-p="r2">An <span class="term">interaction diagram</span> that shows the object(s) that make up the system being analyzed (see Read 1).</li>
+      <li data-p="r3">A dotted line around the object(s), which denotes the elements of the system.</li>
+      <li data-p="r4">Each connection on the interaction diagram becomes an arrow on the force diagram (sometimes 2).</li>
+      <li data-p="r5">An arrow of appropriate length, in the proper direction to represent each force.</li>
+      <li data-p="r6">An appropriate label for each force.</li>
+      <li data-p="r7">All force arrows should start at the center of the object.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Balanced and unbalanced forces</h2>
+    <p data-p="r8">Force diagrams can depict situations where the forces are <span class="term">balanced</span> and situations where the forces are <span class="term">unbalanced</span>. In this section we will explore the relationship between motion and these force situations that are responsible for them.</p>
+    <p data-p="r9">In other words, by identifying the type of motion we are dealing with, we can determine whether the forces are balanced or unbalanced. Or, in reverse, if we know the forces are balanced or unbalanced, we can determine the type of motion.</p>
+    <p data-p="r10">There are five major motion situations that we will deal with in this unit. These include:</p>
+    <ol>
+      <li data-p="r11">Objects at rest (balanced forces).</li>
+      <li data-p="r12">Objects moving at a constant speed in a straight line (balanced forces).</li>
+      <li data-p="r13">Objects that are speeding up (unbalanced forces).</li>
+      <li data-p="r14">Objects that are slowing down (unbalanced forces).</li>
+      <li data-p="r15">Objects that are changing direction (unbalanced forces).</li>
+    </ol>
+
+    <div class="check" data-q="q1">
+      <span class="eyebrow">Checkpoint 1</span>
+      <p>A car drives around a curve at a steady 30 mph. Are the forces on it balanced or unbalanced?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <div class="check" data-q="q1b">
+      <span class="eyebrow">Checkpoint 2</span>
+      <p>A bowling ball rolls across the gym floor in a straight line at a steady speed (ignore friction). Are the forces on it balanced or unbalanced?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Situations 1 &amp; 2: at rest and uniform motion</h2>
+    <p data-p="r16">Objects at rest and objects undergoing uniform motion are both examples of objects that experience no unbalanced force. In other words, the forces acting on an object must be balanced for an object to be at rest or for one to move at a constant speed in a straight line (aka, constant velocity).</p>
+
+    <h3>Balanced force diagrams</h3>
+    <p data-p="r17">A bowling ball sits perfectly still on a perfectly level gym floor. The earth pulls downward on it with a gravitational force. We denote this force as <span class="flab"><span class="vec">F</span><sub>Gravity on Ball by Earth</sub></span>. The ball doesn't fall as a result of this force, so there must be a force balancing the gravitational force. That force is from the floor pushing upward on the ball. We denote the upward push on the ball by the floor <span class="flab"><span class="vec">F</span><sub>Normal on Ball by Floor</sub></span>.</p>
+
+    <figure class="fig">
+      <svg id="figRest" viewBox="0 0 440 300" role="img" aria-label="Bowling ball resting on the floor. An arrow up from its center is labeled F Normal on Ball by Floor and an equal arrow down is labeled F Gravity on Ball by Earth."></svg>
+      <figcaption>Ball at rest. Two equal arrows, opposite directions: the forces are balanced and the net force is zero.</figcaption>
+    </figure>
+
+    <p data-p="r18">The pictorial diagram for this situation must show the ball and the floor. Superimposed on the pictorial diagram is the <span class="term">force diagram</span>. The two forces acting on the object are the same magnitude, but act in opposite directions, so they are balanced. Mathematically, this means that their sum is zero. Therefore, the sum of the forces (aka <span class="term">net force</span>) acting on the ball is zero.</p>
+
+    <figure class="fig">
+      <svg id="figRestFD" viewBox="0 0 380 260" role="img" aria-label="Force diagram only: a dot with an arrow up labeled F Normal on Ball by Floor and an equal arrow down labeled F Gravity on Ball by Earth."></svg>
+      <figcaption>The same forces as a true force diagram: no picture of the ball, just a point for the object, the force arrows and their labels.</figcaption>
+    </figure>
+    <p data-p="r19">The forces are balanced, therefore the object's motion is NOT changing (sitting still, acceleration = 0).</p>
+    <p data-p="r20">When we label forces, we want to indicate the type of interaction between the objects, what object the force is acting on and what object the force is caused by. Therefore, we will use the following notation:</p>
+
+    <div class="notation">
+      <span class="eyebrow">Force labels</span>
+      <div class="big"><span class="vec">F</span><sub><i>type on feeler by dealer</i></sub></div>
+      <p class="tip">Sometimes written <span class="flab"><span class="vec">F</span><sub>kind on victim by agent</sub></span>. Example: <span class="flab"><span class="vec">F</span><sub>Normal on Ball by Floor</sub></span></p>
+      <div class="parts">
+        <div><b>Normal</b> type of force. Here: a surface pushing. Others: Gravity, Applied (a push or pull by a person)</div>
+        <div><b>on Ball</b> the feeler: the ball feels this force</div>
+        <div><b>by Floor</b> the dealer: the floor exerts it</div>
+      </div>
+    </div>
+
+    <div class="check" data-q="q2">
+      <span class="eyebrow">Checkpoint 3</span>
+      <p>A book rests on a table. Earth pulls down on the book (the red arrow). Which label follows “type on feeler by dealer”?</p>
+      <svg class="bookfig" viewBox="0 0 220 230" role="img" aria-label="A book resting on a table, with a blue arrow pointing up from its center and a red arrow pointing down.">
+        <defs><marker id="bkBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker><marker id="bkRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="15" markerHeight="15" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--bad)"/></marker></defs>
+        <rect class="floorfill" x="10" y="140" width="200" height="12"/><line class="floor" x1="10" y1="140" x2="210" y2="140"/>
+        <rect class="book" x="60" y="112" width="100" height="28" rx="3"/>
+        <line class="bookline" x1="66" y1="120" x2="154" y2="120"/><line class="bookline" x1="66" y1="127" x2="154" y2="127"/><line class="bookline" x1="66" y1="134" x2="154" y2="134"/>
+        <line class="bluearrow" x1="110" y1="126" x2="110" y2="30" marker-end="url(#bkBlue)"/>
+        <line class="redarrow" x1="110" y1="126" x2="110" y2="222" marker-end="url(#bkRed)"/>
+        <circle class="cdot" cx="110" cy="126" r="5"/>
+      </svg>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <p data-p="r21">Let us now assume that the bowling ball is already rolling to the right. (How it started moving is outside our observation window, so we cannot determine it.) What forces act on the ball <em>right now</em>? Interestingly, the force diagram is identical to the previous situation. The ball experiences only the downward force of gravity due to the earth <span class="flab"><span class="vec">F</span><sub>Gravity on Ball by Earth</sub></span>, and the upward force on the ball by the floor <span class="flab"><span class="vec">F</span><sub>Normal on Ball by Floor</sub></span>. The forces remain balanced. And so, mathematically the net force on the ball is still zero (balanced force).</p>
+
+    <figure class="fig">
+      <svg id="figMove" viewBox="0 0 440 300" role="img" aria-label="The same ball and force arrows, with speed lines behind the ball showing it rolling to the right."></svg>
+      <figcaption>Ball rolling right at constant speed. Same force diagram as at rest. The arrow at the top is its velocity. Motion is not a force, so it gets no force arrow.</figcaption>
+    </figure>
+
+    <p data-p="r22">The most important thing to understand about this situation is that the ball will, as long as the forces remain balanced, travel at the same speed in a straight line. Nothing is required to cause the ball to keep moving. An unbalanced force would be required to cause it to go faster or slower, and/or an unbalanced force would be necessary to change its direction. But in the absence of an unbalanced force, the ball will continue to move in a straight line at a constant speed. In reality there is a little bit of friction, so the ball will slow eventually. But since friction is so small, we can often consider it to be negligible and leave it off the force diagram.</p>
+    <p data-p="r23">This fact of nature, that objects will maintain their state of motion or rest, as long as there is no unbalanced force on them, is sometimes called <span class="term">Newton's 1st Law of Motion</span>. Objects have mass, which is a measure of the object's resistance to changing its motion, often called <span class="term">inertia</span>. The more massive something is, the harder it is to change its motion. Therefore, an object's inertia has to do with how much mass it has and is sometimes used as the definition for mass. It has nothing to do with a force. <strong>Inertia is not a cause of anything,</strong> and we don't want you to think it is.</p>
+
+    <div class="check" data-q="q3">
+      <span class="eyebrow">Checkpoint 4</span>
+      <p>A bowling ball rolls to the right at constant speed across the gym floor (ignore friction). What keeps it moving?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Unbalanced force: speeding up</h2>
+    <p data-p="r24">Consider a bowling ball, which is at rest on a level gym floor but has a person pushing it to the right. The downward force of gravity on the ball, <span class="flab"><span class="vec">F</span><sub>Gravity on Ball by Earth</sub></span>, and the upward push of the floor on the ball, <span class="flab"><span class="vec">F</span><sub>Normal on Ball by Floor</sub></span>, still act on the ball. Additionally, the person is exerting a force (by pushing with their hand) on the ball to the right. Let's call that force <span class="flab"><span class="vec">F</span><sub>Applied on Ball by Hand</sub></span>. The first two forces act in opposite directions and are balanced, but the new force, <span class="flab"><span class="vec">F</span><sub>Applied on Ball by Hand</sub></span>, is an unbalanced force.</p>
+
+    <figure class="fig">
+      <svg id="figPush" viewBox="0 0 440 300" role="img" aria-label="Bowling ball on the floor. Up arrow F Normal on Ball by Floor, down arrow F Gravity on Ball by Earth, and a right arrow F Applied on Ball by Hand."></svg>
+      <figcaption>The vertical forces cancel. The push to the right is left over: the net force points right.</figcaption>
+    </figure>
+
+    <p data-p="r25">The result of this unbalanced force, or any unbalanced force for that matter, is that the object in question will <span class="term">accelerate</span>. This is to say that the object will speed up, slow down, or change direction. In this case, the unbalanced force will cause the object to begin to move in the direction of the force. After it starts moving, the unbalanced force acts in the same direction as the object is moving and the result is that the object will speed up. Anytime the unbalanced force on an object acts in the same direction the object is traveling, the object will speed up in the direction of the net force.</p>
+    <p data-p="r26">If we were to make a movie of the ball from overhead while the ball was being pushed, the frames of the movie would look something like this (minus the arrows). This is a <span class="term">Motion Map</span> that should be familiar.</p>
+
+    <figure class="fig">
+      <svg id="mmSpeed" viewBox="0 0 320 80" role="img" aria-label="Motion map: five dots spreading farther apart to the right, with velocity arrows getting longer."></svg>
+      <figcaption>Speeding up to the right: the dots spread out and the velocity arrows grow.</figcaption>
+    </figure>
+
+    <p data-p="r27">The arrows above the images of the ball are intended to convey the changing speed of the ball. In this case the length of the arrows represents the speed of the ball and the direction the arrows point represents the direction the ball is moving.</p>
+    <p data-p="r28"><strong>Whenever an object experiences an unbalanced force in the same direction it is moving, it will speed up!</strong></p>
+
+    <div class="check" data-q="q4">
+      <span class="eyebrow">Checkpoint 5</span>
+      <p>On a motion map, the dots get farther apart and the arrows get longer. What is the object doing?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Unbalanced force: slowing down</h2>
+    <p data-p="r29">Now let's consider a different situation. In this case, the bowling ball is already rolling to the right. A person pushes the ball to the left, while it is rolling toward her. Remember, the ball is moving to the right while being pushed to the left. How will this affect the motion of the ball? Analysis of the force diagram indicates that the unbalanced force is <span class="flab"><span class="vec">F</span><sub>Applied on Ball by Hand</sub></span>. In this case, and any time the direction of the unbalanced force is opposite the direction of motion, the object will slow down.</p>
+
+    <figure class="fig">
+      <svg id="figBrake" viewBox="0 0 440 300" role="img" aria-label="Bowling ball rolling right, shown by speed lines behind it, while a force arrow F Applied on Ball by Hand points left."></svg>
+      <figcaption>Rolling right (speed lines), pushed left. The net force is opposite the velocity.</figcaption>
+    </figure>
+
+    <p data-p="r30">The Motion Map of the ball would look something like this:</p>
+    <figure class="fig">
+      <svg id="mmSlow" viewBox="0 0 320 80" role="img" aria-label="Motion map: five dots getting closer together moving right, with velocity arrows getting shorter."></svg>
+      <figcaption>Slowing down while moving right.</figcaption>
+    </figure>
+    <p data-p="r31">Notice that the images of the ball are getting closer together, indicating that the ball is slowing down. The arrows, indicating velocity, are getting shorter as well.</p>
+    <p data-p="r32"><strong>Whenever an object experiences an unbalanced force opposite the direction it is moving, it will slow down!</strong></p>
+
+    <div class="check" data-q="q5">
+      <span class="eyebrow">Checkpoint 6</span>
+      <p>A ball is rolling to the <em>left</em>. The net force on it points to the <em>right</em>. What happens?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Shrinking the object to a point</h2>
+    <p data-p="r33">Typically in a <span class="term">Force Diagram</span>, we do not draw the image of the object (or system of objects), but rather shrink it down to a point because the shape of the system does not matter when analyzing forces.</p>
+    <div class="fig">
+      <div class="figrow">
+        <div><h4>Acceleration toward right</h4><svg id="figAccR" viewBox="0 0 380 280" role="img" aria-label="Point force diagram with up, down and right arrows."></svg></div>
+        <div><h4>Acceleration toward left</h4><svg id="figAccL" viewBox="0 0 380 280" role="img" aria-label="Point force diagram with up, down and left arrows."></svg></div>
+      </div>
+      <p class="tip">The force diagram shows which way the object accelerates, not which way it moves. “Acceleration toward right” could be speeding up while moving right, or slowing down while moving left.</p>
+    </div>
+  </section>
+
+  <section class="practice" id="practice">
+    <h2>Your turn: build the force diagram</h2>
+    <p class="tip">Step 1: each line on the interaction diagram becomes a force. For every possible force, choose its direction, or “none” if it doesn't act on the ball. Step 2: find the net force and predict the motion.</p>
+    <div class="lab">
+      <div class="scen-tabs" id="scenTabs"></div>
+      <div class="scenario"><h3 id="scenTitle"></h3><p id="scenText"></p></div>
+      <div class="steps"><span id="st1">1 · Draw the forces</span><span id="st2">2 · Net force &amp; motion</span></div>
+      <div class="pgrid">
+        <div class="fpanel"><span class="eyebrow">Interaction diagram · system = ball</span><svg id="prInter" viewBox="0 0 300 280" role="img" aria-label="Interaction diagram for this scenario"></svg></div>
+        <div class="fpanel"><span class="eyebrow">Your force diagram</span><svg id="prForce" viewBox="0 0 380 280" role="img" aria-label="Your force diagram"></svg></div>
+      </div>
+      <div class="frows" id="prRows"></div>
+      <div class="qrow" id="prStep2" hidden>
+        <span class="eyebrow">Net force on the ball</span>
+        <div class="seg" id="netSeg"></div>
+        <span class="eyebrow">Motion right now</span>
+        <div class="seg" id="motSeg"></div>
+      </div>
+      <figure class="fig" id="prMap" hidden><svg id="prMM" viewBox="0 0 320 80" role="img" aria-label="Motion map for this scenario"></svg><figcaption id="prMapCap"></figcaption></figure>
+      <div class="actions">
+        <button class="btn" id="prCheck">Check</button>
+        <button class="btn ghost" id="prReset">Start over</button>
+        <button class="btn ghost" id="prShow" hidden>Show me</button>
+        <button class="btn ghost" id="prNext" hidden>Next scenario →</button>
+      </div>
+      <p class="fb" id="prFb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="wrapup" id="wrapup">
+    <h2>Wrap up</h2>
+    <label for="reflect">In your own words: what does a balanced force diagram tell you about an object's motion, and what does an unbalanced one tell you?</label>
+    <textarea id="reflect"></textarea>
+    <div class="status" id="status"></div>
+    <div class="actions">
+      <button class="btn" id="finishBtn">Finish: show my completion screen</button>
+      <button class="btn ghost" id="clearAll">Clear everything</button>
+    </div>
+    <p class="tip">Your completion screen shows your name, your results and a verification code. Screenshot it and upload it to Canvas.</p>
+    <p class="footer-note">Reading text adapted from Modeling Instruction – AMTA · U1 Read 2</p>
+    <details class="teacher" id="teacherCheck">
+      <summary>Teacher: check a verification code</summary>
+      <div class="vgrid">
+        <label for="vName">Student name<input id="vName"></label>
+        <label for="vPeriod">Period<input id="vPeriod"></label>
+        <label for="vCode">Code<input id="vCode" placeholder="XXXXX-XXXXX"></label>
+        <button class="btn" id="vGo">Check</button>
+      </div>
+      <p class="fb" id="vOut" aria-live="polite"></p>
+    </details>
+  </section>
+</article>
+
+<aside class="log" id="log">
+  <div class="inner">
+    <h3>Annotation log</h3>
+    <div class="tally" id="tally"></div>
+    <p class="empty" id="logEmpty">No annotations yet. Select some words in the reading and tap a symbol in the bar at the top.</p>
+    <ul class="entries" id="entries"></ul>
+  </div>
+</aside>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="done-screen" id="doneScreen" hidden role="dialog" aria-modal="true" aria-labelledby="dsTitle">
+  <div class="ds-card">
+    <div class="ds-head">
+      <span class="ds-badge" id="dsBadge">✓</span>
+      <div>
+        <span class="eyebrow">Read 2 · Force Diagrams</span>
+        <h2 id="dsTitle">Complete</h2>
+      </div>
+      <div class="ds-clock"><span class="eyebrow">Live time</span><span id="dsClock"></span></div>
+    </div>
+    <div class="ds-who"><span id="dsName"></span><span id="dsPeriod"></span></div>
+    <div class="ds-stats" id="dsStats"></div>
+    <div class="ds-cols">
+      <div class="ds-block"><span class="eyebrow">Reflection</span><p id="dsReflect"></p></div>
+      <div class="ds-block"><span class="eyebrow">Recent annotations</span><ul id="dsAnns"></ul></div>
+    </div>
+    <div class="ds-foot">
+      <div><span class="eyebrow">Verification code</span><span class="ds-code" id="dsCode"></span></div>
+      <p class="tip">Screenshot this whole screen and upload it to Canvas.<br>Chromebook: Ctrl + Shift + Show windows · Mac: ⌘ + Shift + 3 · Windows: Win + Shift + S</p>
+      <button class="btn ghost" id="dsBack">Back to the reading</button>
+    </div>
+  </div>
+  <div class="ds-water" id="dsWater" aria-hidden="true"></div>
+</div>
+
+<script>
+(function(){
+const TAGS={know:{sym:"✓",name:"Knew this"},imp:{sym:"!",name:"Important"},q:{sym:"?",name:"Confused"},voc:{sym:"★",name:"Key term"}};
+const GOAL=6, KEY="force-diagrams-v2", LESSON="R2";
+let S={name:"",period:"",anns:[],quiz:{},practice:{},reflect:""};
+try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){if(!S.startedAt)S.startedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2600);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+/* identity */
+[["name","#stuName"],["period","#stuPeriod"]].forEach(([k,sel])=>{const i=$(sel);i.value=S[k]||"";i.addEventListener("input",()=>{S[k]=i.value;save();});});
+
+/* annotations */
+const reading=$("#reading");
+let pending=null;
+function textOffset(p,node,off){const r=document.createRange();r.selectNodeContents(p);try{r.setEnd(node,off);}catch(e){return 0;}return r.toString().length;}
+document.addEventListener("selectionchange",()=>{
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.rangeCount){return;}
+  const r=sel.getRangeAt(0);
+  const sn=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;
+  const p=sn&&sn.closest("[data-p]");
+  if(!p||!reading.contains(p)){pending=null;setLive(false);return;}
+  let start=textOffset(p,r.startContainer,r.startOffset);
+  let end=p.contains(r.endContainer)?textOffset(p,r.endContainer,r.endOffset):p.textContent.length;
+  const full=p.textContent;
+  while(start<end&&/\s/.test(full[start]))start++;
+  while(end>start&&/\s/.test(full[end-1]))end--;
+  if(end-start<2){pending=null;setLive(false);return;}
+  pending={p:p.dataset.p,start,end};setLive(true);
+});
+function setLive(on){$("#toolbar").classList.toggle("live",on);document.querySelectorAll(".tagbtn").forEach(b=>b.disabled=!on);
+  $("#tbHint").textContent=on?"Now tap a symbol to tag your selection.":"Select words in the reading, then tap a symbol.";}
+document.querySelectorAll(".tagbtn").forEach(b=>{
+  b.addEventListener("mousedown",e=>e.preventDefault());
+  b.addEventListener("click",()=>{
+    if(!pending)return;
+    const {p,start,end}=pending;
+    if(S.anns.some(a=>a.p===p&&a.start<end&&start<a.end)){toast("That overlaps an annotation you already made. Pick different words, or remove the old one in your log.");return;}
+    const pel=reading.querySelector(`[data-p="${p}"]`);
+    const ann={id:"a"+Date.now().toString(36),p,start,end,tag:b.dataset.tag,text:pel.textContent.slice(start,end),note:""};
+    S.anns.push(ann);save();applyMark(ann);
+    window.getSelection().removeAllRanges();pending=null;setLive(false);
+    renderLog(ann.id);
+  });
+});
+function applyMark(a){
+  const p=reading.querySelector(`[data-p="${a.p}"]`);if(!p)return;
+  const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);const nodes=[];let pos=0,n;
+  while(n=w.nextNode()){const len=n.nodeValue.length;if(pos+len>a.start&&pos<a.end)nodes.push([n,pos]);pos+=len;}
+  nodes.forEach(([node,np],i)=>{
+    const s=Math.max(0,a.start-np),e=Math.min(node.nodeValue.length,a.end-np);
+    let target=node;if(s>0)target=target.splitText(s);if(e-s<target.nodeValue.length)target.splitText(e-s);
+    const m=document.createElement("mark");m.className="ann t-"+a.tag+(i===0?" first":"");m.dataset.id=a.id;m.title=TAGS[a.tag].name;
+    target.parentNode.insertBefore(m,target);m.appendChild(target);
+  });
+}
+function removeMark(id){reading.querySelectorAll(`mark[data-id="${id}"]`).forEach(m=>{const par=m.parentNode;while(m.firstChild)par.insertBefore(m.firstChild,m);par.removeChild(m);par.normalize();});}
+reading.addEventListener("click",e=>{const m=e.target.closest("mark.ann");if(!m)return;if(!window.getSelection().isCollapsed)return;
+  const ta=document.querySelector(`.entry[data-id="${m.dataset.id}"] textarea`);if(ta){ta.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>ta.focus({preventScroll:true}),300);}});
+function renderLog(focusId){
+  const ul=$("#entries");ul.innerHTML="";
+  const order=[...reading.querySelectorAll("[data-p]")].map(e=>e.dataset.p);
+  const list=[...S.anns].sort((a,b)=>order.indexOf(a.p)-order.indexOf(b.p)||a.start-b.start);
+  list.forEach(a=>{
+    const li=document.createElement("li");li.className="entry";li.dataset.id=a.id;
+    const q=document.createElement("div");q.className="q";
+    q.innerHTML=`<span class="chip t-${a.tag}">${TAGS[a.tag].sym}</span>`;
+    const jump=document.createElement("button");jump.textContent="“"+(a.text.length>70?a.text.slice(0,68)+"…":a.text)+"”";
+    jump.addEventListener("click",()=>{const m=reading.querySelector(`mark[data-id="${a.id}"]`);if(m){m.scrollIntoView({block:"center",behavior:"smooth"});m.classList.add("flash");setTimeout(()=>m.classList.remove("flash"),1400);}});
+    q.appendChild(jump);
+    const ta=document.createElement("textarea");ta.id="note-"+a.id;ta.rows=2;ta.value=a.note||"";
+    ta.placeholder=a.tag==="q"?"What's your question?":a.tag==="voc"?"What does this term mean?":a.tag==="imp"?"Why does this matter?":"Where have you seen this before?";
+    ta.setAttribute("aria-label","Note for "+TAGS[a.tag].name+" annotation");
+    ta.addEventListener("input",()=>{a.note=ta.value;save();renderStatus();});
+    const rm=document.createElement("button");rm.className="rm";rm.textContent="Remove";
+    rm.addEventListener("click",()=>{S.anns=S.anns.filter(x=>x.id!==a.id);save();removeMark(a.id);renderLog();});
+    li.append(q,ta,rm);ul.appendChild(li);
+    if(a.id===focusId&&window.matchMedia("(min-width:1060px)").matches)setTimeout(()=>ta.focus({preventScroll:false}),50);
+  });
+  $("#logEmpty").hidden=S.anns.length>0;
+  const counts={know:0,imp:0,q:0,voc:0};S.anns.forEach(a=>counts[a.tag]++);
+  $("#tally").innerHTML=Object.keys(TAGS).map(k=>`<div class="${counts[k]?"met":""}" title="${TAGS[k].name}">${TAGS[k].sym} ${counts[k]}</div>`).join("");
+  const n=S.anns.length;$("#goalTxt").textContent=`${n} / ${GOAL}`;$("#goalBar").style.width=Math.min(100,n/GOAL*100)+"%";
+  if(focusId&&!window.matchMedia("(min-width:1060px)").matches)toast(`Tagged ${TAGS[S.anns.find(a=>a.id===focusId).tag].sym}. Add a note in your log at the bottom.`);
+  renderStatus();
+}
+S.anns.forEach(applyMark);
+
+/* checkpoints */
+const QUIZ={
+  q1:{opts:["Balanced, because its speed is constant","Unbalanced, because its direction is changing"],a:1,
+     why:["Constant speed isn't enough. Changing direction is one of the three ways motion changes.","Right. Changing direction is a change in motion, so an unbalanced force must act."]},
+  q1b:{opts:["Balanced, because its velocity isn't changing","Unbalanced, because it's moving"],a:0,
+     why:["Right. Same speed, same direction: no change in motion, so the forces are balanced.","Moving doesn't require an unbalanced force. Only a change in motion does."]},
+  q2:{opts:["F Gravity on Earth by Book","F Gravity on Book by Earth","F Normal on Book by Earth"],html:['<span class="flab"><span class="vec">F</span><sub>Gravity on Earth by Book</sub></span>','<span class="flab"><span class="vec">F</span><sub>Gravity on Book by Earth</sub></span>','<span class="flab"><span class="vec">F</span><sub>Normal on Book by Earth</sub></span>'],a:1,
+     why:["That would be a force on Earth by the book. The book is the feeler here.","Right: gravity, on the book, by Earth.","Normal is for a surface pushing. Earth pulling is gravity."]},
+  q3:{opts:["A forward force that comes from its motion","Its inertia pushes it forward","Nothing. With balanced forces it keeps its constant velocity."],a:2,
+     why:["There's no “force of motion.” Every force needs a dealer, and nothing is touching it in that direction.","Inertia is not a force and not a cause of anything. It describes how hard it is to change the motion.","Right. That's Newton's 1st law: no unbalanced force, no change in motion."]},
+  q4:{opts:["Moving at constant speed","Speeding up","Slowing down"],a:1,
+     why:["Constant speed would have equal spacing and equal arrows.","Right. More distance each frame means it's going faster.","Slowing down would bring the dots closer together."]},
+  q5:{opts:["It speeds up to the left","It slows down","It moves left at a constant speed"],a:1,
+     why:["It would speed up only if the net force pointed the same way it's moving.","Right. The net force is opposite its motion, so it slows down.","Constant speed needs balanced forces, and these are unbalanced."]}
+};
+document.querySelectorAll(".check").forEach(box=>{
+  const id=box.dataset.q,Q=QUIZ[id],wrap=box.querySelector(".opts"),fb=box.querySelector(".fb");
+  Q.opts.forEach((o,i)=>{const b=document.createElement("button");b.className="opt";if(Q.html)b.innerHTML=Q.html[i];else b.textContent=o;
+    b.addEventListener("click",()=>{grade(i);S.quiz[id]=S.quiz[id]||{first:i,tries:0};S.quiz[id].tries++;if(i===Q.a)S.quiz[id].solved=true;save();renderStatus();});
+    wrap.appendChild(b);});
+  function grade(i){wrap.querySelectorAll(".opt").forEach((b,j)=>{b.classList.toggle("right",j===i&&i===Q.a);b.classList.toggle("wrong",j===i&&i!==Q.a);});
+    fb.textContent=Q.why[i];fb.className="fb "+(i===Q.a?"good":"bad");}
+  if(S.quiz[id]&&S.quiz[id].solved)grade(Q.a);
+});
+
+/* svg helpers */
+const NS="http://www.w3.org/2000/svg";
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+let uid=0;
+function marker(svg,color,size){const id="m"+(uid++);const defs=svg.querySelector("defs")||mk("defs",{},svg);
+  const m=mk("marker",{id,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:size||13,markerHeight:size||13,markerUnits:"userSpaceOnUse",orient:"auto-start-reverse"},defs);
+  mk("path",{d:"M0,0 L10,5 L0,10 z",style:`fill:var(${color})`},m);return `url(#${id})`;}
+function flabel(parent,x,y,sub,anchor){
+  const root=parent.ownerSVGElement||parent,g=mk("g",{},parent);
+  const t=mk("text",{class:"flabel",x,y},g);const f=mk("tspan",{class:"fF"},t);f.textContent="F";const sb=mk("tspan",{dy:"5"},t);sb.textContent=" "+sub;
+  let w=0;try{w=t.getComputedTextLength();}catch(e){}if(!w)w=14+sub.length*6.4;
+  const tx=anchor==="end"?x-w:x;t.setAttribute("x",tx);
+  mk("line",{class:"vecarrow",x1:tx+1,y1:y-15,x2:tx+12,y2:y-15,"marker-end":marker(root,"--accent",6)},g);
+  return g;}
+const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const ARW={up:"↑",down:"↓",left:"←",right:"→"};
+/* draw force arrows from (cx,cy). forces: [{dir,sub}] */
+function drawForces(svg,cx,cy,forces,opts={}){
+  const g=mk("g",{},svg),m=marker(svg,"--accent"),L=opts.len||90,HG=opts.hgap||10,HY=opts.hy||30,used={};
+  forces.forEach(f=>{if(!f.dir||f.dir==="none")return;const[dx,dy]=DIRV[f.dir];const k=used[f.dir]=(used[f.dir]||0)+1;const len=L-(k-1)*14;
+    mk("line",{class:"farrow",x1:cx,y1:cy,x2:cx+dx*len,y2:cy+dy*len,"marker-end":m},g);
+    const off=(k-1)*20;
+    if(f.dir==="up")flabel(g,cx+12,cy-len+14+off,f.sub);
+    else if(f.dir==="down")flabel(g,cx+12,cy+len-2-off,f.sub);
+    else if(f.dir==="right")flabel(g,cx+HG,cy-HY-off,f.sub);
+    else flabel(g,cx-HG,cy-HY-off,f.sub,"end");
+  });
+  return g;
+}
+function drawVel(svg,cx,y,v,text){
+  const t=mk("text",{class:"vtext",x:cx,y:y-6,"text-anchor":"middle"},svg);
+  t.textContent=text||(v==="right"?"moving right":v==="left"?"moving left":"not moving");
+  if(!v)return;
+  const m=marker(svg,"--ink",12),s=v==="right"?1:-1;
+  mk("line",{class:"velv",x1:cx-45*s,y1:y+8,x2:cx+45*s,y2:y+8,"marker-end":m},svg);
+}
+function pict(svg,{forces,moving,status}){
+  svg.innerHTML="";const cx=220,r=34,fy=205,cy=fy-r;
+  mk("rect",{class:"floorfill",x:10,y:fy,width:420,height:12},svg);mk("line",{class:"floor",x1:10,y1:fy,x2:430,y2:fy},svg);
+  const fl=mk("text",{class:"vlabel",x:16,y:fy+28},svg);fl.textContent="gym floor";
+  if(moving){const s=moving==="right"?-1:1,mid=cy+12;for(let i=0;i<5;i++){const x=cx+s*(r+9+i*8),h=16-i*2;mk("path",{class:"speed",d:`M${x},${mid-h} Q${x+s*8},${mid} ${x},${mid+h}`},svg);}}
+  mk("rect",{class:"boundary",x:cx-r-10,y:cy-r-10,width:2*r+20,height:2*r+20,rx:20},svg);
+  mk("circle",{class:"ball",cx,cy,r},svg);
+  [[12,-19],[22,-9],[23,-23]].forEach(([dx,dy])=>mk("circle",{class:"hole",cx:cx+dx,cy:cy+dy,r:3.5},svg));
+  drawForces(svg,cx,cy,forces,{len:95,hgap:r+14,hy:12});
+  mk("circle",{class:"cdot",cx,cy,r:5},svg);
+  drawVel(svg,cx,30,moving,status);
+}
+function pointFD(svg,forces,v,showV){
+  svg.innerHTML="";drawForces(svg,190,145,forces,{len:95});mk("circle",{class:"dot",cx:190,cy:145,r:7},svg);
+  if(showV)drawVel(svg,190,26,v);
+}
+function motionMap(svg,type,dir){
+  svg.innerHTML="";const m=marker(svg,"--muted",9);
+  let xs=type==="speed"?[30,46,80,135,215]:type==="slow"?[30,110,165,199,215]:type==="const"?[40,100,160,220,280]:[160];
+  if(dir==="left")xs=xs.map(x=>320-x);
+  const gaps=xs.slice(1).map((x,i)=>Math.abs(x-xs[i]));
+  xs.forEach((x,i)=>{
+    mk("circle",{class:"mmdot",cx:x,cy:58,r:6},svg);
+    if(type==="rest")return;
+    let len=i<gaps.length?gaps[i]*0.75:(type==="speed"?gaps[gaps.length-1]*1.0:type==="slow"?gaps[gaps.length-1]*0.5:gaps[gaps.length-1]*0.75);
+    len=Math.max(6,Math.min(len,90));const s=dir==="left"?-1:1;
+    mk("line",{class:"mmarrow",x1:x,y1:38,x2:x+s*len,y2:38,"marker-end":m},svg);
+  });
+  if(type==="rest"){const t=mk("text",{class:"mmlabel",x:160,y:30,"text-anchor":"middle"},svg);t.textContent="every frame in the same spot";}
+}
+
+/* reading figures */
+const GB={dir:"down",sub:"Gravity on Ball by Earth"},NB={dir:"up",sub:"Normal on Ball by Floor"};
+pict($("#figRest"),{forces:[NB,GB],status:"not moving"});
+pict($("#figMove"),{forces:[NB,GB],moving:"right"});
+pict($("#figPush"),{forces:[NB,GB,{dir:"right",sub:"Applied on Ball by Hand"}],status:"not moving (yet)"});
+pict($("#figBrake"),{forces:[NB,GB,{dir:"left",sub:"Applied on Ball by Hand"}],moving:"right"});
+motionMap($("#mmSpeed"),"speed","right");
+motionMap($("#mmSlow"),"slow","right");
+pointFD($("#figRestFD"),[NB,GB]);
+pointFD($("#figAccR"),[NB,GB,{dir:"right",sub:"Applied on Ball by Hand"}]);
+pointFD($("#figAccL"),[NB,GB,{dir:"left",sub:"Applied on Ball by Hand"}]);
+
+/* interaction diagram (static) */
+function interDiagram(svg,objs,lines){
+  svg.innerHTML="";const r=o=>o.r||30;
+  const P=objs.find(o=>o.id==="ball");
+  mk("rect",{class:"boundary",x:P.x-r(P)-14,y:P.y-r(P)-14,width:2*r(P)+28,height:2*r(P)+28,rx:18},svg);
+  const t0=mk("text",{class:"blabel",x:P.x-r(P)-10,y:P.y-r(P)-20},svg);t0.textContent="SYSTEM";
+  const m=marker(svg,"--sys",10);
+  lines.forEach(([a,b])=>{const A=objs.find(o=>o.id===a),B=objs.find(o=>o.id===b);const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;
+    mk("line",{class:"ln cross",x1:A.x+ux*(r(A)+3),y1:A.y+uy*(r(A)+3),x2:B.x-ux*(r(B)+3),y2:B.y-uy*(r(B)+3),"marker-start":m,"marker-end":m},svg);});
+  objs.forEach(o=>{const g=mk("g",{class:"node"+(o.id==="ball"?" insys":"")},svg);mk("circle",{cx:o.x,cy:o.y,r:r(o)},g);const t=mk("text",{x:o.x,y:o.y},g);t.textContent=o.label;});
+}
+
+/* practice */
+const O={ball:{id:"ball",label:"Ball",x:150,y:120},floor:{id:"floor",label:"Floor",x:60,y:228},earth:{id:"earth",label:"Earth",x:240,y:228,r:34},hand:{id:"hand",label:"Hand",x:255,y:60}};
+const G={id:"g",sub:"Gravity on Ball by Earth",desc:"Earth pulls on the ball",ans:"down"},N={id:"n",sub:"Normal on Ball by Floor",desc:"Floor pushes on the ball",ans:"up"};
+const SCEN=[
+  {id:"rest",title:"Ball at rest",text:"A bowling ball sits still on the level gym floor.",v:null,
+   objs:["ball","floor","earth"],lines:[["ball","floor"],["ball","earth"]],
+   forces:[G,N,{id:"x",sub:"Normal on Floor by Ball",desc:"Ball pushes on the floor",ans:"none",hint:"That force acts on the floor, not the ball. Only forces ON the system go in its force diagram."}],
+   net:"zero",motion:"bal"},
+  {id:"roll",title:"Rolling ball",text:"The bowling ball rolls to the right across the gym floor at a steady speed. Nobody is touching it. (Ignore friction.)",v:"right",
+   objs:["ball","floor","earth"],lines:[["ball","floor"],["ball","earth"]],
+   forces:[G,N,{id:"x",sub:"Motion on Ball",desc:"The “force of motion” that keeps it rolling",ans:"none",hint:"There's no force of motion: it has no dealer, and nothing touches the ball from behind. With balanced forces it keeps its velocity on its own (Newton's 1st law)."}],
+   net:"zero",motion:"bal"},
+  {id:"push",title:"Push from rest",text:"The bowling ball sits still on the floor. You push it to the right with your hand.",v:null,
+   objs:["ball","floor","earth","hand"],lines:[["ball","floor"],["ball","earth"],["ball","hand"]],
+   forces:[G,N,{id:"a",sub:"Applied on Ball by Hand",desc:"Your hand pushes on the ball",ans:"right"},
+     {id:"x",sub:"Inertia on Ball",desc:"The ball's inertia",ans:"none",hint:"Inertia is not a force and not a cause of anything. It has no dealer and no line on the interaction diagram."}],
+   net:"right",motion:"speed"},
+  {id:"brake",title:"Stopping the ball",text:"The bowling ball rolls to the right. Your hand pushes it to the left as it comes toward you.",v:"right",
+   objs:["ball","floor","earth","hand"],lines:[["ball","floor"],["ball","earth"],["ball","hand"]],
+   forces:[G,N,{id:"a",sub:"Applied on Ball by Hand",desc:"Your hand pushes on the ball",ans:"left"},
+     {id:"x",sub:"Motion on Ball",desc:"The “force of motion” to the right",ans:"none",hint:"The ball rolling right doesn't need a force to the right. Velocity is not a force."}],
+   net:"left",motion:"slow"},
+  {id:"chase",title:"Pushing it along",text:"The bowling ball rolls to the left. Your hand pushes it to the left too, in the same direction it's moving.",v:"left",
+   objs:["ball","floor","earth","hand"],lines:[["ball","floor"],["ball","earth"],["ball","hand"]],
+   forces:[G,N,{id:"a",sub:"Applied on Ball by Hand",desc:"Your hand pushes on the ball",ans:"left"},
+     {id:"x",sub:"Applied on Hand by Ball",desc:"The ball pushes back on your hand",ans:"none",hint:"That force is real, but it acts on your hand. It belongs in your hand's force diagram, not the ball's."}],
+   net:"left",motion:"speed"}
+];
+const NETS=[["zero","Zero"],["up","↑"],["down","↓"],["left","←"],["right","→"]];
+const MOTS=[["bal","At rest or constant velocity"],["speed","Speeding up"],["slow","Slowing down"]];
+const MOTNAME={bal:"no change in motion",speed:"speeding up",slow:"slowing down"};
+let cur=0,step=1,tries=0,choice={},netC=null,motC=null;
+function seg(el,opts,get,set,disabled){el.innerHTML="";opts.forEach(([v,l])=>{const b=document.createElement("button");b.textContent=l;b.setAttribute("aria-pressed",get()===v);b.disabled=!!disabled;
+  b.addEventListener("click",()=>{set(v);seg(el,opts,get,set,disabled);$("#prFb").textContent="";});el.appendChild(b);});}
+function drawPr(){const s=SCEN[cur];pointFD($("#prForce"),s.forces.map(f=>({dir:choice[f.id],sub:f.sub})),s.v,true);}
+function rows(){
+  const s=SCEN[cur],box=$("#prRows");box.innerHTML="";
+  s.forces.forEach(f=>{
+    const r=document.createElement("div");r.className="frow";
+    r.innerHTML=`<div class="fl"><span class="flab"><span class="vec">F</span><sub>${esc(f.sub)}</sub></span><small>${esc(f.desc)}</small></div>`;
+    const sg=document.createElement("div");sg.className="seg";sg.setAttribute("role","group");sg.setAttribute("aria-label","Direction of F "+f.sub);
+    seg(sg,[["none","none"],["up","↑"],["down","↓"],["left","←"],["right","→"]],()=>choice[f.id]||"none",v=>{choice[f.id]=v;drawPr();},step!==1);
+    r.appendChild(sg);box.appendChild(r);
+  });
+}
+function step2ui(){
+  $("#prStep2").hidden=step<2;
+  seg($("#netSeg"),NETS,()=>netC,v=>netC=v,step!==2);
+  seg($("#motSeg"),MOTS,()=>motC,v=>motC=v,step!==2);
+}
+function loadScen(i){
+  cur=i;const s=SCEN[i],st=S.practice[s.id]||{};tries=0;
+  $("#scenTitle").textContent=s.title;$("#scenText").textContent=s.text;
+  interDiagram($("#prInter"),s.objs.map(k=>O[k]),s.lines);
+  choice={};netC=null;motC=null;
+  if(st.step1){s.forces.forEach(f=>choice[f.id]=f.ans);}
+  if(st.step2){netC=s.net;motC=s.motion;}
+  step=st.step2?3:st.step1?2:1;
+  drawPr();rows();step2ui();ui();$("#prFb").textContent="";
+}
+function ui(){
+  const s=SCEN[cur];
+  $("#st1").className=step>1?"ok":"on";$("#st2").className=step===3?"ok":step===2?"on":"";
+  $("#prCheck").hidden=step===3;$("#prShow").hidden=!(tries>=2&&step<3);$("#prNext").hidden=step!==3;
+  $("#prMap").hidden=step!==3;
+  if(step===3){motionMap($("#prMM"),s.motion==="bal"?(s.v?"const":"rest"):s.motion,s.v||s.net);
+    $("#prMapCap").textContent=`Motion map: ${s.motion==="bal"?(s.v?"constant velocity":"at rest"):MOTNAME[s.motion]+" while moving "+(s.v||s.net)}.`;}
+  $("#scenTabs").innerHTML="";
+  SCEN.forEach((sc,i)=>{const b=document.createElement("button");b.className="pill";b.setAttribute("aria-pressed",i===cur);
+    b.innerHTML=`${i+1}. ${sc.title}${S.practice[sc.id]&&S.practice[sc.id].step2?' <span class="done">✓</span>':""}`;b.addEventListener("click",()=>loadScen(i));$("#scenTabs").appendChild(b);});
+}
+function feedback(msg,good){const f=$("#prFb");f.textContent=msg;f.className="fb "+(good?"good":"bad");}
+$("#prCheck").addEventListener("click",()=>{
+  const s=SCEN[cur];S.practice[s.id]=S.practice[s.id]||{tries1:0,tries2:0};const st=S.practice[s.id];
+  if(step===1){
+    st.tries1++;const wrong=s.forces.filter(f=>(choice[f.id]||"none")!==f.ans);
+    if(!wrong.length){st.step1=true;save();step=2;tries=0;rows();step2ui();ui();feedback(`All forces correct. ${s.lines.length} lines on the interaction diagram, ${s.lines.length} arrows on the force diagram.`,true);renderStatus();return;}
+    tries++;const msg=[];
+    const fake=wrong.find(f=>f.ans==="none");if(fake)msg.push(fake.hint);
+    const real=wrong.filter(f=>f.ans!=="none");
+    if(real.length){const off=real.find(f=>(choice[f.id]||"none")==="none");
+      msg.push(off?`Each line on the interaction diagram becomes a force. You're missing one.`:`Check the direction of ${real.length>1?"some forces":"one force"}. Which way does the dealer push or pull?`);}
+    save();ui();feedback(msg.join(" "),false);
+  }else if(step===2){
+    st.tries2++;
+    if(netC===s.net&&motC===s.motion){st.step2=true;save();step=3;step2ui();rows();ui();
+      feedback(s.net==="zero"?"Correct. Balanced forces: the motion doesn't change.":`Correct. Net force ${ARW[s.net]}${s.v?`, velocity ${ARW[s.v]}: `+(s.v===s.net?"same direction, so it speeds up.":"opposite directions, so it slows down."):": starting from rest, it speeds up in that direction."}`,true);renderStatus();return;}
+    tries++;const msg=[];
+    if(netC!==s.net)msg.push("Add up the arrows. Equal and opposite arrows cancel. What's left over?");
+    else if(motC!==s.motion)msg.push(s.net==="zero"?"Balanced forces mean the motion doesn't change.":"Compare the net force direction with the velocity direction (the arrow at the top).");
+    if(netC===null||motC===null)msg.unshift("Pick an answer for both questions.");
+    save();ui();feedback(msg.join(" "),false);
+  }
+});
+$("#prShow").addEventListener("click",()=>{
+  const s=SCEN[cur];
+  if(step===1){s.forces.forEach(f=>choice[f.id]=f.ans);drawPr();rows();feedback("Here are the forces. Compare them with yours, then press Check.",true);}
+  else{netC=s.net;motC=s.motion;step2ui();feedback("Here are the answers. Press Check.",true);}
+  S.practice[s.id].shown=true;save();
+});
+$("#prReset").addEventListener("click",()=>{delete S.practice[SCEN[cur].id];save();loadScen(cur);renderStatus();});
+$("#prNext").addEventListener("click",()=>{const nxt=SCEN.findIndex(sc=>!(S.practice[sc.id]&&S.practice[sc.id].step2));loadScen(nxt>=0?nxt:(cur+1)%SCEN.length);});
+loadScen(Math.max(0,SCEN.findIndex(sc=>!(S.practice[sc.id]&&S.practice[sc.id].step2))));
+
+/* wrap up */
+const NQ=Object.keys(QUIZ).length,ND=SCEN.length;
+const refl=$("#reflect");refl.value=S.reflect||"";refl.addEventListener("input",()=>{S.reflect=refl.value;save();renderStatus();});
+function annGoalMet(){const c={};S.anns.forEach(a=>c[a.tag]=1);return S.anns.length>=GOAL&&Object.keys(TAGS).every(k=>c[k]);}
+function facts(){
+  const q=Object.keys(QUIZ);
+  return {qf:q.filter(k=>S.quiz[k]&&S.quiz[k].first===QUIZ[k].a).length,qDone:q.filter(k=>S.quiz[k]&&S.quiz[k].solved).length,
+    dg:SCEN.filter(s=>S.practice[s.id]&&S.practice[s.id].step2).length,show:SCEN.some(s=>S.practice[s.id]&&S.practice[s.id].shown)?1:0,
+    refl:S.reflect.trim().length>20?1:0,notes:S.anns.filter(a=>a.note.trim()).length};
+}
+function renderStatus(){
+  const F=facts();const row=(ok,t)=>`<span class="${ok?"ok":"no"}">${ok?"✓":"○"} ${t}</span>`;
+  $("#status").innerHTML=row(annGoalMet(),`Annotations: ${S.anns.length} (goal ${GOAL}, every symbol used), ${F.notes} with notes`)+row(F.qDone===NQ,`Checkpoints: ${F.qDone} of ${NQ} solved`)+row(F.dg===ND,`Force diagrams built: ${F.dg} of ${ND}`)+row(F.refl,"Reflection written");
+}
+
+/* completion screen + verification code */
+const A32="0123456789ABCDEFGHJKMNPQRSTVWXYZ",MASK=0x3D91C47A6E2Bn,EPOCH=Date.UTC(2026,0,1);
+function fnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h;}
+function norm(s){return (s||"").trim().toLowerCase().replace(/\s+/g," ");}
+function chkOf(name,period,payload){return BigInt(fnv(LESSON+"|"+norm(name)+"|"+norm(period)+"|"+payload.toString())&0x3FFF);}
+function packCode(name,period,f){
+  const payload=(BigInt(f.mins)<<14n)|(BigInt(f.anns)<<8n)|(BigInt(f.qf)<<5n)|(BigInt(f.dg)<<2n)|(BigInt(f.show)<<1n)|BigInt(f.refl);
+  let full=((payload<<14n)|chkOf(name,period,payload))^MASK,s="";for(let i=0;i<10;i++){s=A32[Number(full&31n)]+s;full>>=5n;}
+  return s.slice(0,5)+"-"+s.slice(5);
+}
+function unpackCode(name,period,code){
+  const c=(code||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1");
+  if(c.length!==10)return null;let full=0n;
+  for(const ch of c){const v=A32.indexOf(ch);if(v<0)return null;full=(full<<5n)|BigInt(v);}
+  full^=MASK;const chk=full&0x3FFFn,payload=full>>14n;
+  if(chkOf(name,period,payload)!==chk)return null;
+  return {mins:Number(payload>>14n),anns:Number((payload>>8n)&63n),qf:Number((payload>>5n)&7n),dg:Number((payload>>2n)&7n),show:Number((payload>>1n)&1n),refl:Number(payload&1n)};
+}
+const fmtTime=t=>new Date(t).toLocaleString([], {weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+let clockT=null;
+function openDone(){
+  if(!S.name.trim()||!S.period.trim()){toast("Type your name and period at the top first.");const i=$(S.name.trim()?"#stuPeriod":"#stuName");i.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>i.focus({preventScroll:true}),300);return;}
+  const F=facts(),complete=annGoalMet()&&F.qDone===NQ&&F.dg===ND&&F.refl;
+  if(complete&&!S.finishedAt){S.finishedAt=Date.now();save();}
+  const fin=complete?S.finishedAt:Date.now();
+  const left=[!annGoalMet(),F.qDone<NQ,F.dg<ND,!F.refl].filter(Boolean).length;
+  const ds=$("#doneScreen");ds.classList.toggle("incomplete",!complete);
+  $("#dsBadge").textContent=complete?"✓":"!";
+  $("#dsTitle").textContent=complete?"Complete":`Not finished: ${left} part${left>1?"s":""} left`;
+  $("#dsName").textContent=S.name.trim();$("#dsPeriod").textContent="Period "+S.period.trim();
+  const c={know:0,imp:0,q:0,voc:0};S.anns.forEach(a=>c[a.tag]++);
+  const mins=S.startedAt?Math.max(1,Math.round((fin-S.startedAt)/60000)):null;
+  const tile=(miss,big,label,sub)=>`<div class="ds-stat${miss?" miss":""}"><span class="eyebrow">${label}</span><b>${big}</b><small>${sub}</small></div>`;
+  $("#dsStats").innerHTML=
+    tile(!annGoalMet(),S.anns.length,"Annotations",`✓${c.know} !${c.imp} ?${c.q} ★${c.voc} · ${F.notes} with notes`)+
+    tile(F.qDone<NQ,`${F.qf}/${NQ}`,"Checkpoints","right on first try"+(F.qDone<NQ?` · ${NQ-F.qDone} unsolved`:""))+
+    tile(F.dg<ND,`${F.dg}/${ND}`,"Force diagrams",F.show?"used Show me":"no answers revealed")+
+    tile(false,mins===null?"–":mins>=600?">10 h":mins+" min","Time on task",S.startedAt?"started "+fmtTime(S.startedAt):"");
+  $("#dsReflect").textContent=S.reflect.trim()?("“"+(S.reflect.trim().length>300?S.reflect.trim().slice(0,298)+"…":S.reflect.trim())+"”"):"No reflection yet.";
+  $("#dsAnns").innerHTML=S.anns.slice(-3).reverse().map(a=>`<li><span class="chip t-${a.tag}">${TAGS[a.tag].sym}</span> “${esc(a.text.length>60?a.text.slice(0,58)+"…":a.text)}”${a.note.trim()?" — "+esc(a.note.trim().slice(0,80)):""}</li>`).join("")||"<li>None yet.</li>";
+  const code=packCode(S.name,S.period,{mins:Math.min(1048575,Math.max(0,Math.floor((fin-EPOCH)/60000))),anns:Math.min(63,S.anns.length),qf:F.qf,dg:F.dg,show:F.show,refl:F.refl});
+  $("#dsCode").textContent=code;
+  const ink=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#172031";
+  const l1=esc(`${S.name.trim()} · P${S.period.trim()}`),l2=esc(`${fmtTime(fin)} · ${code}`);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="380" height="200"><g transform="rotate(-24 190 100)" fill="${ink}" fill-opacity=".09" font-family="sans-serif" font-weight="700" text-anchor="middle"><text x="190" y="92" font-size="20">${l1}</text><text x="190" y="118" font-size="13">${l2}</text></g></svg>`;
+  $("#dsWater").style.backgroundImage=`url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+  const tick=()=>{$("#dsClock").textContent=new Date().toLocaleString([], {weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});};
+  tick();clearInterval(clockT);clockT=setInterval(tick,1000);
+  ds.hidden=false;document.body.style.overflow="hidden";ds.scrollTop=0;$("#dsBack").focus({preventScroll:true});
+}
+function closeDone(){$("#doneScreen").hidden=true;document.body.style.overflow="";clearInterval(clockT);$("#finishBtn").focus({preventScroll:true});}
+$("#finishBtn").addEventListener("click",openDone);
+$("#dsBack").addEventListener("click",closeDone);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#doneScreen").hidden)closeDone();});
+$("#vGo").addEventListener("click",()=>{
+  const r=unpackCode($("#vName").value,$("#vPeriod").value,$("#vCode").value),o=$("#vOut");
+  if(!r){o.className="fb bad";o.textContent="This code does not match that name and period for Read 2. Check spelling, or the screenshot may have been altered or shared.";return;}
+  o.className="fb good";
+  o.textContent=`Valid. Screen made ${fmtTime(EPOCH+r.mins*60000)} · ${r.anns} annotations · ${r.qf}/${NQ} checkpoints right first try · ${r.dg}/${ND} force diagrams · Show me ${r.show?"used":"not used"} · reflection ${r.refl?"written":"missing"}. Compare these with the screenshot.`;
+});
+
+const clr=$("#clearAll");let armed=false;
+clr.addEventListener("click",()=>{
+  if(!armed){armed=true;clr.textContent="Tap again to erase all your work";setTimeout(()=>{armed=false;clr.textContent="Clear everything";},4000);return;}
+  S.anns.forEach(a=>removeMark(a.id));S={name:S.name,period:S.period,anns:[],quiz:{},practice:{},reflect:""};save();
+  refl.value="";document.querySelectorAll(".check .opt").forEach(b=>b.classList.remove("right","wrong"));document.querySelectorAll(".check .fb").forEach(f=>f.textContent="");
+  loadScen(0);renderLog();armed=false;clr.textContent="Clear everything";toast("Cleared");
+});
+renderLog();
+})();
+</script>
+
+</body>
+</html>
