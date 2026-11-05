@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Interaction Diagrams Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: lab-notebook reading column + sticky annotation log; the dashed system boundary is the recurring motif */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --ink:#172031; --muted:#586379; --line:#d3d9e3; --faint:#b8c1cf;
+  --accent:#2445d4; --accent-ink:#ffffff; --sys:#0b8584; --sys-tint:rgba(11,133,132,.08);
+  --good:#1b7a3a; --good-bg:#e3f4e8; --bad:#b4232f; --bad-bg:#fbe7e9;
+  --a-know:#c9ebcf; --a-imp:#ffe27a; --a-q:#e2d3ff; --a-voc:#cfe2ff;
+  --a-know-ink:#1b6a32; --a-imp-ink:#8a6400; --a-q-ink:#5b3aa6; --a-voc-ink:#1f4fa8;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151f; --surface:#182031; --ink:#e7ebf3; --muted:#9aa5ba; --line:#2b3549; --faint:#47536b;
+  --accent:#7d97ff; --accent-ink:#0d1220; --sys:#3fc9c4; --sys-tint:rgba(63,201,196,.09);
+  --good:#6fd18f; --good-bg:#16301f; --bad:#ff8a93; --bad-bg:#3a1c21;
+  --a-know:#1f4b2b; --a-imp:#5b4a0e; --a-q:#3d2e64; --a-voc:#1c3a66;
+  --a-know-ink:#8fe0a6; --a-imp-ink:#ffd65c; --a-q-ink:#c9b2ff; --a-voc-ink:#9cc1ff;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151f; --surface:#182031; --ink:#e7ebf3; --muted:#9aa5ba; --line:#2b3549; --faint:#47536b;
+  --accent:#7d97ff; --accent-ink:#0d1220; --sys:#3fc9c4; --sys-tint:rgba(63,201,196,.09);
+  --good:#6fd18f; --good-bg:#16301f; --bad:#ff8a93; --bad-bg:#3a1c21;
+  --a-know:#1f4b2b; --a-imp:#5b4a0e; --a-q:#3d2e64; --a-voc:#1c3a66;
+  --a-know-ink:#8fe0a6; --a-imp-ink:#ffd65c; --a-q-ink:#c9b2ff; --a-voc-ink:#9cc1ff;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1160px;margin:0 auto}
+
+header.top{padding-block:36px 22px;display:grid;gap:14px}
+.top .lede{max-width:62ch;color:var(--muted);font-size:1.05rem}
+.ident{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end}
+.ident label{display:grid;gap:2px;font-size:.8rem;color:var(--muted)}
+.ident input{font:inherit;font-size:1rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0;width:min(260px,100%)}
+.ident input.short{width:90px}
+
+.toolbar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.toolbar .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tagbtn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font-size:.92rem;transition:transform .12s}
+.tagbtn .sym{font-family:var(--f-mono);font-weight:500;width:1.3em;height:1.3em;display:inline-grid;place-items:center;border-radius:50%;font-size:.85rem}
+.tagbtn[data-tag="know"] .sym{background:var(--a-know);color:var(--a-know-ink)}
+.tagbtn[data-tag="imp"] .sym{background:var(--a-imp);color:var(--a-imp-ink)}
+.tagbtn[data-tag="q"] .sym{background:var(--a-q);color:var(--a-q-ink)}
+.tagbtn[data-tag="voc"] .sym{background:var(--a-voc);color:var(--a-voc-ink)}
+.tagbtn:disabled{opacity:.5;cursor:not-allowed}
+.toolbar.live .tagbtn:not(:disabled){border-color:var(--accent)}
+.toolbar.live .tagbtn:not(:disabled):hover{transform:translateY(-1px)}
+.toolbar .hint{font-size:.85rem;color:var(--muted);flex:1 1 220px;min-width:0}
+.goal{display:flex;gap:6px;align-items:center;font-family:var(--f-mono);font-size:.8rem;margin-left:auto}
+.goal a{color:var(--accent);text-decoration:none;white-space:nowrap}
+.goal .bar{width:70px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.goal .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:32px}
+@media (min-width:1060px){.grid{grid-template-columns:minmax(0,1fr) 320px}}
+article{min-width:0;max-width:70ch;display:grid;gap:18px}
+article section{display:grid;gap:14px}
+article section + section{margin-top:22px}
+.reading [data-p]{scroll-margin-top:120px}
+.reading ol{margin:0;padding-left:1.4em;display:grid;gap:12px}
+.reading li::marker{font-family:var(--f-mono);color:var(--muted);font-size:.85em}
+.term{font-weight:700}
+.footer-note{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);margin-top:30px}
+
+mark.ann{color:inherit;border-radius:3px;padding:0 1px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+mark.t-know{background:var(--a-know)} mark.t-imp{background:var(--a-imp)} mark.t-q{background:var(--a-q)} mark.t-voc{background:var(--a-voc)}
+mark.ann.first::before{font-family:var(--f-mono);font-size:.68em;font-weight:500;vertical-align:super;margin-right:2px}
+mark.t-know.first::before{content:"✓";color:var(--a-know-ink)} mark.t-imp.first::before{content:"!";color:var(--a-imp-ink)}
+mark.t-q.first::before{content:"?";color:var(--a-q-ink)} mark.t-voc.first::before{content:"★";color:var(--a-voc-ink)}
+mark.ann.flash{outline:2px solid var(--accent)}
+
+aside.log{min-width:0}
+@media (min-width:1060px){aside.log .inner{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 84px);max-height:calc(100vh - 110px);overflow:auto}}
+.log .inner{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.log .empty{color:var(--muted);font-size:.9rem}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tally div{text-align:center;border-radius:8px;padding:6px 0;font-family:var(--f-mono);font-size:.8rem;border:1px solid var(--line)}
+.tally div.met{border-color:var(--good);color:var(--good)}
+.entries{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.entry{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}
+.entry .q{font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:baseline}
+.entry .q button{background:none;border:0;padding:0;color:inherit;text-align:left;font-style:italic}
+.chip{flex:none;font-family:var(--f-mono);font-size:.75rem;width:1.5em;height:1.5em;display:inline-grid;place-items:center;border-radius:50%}
+.chip.t-know{background:var(--a-know);color:var(--a-know-ink)} .chip.t-imp{background:var(--a-imp);color:var(--a-imp-ink)}
+.chip.t-q{background:var(--a-q);color:var(--a-q-ink)} .chip.t-voc{background:var(--a-voc);color:var(--a-voc-ink)}
+.entry textarea{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;resize:vertical;min-height:2.4em;width:100%}
+.entry .rm{justify-self:end;background:none;border:0;color:var(--muted);font-size:.78rem;text-decoration:underline}
+
+.key{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
+.key ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;font-size:.92rem}
+.key li{display:flex;gap:8px;align-items:baseline}
+
+.check{border:1.5px dashed var(--sys);background:var(--sys-tint);border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+.check .eyebrow{color:var(--sys)}
+.check .opts{display:grid;gap:6px}
+.check .opt{text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.95rem}
+.check .opt:hover{border-color:var(--sys)}
+.check .opt.right{border-color:var(--good);background:var(--good-bg)}
+.check .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.fb{font-size:.92rem}
+.fb.good{color:var(--good)} .fb.bad{color:var(--bad)}
+
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
+.lab svg{width:100%;height:auto;max-width:520px;display:block;margin:0 auto;touch-action:manipulation}
+.presets,.scen-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem}
+.pill[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pill .done{color:var(--good);font-weight:700}
+.pill[aria-pressed="true"] .done{color:inherit}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;font-size:.9rem}
+.readout div{border-radius:10px;padding:8px 10px;border:1px solid var(--line)}
+.readout b{display:block;font-family:var(--f-mono);font-weight:500;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.readout .x b{color:var(--sys)} .readout .in b{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.legend .lx::before{border-color:var(--sys)} .legend .li::before{border-color:var(--muted)} .legend .lb::before{border:2px dashed var(--sys);height:10px;border-radius:3px}
+
+.node circle{fill:var(--surface);stroke:var(--ink);stroke-width:2;transition:stroke .15s}
+.node text{fill:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.clickable .node{cursor:pointer}
+.clickable .node:hover circle{stroke:var(--accent)}
+.node.sel circle{stroke:var(--accent);stroke-width:4}
+.node.insys circle{fill:var(--sys-tint);stroke:var(--sys)}
+.node:focus{outline:none} .node:focus-visible circle{stroke:var(--accent);stroke-width:4}
+.ln{stroke-width:3;fill:none}
+.ln.neutral{stroke:var(--ink)} .ln.cross{stroke:var(--sys);stroke-width:4} .ln.internal{stroke:var(--muted)} .ln.outside{stroke:var(--faint)}
+.ln.picked{stroke:var(--accent);stroke-width:5}
+.hit{stroke:transparent;stroke-width:22;fill:none;cursor:pointer}
+.hit:focus{outline:none} .hit:focus-visible{stroke:var(--accent);stroke-opacity:.25}
+.boundary{fill:var(--sys-tint);stroke:var(--sys);stroke-width:2;stroke-dasharray:8 6}
+.blabel{fill:var(--sys);font-family:var(--f-mono);font-size:11px;letter-spacing:.08em}
+.tip{font-size:.85rem;color:var(--muted)}
+.fig{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px}
+.fig svg{width:100%;height:auto;max-width:480px;display:block;margin:0 auto}
+.fig figcaption{font-size:.85rem;color:var(--muted)}
+.fig .halo{fill:var(--a-imp);opacity:.8}
+.fig .leader{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+.fig .callout{fill:var(--accent);font-family:var(--f-body);font-size:13px;font-weight:700}
+.fig .sub{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.note{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:grid;gap:4px;margin-left:1.4em}
+.law{background:var(--a-voc);border-radius:14px;padding:14px 16px;display:grid;gap:6px}
+.law .eyebrow{color:var(--a-voc-ink);font-weight:500}
+.hl{background:var(--a-imp);border-radius:3px;padding:0 3px}
+
+.practice .scenario{display:grid;gap:4px}
+.steps{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--f-mono);font-size:.75rem}
+.steps span{padding:3px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.steps span.on{border-color:var(--accent);color:var(--accent)}
+.steps span.ok{border-color:var(--good);color:var(--good)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400}
+
+.wrapup textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:90px}
+.status{display:grid;gap:4px;font-size:.92rem}
+.status .ok{color:var(--good)} .status .no{color:var(--muted)}
+.teacher{margin-top:8px;font-size:.85rem;color:var(--muted)}
+.teacher summary{cursor:pointer}
+.vgrid{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:8px}
+.vgrid label{display:grid;gap:2px;font-size:.78rem}
+.vgrid input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:150px}
+.done-screen{position:fixed;inset:0;z-index:100;background:var(--bg);overflow:auto;
+  padding-top:max(16px, env(safe-area-inset-top, 0px));padding-bottom:max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.ds-card{position:relative;max-width:900px;margin:0 auto;background:var(--surface);border:2px dashed var(--sys);border-radius:20px;padding:22px clamp(16px,3vw,32px);display:grid;gap:16px}
+.ds-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.ds-head h2{font-size:1.8rem}
+.ds-badge{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.6rem;font-weight:700;background:var(--good-bg);color:var(--good);flex:none}
+.done-screen.incomplete .ds-badge{background:var(--bad-bg);color:var(--bad)}
+.done-screen.incomplete #dsTitle{color:var(--bad)}
+.ds-clock{margin-left:auto;display:grid;text-align:right;font-family:var(--f-mono);font-size:.95rem;font-variant-numeric:tabular-nums}
+.ds-who{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;font-family:var(--f-display);font-weight:800}
+#dsName{font-size:clamp(1.8rem,5vw,2.8rem);letter-spacing:-.02em;line-height:1.1;overflow-wrap:anywhere}
+#dsPeriod{font-size:1.3rem;color:var(--muted)}
+.ds-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.ds-stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px}
+.ds-stat b{font-family:var(--f-display);font-size:1.8rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.ds-stat.miss b{color:var(--bad)}
+.ds-stat small{color:var(--muted);font-size:.8rem}
+.ds-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.ds-block{display:grid;gap:4px;align-content:start;min-width:0}
+.ds-block p{font-size:.95rem;font-style:italic;overflow-wrap:anywhere}
+.ds-block ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:.88rem}
+.ds-block li{overflow-wrap:anywhere}
+.ds-foot{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;border-top:1px solid var(--line);padding-top:14px}
+.ds-foot > div{display:grid}
+.ds-code{font-family:var(--f-mono);font-size:1.5rem;letter-spacing:.08em;color:var(--sys)}
+.ds-foot .tip{flex:1 1 260px}
+.ds-water{position:fixed;inset:0;pointer-events:none;z-index:101;background-repeat:repeat}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;max-width:min(92vw,460px);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">Unit 1 · Reading · Forces &amp; Systems</span>
+  <h1>Read 1: Interaction Diagrams</h1>
+  <p class="lede">Read and annotate as you go. Along the way you'll answer quick checkpoints and build interaction diagrams yourself. Your work saves in this browser. When you finish, you'll get a completion screen to screenshot and turn in on Canvas.</p>
+  <div class="ident">
+    <label for="stuName">Name<input id="stuName" autocomplete="name"></label>
+    <label for="stuPeriod">Period<input id="stuPeriod" class="short"></label>
+  </div>
+</header>
+
+<div class="toolbar" id="toolbar">
+  <div class="row">
+    <button class="tagbtn" data-tag="know" disabled><span class="sym">✓</span>Knew this</button>
+    <button class="tagbtn" data-tag="imp" disabled><span class="sym">!</span>Important</button>
+    <button class="tagbtn" data-tag="q" disabled><span class="sym">?</span>Confused</button>
+    <button class="tagbtn" data-tag="voc" disabled><span class="sym">★</span>Key term</button>
+    <span class="hint" id="tbHint">Select words in the reading, then tap a symbol.</span>
+    <span class="goal"><span id="goalTxt">0 / 6</span><span class="bar"><i id="goalBar"></i></span><a href="#log">Log ↓</a></span>
+  </div>
+</div>
+
+<div class="grid">
+<article class="reading" id="reading">
+
+  <div class="key">
+    <span class="eyebrow">How to annotate</span>
+    <ul>
+      <li><span class="chip t-know">✓</span>I already knew this</li>
+      <li><span class="chip t-imp">!</span>New or important idea</li>
+      <li><span class="chip t-q">?</span>I'm confused or have a question</li>
+      <li><span class="chip t-voc">★</span>Key vocabulary word</li>
+    </ul>
+    <p class="tip">Goal: at least 6 annotations, with every symbol used at least once. Give each one a short note in your log: what you think it means, or what your question is.</p>
+  </div>
+
+  <section>
+    <h2>What is an interaction diagram?</h2>
+    <p data-p="p1"><span class="term">Interaction Diagrams</span> are a tool for identifying interactions between objects and defining “<span class="term">systems</span>.”</p>
+    <p data-p="p2">We use <span class="term">Interaction Diagrams</span> to identify a collection of objects that we will call the “<span class="term">system</span>” and distinguish them from objects “outside the system” (i.e. in the surroundings).</p>
+    <p data-p="p3">The choice of a <span class="term">system</span> boundary does not change anything about the event or interaction. It is just a tool we use to help analyze situations involving forces and energy transfers.</p>
+    <p data-p="p4">The way we choose a <span class="term">system</span> boundary can help make our analysis easier but will vary depending on the questions we are trying to answer.</p>
+
+    <div class="check" data-q="q1">
+      <span class="eyebrow">Checkpoint 1</span>
+      <p>Ana draws her system boundary around just the book. Ben draws his around the book <em>and</em> the brick sitting on it. Whose choice changes the forces acting on the book?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <p data-p="p5">All objects are actually made up of smaller parts, e.g. molecules, atoms, electrons, protons and neutrons. So an “object” is really a system made up of smaller parts that we group together and analyze as a single “object”.</p>
+    <p data-p="p6">Other examples are cars, planes, people, etc. These “objects” are really <span class="term">systems</span> of objects that we often analyze as if they were a single object.</p>
+
+    <div class="check" data-q="q2">
+      <span class="eyebrow">Checkpoint 2</span>
+      <p>Your phone is really a system of thousands of parts. When does it make sense to treat it as a single object?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Steps in constructing an interaction diagram</h2>
+    <ol>
+      <li data-p="s1">Identify the objects in the event that are interacting with each other. You know when two objects are interacting by determining if they influence each other.</li>
+      <li data-p="s2">Most interactions occur when there is obvious contact between them. However, there are interactions that “act at a distance.” Magnets and the Earth can interact with objects they are not touching. These interactions involve forces that “act at a distance” through a magnetic or gravitational force field, which we will study in depth in later lessons.</li>
+    </ol>
+
+    <div class="check" data-q="q3">
+      <span class="eyebrow">Checkpoint 3</span>
+      <p>Which pair interacts <em>without</em> touching?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <ol start="3">
+      <li data-p="s3">Start making your <span class="term">Interaction Diagrams</span> by drawing circles to represent each of the objects that are interacting. All objects are represented without any details of their shape or structure. Label each circle to identify the object that it represents.</li>
+    </ol>
+
+    <figure class="fig">
+      <svg viewBox="0 0 440 150" role="img" aria-label="Four labeled circles: Brick, Book, Floor, Earth">
+        <g class="node"><circle cx="70" cy="75" r="32"/><text x="70" y="75">Brick</text></g>
+        <g class="node"><circle cx="170" cy="75" r="32"/><text x="170" y="75">Book</text></g>
+        <g class="node"><circle cx="270" cy="75" r="32"/><text x="270" y="75">Floor</text></g>
+        <g class="node"><circle cx="370" cy="75" r="40"/><text x="370" y="75">Earth</text></g>
+      </svg>
+      <figcaption>Step 3 for a brick on a book on the floor: one labeled circle per object. No shapes, no details, no lines yet.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="eyebrow">Note</span>
+      <p data-p="s4">The placement and orientation of objects does not really matter, as you are just trying to identify interactions between objects. We will use another tool, called the <span class="term">Force Diagram,</span> to show how interactions affect the <span class="term">system</span>.</p>
+    </div>
+
+    <ol start="4">
+      <li data-p="s5">Draw lines between objects that interact with each other with <strong class="hl">arrow heads on each end</strong>. Whenever an interaction line ends on a circle, this means that the object represented by that circle experiences a Force, push or pull, from the object at the other end of the line.</li>
+    </ol>
+
+    <figure class="fig">
+      <svg viewBox="0 0 440 210" role="img" aria-label="Book and Floor joined by one line with an arrowhead at each end. The arrowhead at the Book means the Book feels a force from the Floor; the arrowhead at the Floor means the Floor feels a force from the Book.">
+        <defs><marker id="figArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker></defs>
+        <circle class="halo" cx="128" cy="120" r="17"/><circle class="halo" cx="312" cy="120" r="17"/>
+        <line x1="127" y1="120" x2="313" y2="120" style="stroke:var(--ink);stroke-width:3" marker-start="url(#figArrow)" marker-end="url(#figArrow)"/>
+        <g class="node"><circle cx="90" cy="120" r="34"/><text x="90" y="120">Book</text></g>
+        <g class="node"><circle cx="350" cy="120" r="34"/><text x="350" y="120">Floor</text></g>
+        <line class="leader" x1="134" y1="58" x2="130" y2="102"/><line class="leader" x1="306" y1="58" x2="310" y2="102"/>
+        <text class="callout" x="110" y="30">Book feels a force</text><text class="callout" x="110" y="48">from the Floor</text>
+        <text class="callout" x="330" y="30" text-anchor="end">Floor feels a force</text><text class="callout" x="330" y="48" text-anchor="end">from the Book</text>
+        <text class="sub" x="220" y="150" text-anchor="middle">one interaction = one line, two arrowheads</text>
+      </svg>
+      <figcaption>Each arrowhead marks an object that experiences a force. A line with only one arrowhead would be telling half the story.</figcaption>
+    </figure>
+
+    <ol start="5">
+      <li data-p="s6">Every force is an interaction between two objects. Both objects experience the same force, but in opposite directions, as indicated by the arrowheads. If object J is pushed by object K, then object K is also pushed by object J.</li>
+    </ol>
+
+    <div class="law">
+      <span class="eyebrow">This is Newton's 3rd law</span>
+      <p>When two objects interact, each one pushes or pulls on the other with a force of <strong>equal strength</strong> in the <strong>opposite direction</strong>. Forces always come in these pairs, so every interaction line you draw shows one 3rd-law pair.</p>
+    </div>
+
+    <div class="check" data-q="q4">
+      <span class="eyebrow">Checkpoint 4</span>
+      <p>Object J pushes object K to the right. What does K do to J?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+
+    <ol start="6">
+      <li data-p="s7">Draw a dashed box around the <span class="term">system</span> you are interested in analyzing. Below are examples that illustrate the same objects but with a different <span class="term">system</span> definition or boundary.</li>
+      <li data-p="s8">Note the interactions that cross the <span class="term">system</span> boundary (the dashed line). These are the forces that may affect the motion of the <span class="term">system</span>.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Examples: one event, three systems</h2>
+    <p data-p="e0">A brick is on top of a book which is on the floor.</p>
+
+    <div class="lab" id="exLab">
+      <span class="eyebrow">Explore · tap circles to put them inside or outside the system</span>
+      <div class="presets" id="exPresets">
+        <button class="pill" data-preset="1" aria-pressed="false">Example 1: Book</button>
+        <button class="pill" data-preset="2" aria-pressed="false">Example 2: Brick + Book</button>
+        <button class="pill" data-preset="3" aria-pressed="false">Example 3: Brick, Book + Floor</button>
+        <button class="pill" data-preset="0" aria-pressed="false">Clear</button>
+      </div>
+      <svg id="exSvg" viewBox="0 0 440 330" role="img" aria-label="Interaction diagram of a brick, book, floor and Earth"></svg>
+      <div class="legend"><span class="lb">system boundary</span><span class="lx">crosses the boundary</span><span class="li">internal (inside the system)</span></div>
+      <div class="readout" id="exReadout"></div>
+    </div>
+
+    <h3>Example 1</h3>
+    <p data-p="e1">If we are interested in analyzing the forces on the book only, we might define the system as just the book. <strong>System = Book.</strong> In this case the 3 interactions with the book all cross the system boundary. You should notice that the Brick does NOT interact with the floor directly and thus there is no interaction line between them.</p>
+
+    <h3>Example 2</h3>
+    <p data-p="e2">If we decided to analyze the Brick and Book as a system, we would include both within the system boundary. The Interaction Diagram would change as shown. This does not change the situation or event, just the way you are going to analyze it. The interaction between the Brick and Book is “internal” to the system and will be ignored in our force analysis, as you will see in future lessons.</p>
+    <p data-p="e3"><strong>System = Brick and Book.</strong> In this case some of the interactions cross the system boundaries (brick-earth, book-floor, book-earth). The only interaction that is inside the system is the one between the book and the brick.</p>
+
+    <h3>Example 3</h3>
+    <p data-p="e4"><strong>System = Brick, Book and Floor.</strong> In this case the only interactions that cross the system boundary are between the earth and the objects within the system. All other interactions are “internal” and will be ignored in our future force analysis.</p>
+
+    <div class="check" data-q="q5">
+      <span class="eyebrow">Checkpoint 5</span>
+      <p>Try it on the diagram: put only the <em>brick</em> in the system. How many interactions cross the boundary?</p>
+      <div class="opts"></div><p class="fb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="practice" id="practice">
+    <h2>Your turn: build the diagram</h2>
+    <p class="tip">Step 1: tap one circle, then another, to draw (or erase) an interaction line between them. Check when you think you have them all. Step 2: a system boundary appears. Tap every line that crosses it.</p>
+    <div class="lab">
+      <div class="scen-tabs" id="scenTabs"></div>
+      <div class="scenario"><h3 id="scenTitle"></h3><p id="scenText"></p></div>
+      <div class="steps"><span id="st1">1 · Draw interactions</span><span id="st2">2 · Find what crosses</span></div>
+      <svg id="prSvg" viewBox="0 0 440 330" role="img" aria-label="Practice interaction diagram"></svg>
+      <p class="tip" id="prTip"></p>
+      <div class="actions">
+        <button class="btn" id="prCheck">Check</button>
+        <button class="btn ghost" id="prReset">Start over</button>
+        <button class="btn ghost" id="prShow" hidden>Show me</button>
+        <button class="btn ghost" id="prNext" hidden>Next scenario →</button>
+      </div>
+      <p class="fb" id="prFb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="wrapup" id="wrapup">
+    <h2>Wrap up</h2>
+    <label for="reflect">In your own words: what is a system, and why are we allowed to choose where its boundary goes?</label>
+    <textarea id="reflect"></textarea>
+    <div class="status" id="status"></div>
+    <div class="actions">
+      <button class="btn" id="finishBtn">Finish: show my completion screen</button>
+      <button class="btn ghost" id="clearAll">Clear everything</button>
+    </div>
+    <p class="tip">Your completion screen shows your name, your results and a verification code. Screenshot it and upload it to Canvas.</p>
+    <p class="footer-note">Reading text ©Modeling Instruction – AMTA 2016 · U1 Reading v1.0</p>
+    <details class="teacher" id="teacherCheck">
+      <summary>Teacher: check a verification code</summary>
+      <div class="vgrid">
+        <label for="vName">Student name<input id="vName"></label>
+        <label for="vPeriod">Period<input id="vPeriod"></label>
+        <label for="vCode">Code<input id="vCode" placeholder="XXXXX-XXXXX"></label>
+        <button class="btn" id="vGo">Check</button>
+      </div>
+      <p class="fb" id="vOut" aria-live="polite"></p>
+    </details>
+  </section>
+</article>
+
+<aside class="log" id="log">
+  <div class="inner">
+    <h3>Annotation log</h3>
+    <div class="tally" id="tally"></div>
+    <p class="empty" id="logEmpty">No annotations yet. Select some words in the reading and tap a symbol in the bar at the top.</p>
+    <ul class="entries" id="entries"></ul>
+  </div>
+</aside>
+</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="done-screen" id="doneScreen" hidden role="dialog" aria-modal="true" aria-labelledby="dsTitle">
+  <div class="ds-card">
+    <div class="ds-head">
+      <span class="ds-badge" id="dsBadge">✓</span>
+      <div>
+        <span class="eyebrow">Read 1 · Interaction Diagrams</span>
+        <h2 id="dsTitle">Complete</h2>
+      </div>
+      <div class="ds-clock"><span class="eyebrow">Live time</span><span id="dsClock"></span></div>
+    </div>
+    <div class="ds-who"><span id="dsName"></span><span id="dsPeriod"></span></div>
+    <div class="ds-stats" id="dsStats"></div>
+    <div class="ds-cols">
+      <div class="ds-block"><span class="eyebrow">Reflection</span><p id="dsReflect"></p></div>
+      <div class="ds-block"><span class="eyebrow">Recent annotations</span><ul id="dsAnns"></ul></div>
+    </div>
+    <div class="ds-foot">
+      <div><span class="eyebrow">Verification code</span><span class="ds-code" id="dsCode"></span></div>
+      <p class="tip">Screenshot this whole screen and upload it to Canvas.<br>Chromebook: Ctrl + Shift + Show windows · Mac: ⌘ + Shift + 3 · Windows: Win + Shift + S</p>
+      <button class="btn ghost" id="dsBack">Back to the reading</button>
+    </div>
+  </div>
+  <div class="ds-water" id="dsWater" aria-hidden="true"></div>
+</div>
+
+<script>
+(function(){
+const TAGS={know:{sym:"✓",name:"Knew this"},imp:{sym:"!",name:"Important"},q:{sym:"?",name:"Confused"},voc:{sym:"★",name:"Key term"}};
+const GOAL=6, KEY="interaction-diagrams-v1";
+let S={name:"",period:"",anns:[],quiz:{},practice:{},reflect:""};
+try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){if(!S.startedAt)S.startedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2600);}
+
+/* identity */
+[["name","#stuName"],["period","#stuPeriod"]].forEach(([k,sel])=>{const i=$(sel);i.value=S[k]||"";i.addEventListener("input",()=>{S[k]=i.value;save();});});
+
+/* annotations */
+const reading=$("#reading");
+let pending=null;
+function textOffset(p,node,off){const r=document.createRange();r.selectNodeContents(p);try{r.setEnd(node,off);}catch(e){return 0;}return r.toString().length;}
+document.addEventListener("selectionchange",()=>{
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.rangeCount){return;}
+  const r=sel.getRangeAt(0);
+  const sn=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;
+  const p=sn&&sn.closest("[data-p]");
+  if(!p||!reading.contains(p)){pending=null;setLive(false);return;}
+  let start=textOffset(p,r.startContainer,r.startOffset);
+  let end=p.contains(r.endContainer)?textOffset(p,r.endContainer,r.endOffset):p.textContent.length;
+  const full=p.textContent;
+  while(start<end&&/\s/.test(full[start]))start++;
+  while(end>start&&/\s/.test(full[end-1]))end--;
+  if(end-start<2){pending=null;setLive(false);return;}
+  pending={p:p.dataset.p,start,end};setLive(true);
+});
+function setLive(on){$("#toolbar").classList.toggle("live",on);document.querySelectorAll(".tagbtn").forEach(b=>b.disabled=!on);
+  $("#tbHint").textContent=on?"Now tap a symbol to tag your selection.":"Select words in the reading, then tap a symbol.";}
+document.querySelectorAll(".tagbtn").forEach(b=>{
+  b.addEventListener("mousedown",e=>e.preventDefault());
+  b.addEventListener("click",()=>{
+    if(!pending)return;
+    const {p,start,end}=pending;
+    if(S.anns.some(a=>a.p===p&&a.start<end&&start<a.end)){toast("That overlaps an annotation you already made. Pick different words, or remove the old one in your log.");return;}
+    const pel=reading.querySelector(`[data-p="${p}"]`);
+    const ann={id:"a"+Date.now().toString(36),p,start,end,tag:b.dataset.tag,text:pel.textContent.slice(start,end),note:""};
+    S.anns.push(ann);save();applyMark(ann);
+    window.getSelection().removeAllRanges();pending=null;setLive(false);
+    renderLog(ann.id);
+  });
+});
+function applyMark(a){
+  const p=reading.querySelector(`[data-p="${a.p}"]`);if(!p)return;
+  const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);const nodes=[];let pos=0,n;
+  while(n=w.nextNode()){const len=n.nodeValue.length;if(pos+len>a.start&&pos<a.end)nodes.push([n,pos]);pos+=len;}
+  nodes.forEach(([node,np],i)=>{
+    const s=Math.max(0,a.start-np),e=Math.min(node.nodeValue.length,a.end-np);
+    let target=node;if(s>0)target=target.splitText(s);if(e-s<target.nodeValue.length)target.splitText(e-s);
+    const m=document.createElement("mark");m.className="ann t-"+a.tag+(i===0?" first":"");m.dataset.id=a.id;m.title=TAGS[a.tag].name;
+    target.parentNode.insertBefore(m,target);m.appendChild(target);
+  });
+}
+function removeMark(id){reading.querySelectorAll(`mark[data-id="${id}"]`).forEach(m=>{const par=m.parentNode;while(m.firstChild)par.insertBefore(m.firstChild,m);par.removeChild(m);par.normalize();});}
+reading.addEventListener("click",e=>{const m=e.target.closest("mark.ann");if(!m)return;if(!window.getSelection().isCollapsed)return;
+  const ta=document.querySelector(`.entry[data-id="${m.dataset.id}"] textarea`);if(ta){ta.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>ta.focus({preventScroll:true}),300);}});
+function renderLog(focusId){
+  const ul=$("#entries");ul.innerHTML="";
+  const order=[...reading.querySelectorAll("[data-p]")].map(e=>e.dataset.p);
+  const list=[...S.anns].sort((a,b)=>order.indexOf(a.p)-order.indexOf(b.p)||a.start-b.start);
+  list.forEach(a=>{
+    const li=document.createElement("li");li.className="entry";li.dataset.id=a.id;
+    const q=document.createElement("div");q.className="q";
+    q.innerHTML=`<span class="chip t-${a.tag}">${TAGS[a.tag].sym}</span>`;
+    const jump=document.createElement("button");jump.textContent="“"+(a.text.length>70?a.text.slice(0,68)+"…":a.text)+"”";
+    jump.addEventListener("click",()=>{const m=reading.querySelector(`mark[data-id="${a.id}"]`);if(m){m.scrollIntoView({block:"center",behavior:"smooth"});m.classList.add("flash");setTimeout(()=>m.classList.remove("flash"),1400);}});
+    q.appendChild(jump);
+    const ta=document.createElement("textarea");ta.id="note-"+a.id;ta.rows=2;ta.value=a.note||"";
+    ta.placeholder=a.tag==="q"?"What's your question?":a.tag==="voc"?"What does this term mean?":a.tag==="imp"?"Why does this matter?":"Where have you seen this before?";
+    ta.setAttribute("aria-label","Note for "+TAGS[a.tag].name+" annotation");
+    ta.addEventListener("input",()=>{a.note=ta.value;save();renderStatus();});
+    const rm=document.createElement("button");rm.className="rm";rm.textContent="Remove";
+    rm.addEventListener("click",()=>{S.anns=S.anns.filter(x=>x.id!==a.id);save();removeMark(a.id);renderLog();});
+    li.append(q,ta,rm);ul.appendChild(li);
+    if(a.id===focusId&&window.matchMedia("(min-width:1060px)").matches)setTimeout(()=>ta.focus({preventScroll:false}),50);
+  });
+  $("#logEmpty").hidden=S.anns.length>0;
+  const counts={know:0,imp:0,q:0,voc:0};S.anns.forEach(a=>counts[a.tag]++);
+  $("#tally").innerHTML=Object.keys(TAGS).map(k=>`<div class="${counts[k]?"met":""}" title="${TAGS[k].name}">${TAGS[k].sym} ${counts[k]}</div>`).join("");
+  const n=S.anns.length;$("#goalTxt").textContent=`${n} / ${GOAL}`;$("#goalBar").style.width=Math.min(100,n/GOAL*100)+"%";
+  if(focusId&&!window.matchMedia("(min-width:1060px)").matches)toast(`Tagged ${TAGS[S.anns.find(a=>a.id===focusId).tag].sym}. Add a note in your log at the bottom.`);
+  renderStatus();
+}
+S.anns.forEach(applyMark);
+
+/* checkpoints */
+const QUIZ={
+  q1:{opts:["Ana's choice","Ben's choice","Neither one. The boundary only changes what we choose to analyze."],a:2,
+     why:["The forces come from the objects and how they touch, not from where Ana draws a box.","Drawing a box can't push on anything. The brick still presses on the book either way.","Right. The event is the same; only the analysis changes."]},
+  q2:{opts:["Never. You always have to track every part.","When we care about how the whole phone interacts with other things, not how its parts interact.","Only when it's turned off."],a:1,
+     why:["Then we could never analyze anything. Even atoms are made of parts!","Right. Grouping parts into one 'object' is a choice that keeps the analysis simple.","Whether it's on doesn't matter. What matters is the question you're asking."]},
+  q3:{opts:["Your hand and a door you're pushing","Earth and an apple falling from a tree","Your feet and the floor"],a:1,
+     why:["Your hand is touching the door, so that's a contact interaction.","Right. Gravity acts at a distance; the apple isn't touching Earth while it falls.","Your feet touch the floor, so that's a contact interaction."]},
+  q4:{opts:["Nothing. Only J is doing the pushing.","K pushes J to the right.","K pushes J to the left, with the same strength.","K pushes J to the left, but more weakly."],a:2,
+     why:["Every force is an interaction. If J pushes K, K pushes J too.","Check the arrowheads: the two forces point in opposite directions.","Right. Same force, opposite directions, as the two arrowheads show.","The reading says both objects experience the same force."]},
+  q5:{opts:["1","2","3"],a:1,
+     why:["The brick touches the book, but don't forget something that acts at a distance.","Right: brick–book and brick–Earth. The brick never touches the floor.","The brick doesn't touch the floor, so there's no brick–floor line."]}
+};
+document.querySelectorAll(".check").forEach(box=>{
+  const id=box.dataset.q,Q=QUIZ[id],wrap=box.querySelector(".opts"),fb=box.querySelector(".fb");
+  Q.opts.forEach((o,i)=>{const b=document.createElement("button");b.className="opt";b.textContent=o;
+    b.addEventListener("click",()=>{grade(i);S.quiz[id]=S.quiz[id]||{first:i,tries:0};S.quiz[id].tries++;if(i===Q.a)S.quiz[id].solved=true;save();renderStatus();});
+    wrap.appendChild(b);});
+  function grade(i){wrap.querySelectorAll(".opt").forEach((b,j)=>{b.classList.toggle("right",j===i&&i===Q.a);b.classList.toggle("wrong",j===i&&i!==Q.a);});
+    fb.textContent=Q.why[i];fb.className="fb "+(i===Q.a?"good":"bad");}
+  if(S.quiz[id]&&S.quiz[id].solved)grade(Q.a);
+});
+
+/* diagram engine */
+const NS="http://www.w3.org/2000/svg";
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+const K=(a,b)=>[a,b].sort().join("|");
+let uid=0;
+class Diagram{
+  constructor(svg,o){this.svg=svg;this.uid="d"+(uid++);Object.assign(this,{objects:[],lines:new Set(),system:new Set(),mode:"explore",picked:new Set(),showClass:true,onChange:()=>{}},o);this.sel=null;this.render();}
+  obj(id){return this.objects.find(o=>o.id===id);}
+  r(o){return o.r||32;}
+  cls(key){if(!this.system.size)return"neutral";const[a,b]=key.split("|");const ia=this.system.has(a),ib=this.system.has(b);return ia&&ib?"internal":(ia||ib)?"cross":"outside";}
+  label(key){return key.split("|").map(id=>this.obj(id).label).join("–");}
+  render(){
+    const svg=this.svg;svg.innerHTML="";svg.classList.toggle("clickable",this.mode==="explore"||this.mode==="build");
+    const defs=mk("defs",{},svg);
+    ["neutral","cross","internal","outside","picked"].forEach(c=>{const m=mk("marker",{id:`${this.uid}-${c}`,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"11",markerHeight:"11",markerUnits:"userSpaceOnUse",orient:"auto-start-reverse"},defs);
+      const col={neutral:"--ink",cross:"--sys",internal:"--muted",outside:"--faint",picked:"--accent"}[c];mk("path",{d:"M0,0 L10,5 L0,10 z",style:`fill:var(${col})`},m);});
+    if(this.system.size){
+      const mem=[...this.system].map(id=>this.obj(id)),pad=16;
+      const x0=Math.min(...mem.map(o=>o.x-this.r(o)))-pad,x1=Math.max(...mem.map(o=>o.x+this.r(o)))+pad,y0=Math.min(...mem.map(o=>o.y-this.r(o)))-pad,y1=Math.max(...mem.map(o=>o.y+this.r(o)))+pad;
+      const intrudes=this.objects.some(o=>!this.system.has(o.id)&&o.x+this.r(o)>x0&&o.x-this.r(o)<x1&&o.y+this.r(o)>y0&&o.y-this.r(o)<y1);
+      if(!intrudes){mk("rect",{class:"boundary",x:x0,y:y0,width:x1-x0,height:y1-y0,rx:22},svg);const t=mk("text",{class:"blabel",x:x0+4,y:y0-6},svg);t.textContent="SYSTEM";}
+      else mem.forEach(o=>{mk("circle",{class:"boundary",cx:o.x,cy:o.y,r:this.r(o)+12},svg);const t=mk("text",{class:"blabel","text-anchor":"middle",x:o.x,y:o.y-this.r(o)-18},svg);t.textContent="SYSTEM";});
+    }
+    const lg=mk("g",{},svg);
+    this.lines.forEach(key=>{
+      const[a,b]=key.split("|").map(id=>this.obj(id));const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;
+      const p1=[a.x+ux*(this.r(a)+3),a.y+uy*(this.r(a)+3)],p2=[b.x-ux*(this.r(b)+3),b.y-uy*(this.r(b)+3)];
+      const c=this.mode==="pick"?(this.picked.has(key)?"picked":"neutral"):(this.showClass?this.cls(key):"neutral");
+      mk("line",{class:"ln "+c,x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],"marker-start":`url(#${this.uid}-${c})`,"marker-end":`url(#${this.uid}-${c})`},lg);
+      if(this.mode==="pick"){const h=mk("line",{class:"hit",x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],tabindex:"0",role:"button","aria-pressed":this.picked.has(key),"aria-label":this.label(key)+" interaction"},lg);
+        const go=()=>{this.picked.has(key)?this.picked.delete(key):this.picked.add(key);this.render();this.onChange();const nh=[...this.svg.querySelectorAll(".hit")].find(x=>x.getAttribute("aria-label")===this.label(key)+" interaction");if(nh)nh.focus({preventScroll:true});};
+        h.addEventListener("click",go);h.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});}
+    });
+    this.objects.forEach(o=>{
+      const live=this.mode==="explore"||this.mode==="build";
+      const g=mk("g",{class:"node"+(this.system.has(o.id)?" insys":"")+(this.sel===o.id?" sel":""),"data-id":o.id,"aria-label":o.label},svg);
+      if(live){g.setAttribute("tabindex","0");g.setAttribute("role","button");}
+      mk("circle",{cx:o.x,cy:o.y,r:this.r(o)},g);const t=mk("text",{x:o.x,y:o.y},g);t.textContent=o.label;
+      if(live){const go=()=>this.tap(o.id);g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});}
+    });
+  }
+  tap(id){
+    const kb=document.activeElement&&document.activeElement.closest&&document.activeElement.closest(".node");
+    if(this.mode==="explore"){this.system.has(id)?this.system.delete(id):this.system.add(id);}
+    else if(this.mode==="build"){if(this.sel===null)this.sel=id;else if(this.sel===id)this.sel=null;else{const k=K(this.sel,id);this.lines.has(k)?this.lines.delete(k):this.lines.add(k);this.sel=null;}}
+    else return;
+    this.render();this.onChange();
+    if(kb){const n=this.svg.querySelector(`.node[data-id="${id}"]`);if(n)n.focus({preventScroll:true});}
+  }
+}
+
+/* examples explorer */
+const exObjs=[{id:"brick",label:"Brick",x:140,y:72},{id:"book",label:"Book",x:140,y:165},{id:"floor",label:"Floor",x:140,y:258},{id:"earth",label:"Earth",x:330,y:165,r:40}];
+const exLines=["brick|book","book|floor","brick|earth","book|earth","floor|earth"].map(s=>K(...s.split("|")));
+const ex=new Diagram($("#exSvg"),{objects:exObjs,lines:new Set(exLines),system:new Set(["book"]),mode:"explore",onChange:exUpdate});
+const presets={0:[],1:["book"],2:["brick","book"],3:["brick","book","floor"]};
+document.querySelectorAll("#exPresets .pill").forEach(b=>b.addEventListener("click",()=>{ex.system=new Set(presets[b.dataset.preset]);ex.render();exUpdate();}));
+function exUpdate(){
+  const sys=[...ex.system].sort().join();
+  document.querySelectorAll("#exPresets .pill").forEach(b=>b.setAttribute("aria-pressed",b.dataset.preset!=="0"&&presets[b.dataset.preset].slice().sort().join()===sys?"true":"false"));
+  const R=$("#exReadout");
+  if(!ex.system.size){R.innerHTML=`<div><b>No system yet</b>Tap circles to choose what's inside the boundary.</div>`;return;}
+  const cross=[...ex.lines].filter(k=>ex.cls(k)==="cross").map(k=>ex.label(k)),inn=[...ex.lines].filter(k=>ex.cls(k)==="internal").map(k=>ex.label(k));
+  R.innerHTML=`<div class="x"><b>Crosses boundary (${cross.length})</b>${cross.join(", ")||"none"}</div><div class="in"><b>Internal (${inn.length})</b>${inn.join(", ")||"none"}</div>`;
+}
+exUpdate();
+
+/* practice */
+const SCEN=[
+  {id:"box",title:"Holding a box",text:"You stand on the floor holding a box in your hands. The box is not touching the floor.",
+   objects:[{id:"person",label:"Person",x:120,y:90},{id:"box",label:"Box",x:300,y:90},{id:"floor",label:"Floor",x:120,y:250},{id:"earth",label:"Earth",x:310,y:245,r:40}],
+   answer:["person|box","person|floor","person|earth","box|earth","floor|earth"],system:["box"],
+   hints:{"box|floor":"The box isn't touching the floor. Does it push on the floor directly?"}},
+  {id:"magnet",title:"Fridge magnet",text:"A magnet sticks to the door of a refrigerator. The fridge sits on the kitchen floor.",
+   objects:[{id:"magnet",label:"Magnet",x:100,y:100},{id:"fridge",label:"Fridge",x:240,y:100},{id:"floor",label:"Floor",x:240,y:250},{id:"earth",label:"Earth",x:380,y:200,r:40}],
+   answer:["magnet|fridge","magnet|earth","fridge|floor","fridge|earth","floor|earth"],system:["magnet","fridge"],
+   hints:{"magnet|floor":"The magnet only touches the fridge, and the floor isn't magnetic. Does the magnet push or pull on the floor directly?"}},
+  {id:"ball",title:"Ball in flight",text:"A soccer ball has just been kicked and is flying through the air. Nobody is touching it now.",
+   objects:[{id:"ball",label:"Ball",x:220,y:90},{id:"air",label:"Air",x:100,y:240},{id:"earth",label:"Earth",x:330,y:240,r:40}],
+   answer:["ball|air","ball|earth","air|earth"],system:["ball"],hints:{}},
+  {id:"trailer",title:"Towing a trailer",text:"A car tows a trailer along a flat road. Both have wheels on the road.",
+   objects:[{id:"car",label:"Car",x:110,y:95},{id:"trailer",label:"Trailer",x:300,y:95},{id:"road",label:"Road",x:205,y:240},{id:"earth",label:"Earth",x:370,y:250,r:40}],
+   answer:["car|trailer","car|road","trailer|road","car|earth","trailer|earth","road|earth"],system:["car","trailer"],hints:{}}
+];
+SCEN.forEach(s=>{s.answer=s.answer.map(x=>K(...x.split("|")));const h={};Object.keys(s.hints).forEach(k=>{h[K(...k.split("|"))]=s.hints[k];});s.hints=h;
+  s.cross=s.answer.filter(k=>{const[a,b]=k.split("|");return s.system.includes(a)!==s.system.includes(b);});});
+let cur=0,step=1,tries=0;
+const pr=new Diagram($("#prSvg"),{objects:[],mode:"build",onChange:()=>{$("#prFb").textContent="";}});
+function sysName(s){return s.system.map(id=>s.objects.find(o=>o.id===id).label).join(" + ");}
+function loadScen(i){
+  cur=i;const s=SCEN[i],st=S.practice[s.id]||{};tries=0;
+  $("#scenTitle").textContent=s.title;$("#scenText").textContent=s.text;
+  pr.objects=s.objects;pr.sel=null;pr.picked=new Set();
+  if(st.step2){step=3;pr.lines=new Set(s.answer);pr.system=new Set(s.system);pr.mode="static";pr.showClass=true;}
+  else if(st.step1){step=2;pr.lines=new Set(s.answer);pr.system=new Set(s.system);pr.mode="pick";}
+  else{step=1;pr.lines=new Set();pr.system=new Set();pr.mode="build";}
+  pr.render();ui();$("#prFb").textContent="";
+}
+function ui(){
+  const s=SCEN[cur];
+  $("#st1").className=step>1?"ok":"on";$("#st2").className=step===3?"ok":step===2?"on":"";
+  $("#prTip").textContent=step===1?"Tap two circles to connect them. Tap the same pair again to erase. Remember interactions that act at a distance.":
+    step===2?`System = ${sysName(s)}. Tap every interaction line that crosses the dashed boundary.`:
+    `Done. Teal lines cross the boundary of the ${sysName(s)} system; gray lines are internal.`;
+  $("#prCheck").hidden=step===3;$("#prShow").hidden=!(tries>=2&&step<3);$("#prNext").hidden=step!==3;
+  $("#scenTabs").innerHTML="";
+  SCEN.forEach((sc,i)=>{const b=document.createElement("button");b.className="pill";b.setAttribute("aria-pressed",i===cur);
+    b.innerHTML=`${i+1}. ${sc.title}${S.practice[sc.id]&&S.practice[sc.id].step2?' <span class="done">✓</span>':""}`;b.addEventListener("click",()=>loadScen(i));$("#scenTabs").appendChild(b);});
+}
+function feedback(msg,good){const f=$("#prFb");f.textContent=msg;f.className="fb "+(good?"good":"bad");}
+$("#prCheck").addEventListener("click",()=>{
+  const s=SCEN[cur];S.practice[s.id]=S.practice[s.id]||{tries1:0,tries2:0};const st=S.practice[s.id];
+  if(step===1){
+    const missing=s.answer.filter(k=>!pr.lines.has(k)),extra=[...pr.lines].filter(k=>!s.answer.includes(k));
+    st.tries1++;
+    if(!missing.length&&!extra.length){st.step1=true;save();step=2;tries=0;pr.system=new Set(s.system);pr.mode="pick";pr.sel=null;pr.render();ui();feedback(`All ${s.answer.length} interactions found. Now the system boundary is drawn.`,true);renderStatus();return;}
+    tries++;const msg=[];
+    if(missing.length)msg.push(`You're missing ${missing.length} interaction${missing.length>1?"s":""}.`+(missing.some(k=>k.includes("earth"))?" Hint: which objects does Earth pull on?":""));
+    if(extra.length){const h=extra.map(k=>s.hints[k]).find(Boolean);msg.push(`${extra.length} line${extra.length>1?"s don't":" doesn't"} belong.`+(h?" "+h:" Do those two objects really push or pull on each other?"));}
+    save();ui();feedback(msg.join(" "),false);
+  }else if(step===2){
+    st.tries2++;const missing=s.cross.filter(k=>!pr.picked.has(k)),extra=[...pr.picked].filter(k=>!s.cross.includes(k));
+    if(!missing.length&&!extra.length){st.step2=true;save();step=3;pr.mode="static";pr.showClass=true;pr.render();ui();
+      const inn=s.answer.filter(k=>!s.cross.includes(k)).map(k=>pr.label(k));feedback(`Correct: ${s.cross.length} cross the boundary.`+(inn.length?` ${inn.join(", ")} ${inn.length>1?"are":"is"} internal.`:""),true);renderStatus();return;}
+    tries++;save();ui();
+    feedback((extra.length?`${extra.length} of your picks ${extra.length>1?"are":"is"} internal: a crossing line has exactly one end inside the boundary. `:"")+(missing.length?`${missing.length} crossing line${missing.length>1?"s are":" is"} still unpicked.`:""),false);
+  }
+});
+$("#prShow").addEventListener("click",()=>{
+  const s=SCEN[cur];
+  if(step===1){pr.lines=new Set(s.answer);pr.sel=null;pr.render();feedback("Here are the interactions. Look for the ones you missed, then press Check.",true);}
+  else{pr.picked=new Set(s.cross);pr.render();feedback("These are the lines with exactly one end inside the boundary. Press Check.",true);}
+  S.practice[s.id].shown=true;save();
+});
+$("#prReset").addEventListener("click",()=>{delete S.practice[SCEN[cur].id];save();loadScen(cur);renderStatus();});
+$("#prNext").addEventListener("click",()=>{const nxt=SCEN.findIndex(sc=>!(S.practice[sc.id]&&S.practice[sc.id].step2));loadScen(nxt>=0?nxt:(cur+1)%SCEN.length);});
+loadScen(Math.max(0,SCEN.findIndex(sc=>!(S.practice[sc.id]&&S.practice[sc.id].step2))));
+
+/* wrap up */
+const refl=$("#reflect");refl.value=S.reflect||"";refl.addEventListener("input",()=>{S.reflect=refl.value;save();renderStatus();});
+function annGoalMet(){const c={};S.anns.forEach(a=>c[a.tag]=1);return S.anns.length>=GOAL&&Object.keys(TAGS).every(k=>c[k]);}
+function renderStatus(){
+  const q=Object.keys(QUIZ),qDone=q.filter(k=>S.quiz[k]&&S.quiz[k].solved).length;
+  const pDone=SCEN.filter(s=>S.practice[s.id]&&S.practice[s.id].step2).length,notes=S.anns.filter(a=>a.note.trim()).length;
+  const row=(ok,t)=>`<span class="${ok?"ok":"no"}">${ok?"✓":"○"} ${t}</span>`;
+  $("#status").innerHTML=row(annGoalMet(),`Annotations: ${S.anns.length} (goal ${GOAL}, every symbol used), ${notes} with notes`)+row(qDone===q.length,`Checkpoints: ${qDone} of ${q.length} solved`)+row(pDone===SCEN.length,`Diagrams built: ${pDone} of ${SCEN.length}`)+row(S.reflect.trim().length>20,"Reflection written");
+}
+/* completion screen + verification code */
+const A32="0123456789ABCDEFGHJKMNPQRSTVWXYZ",MASK=0x5A3C9E17B2D4n,EPOCH=Date.UTC(2026,0,1);
+function fnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h;}
+function norm(s){return (s||"").trim().toLowerCase().replace(/\s+/g," ");}
+function packCode(name,period,f){
+  const payload=(BigInt(f.mins)<<14n)|(BigInt(f.anns)<<8n)|(BigInt(f.qf)<<5n)|(BigInt(f.dg)<<2n)|(BigInt(f.show)<<1n)|BigInt(f.refl);
+  const chk=BigInt(fnv(norm(name)+"|"+norm(period)+"|"+payload.toString())&0x3FFF);
+  let full=((payload<<14n)|chk)^MASK,s="";for(let i=0;i<10;i++){s=A32[Number(full&31n)]+s;full>>=5n;}
+  return s.slice(0,5)+"-"+s.slice(5);
+}
+function unpackCode(name,period,code){
+  const c=(code||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1");
+  if(c.length!==10)return null;let full=0n;
+  for(const ch of c){const v=A32.indexOf(ch);if(v<0)return null;full=(full<<5n)|BigInt(v);}
+  full^=MASK;const chk=full&0x3FFFn,payload=full>>14n;
+  if(BigInt(fnv(norm(name)+"|"+norm(period)+"|"+payload.toString())&0x3FFF)!==chk)return null;
+  return {mins:Number(payload>>14n),anns:Number((payload>>8n)&63n),qf:Number((payload>>5n)&7n),dg:Number((payload>>2n)&7n),show:Number((payload>>1n)&1n),refl:Number(payload&1n)};
+}
+const fmtTime=t=>new Date(t).toLocaleString([], {weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+function facts(){
+  const q=Object.keys(QUIZ);
+  return {qf:q.filter(k=>S.quiz[k]&&S.quiz[k].first===QUIZ[k].a).length,qDone:q.filter(k=>S.quiz[k]&&S.quiz[k].solved).length,
+    dg:SCEN.filter(s=>S.practice[s.id]&&S.practice[s.id].step2).length,show:SCEN.some(s=>S.practice[s.id]&&S.practice[s.id].shown)?1:0,
+    refl:S.reflect.trim().length>20?1:0,notes:S.anns.filter(a=>a.note.trim()).length};
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+let clockT=null;
+function openDone(){
+  if(!S.name.trim()||!S.period.trim()){toast("Type your name and period at the top first.");const i=$(S.name.trim()?"#stuPeriod":"#stuName");i.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>i.focus({preventScroll:true}),300);return;}
+  const F=facts(),complete=annGoalMet()&&F.qDone===Object.keys(QUIZ).length&&F.dg===SCEN.length&&F.refl;
+  if(complete&&!S.finishedAt){S.finishedAt=Date.now();save();}
+  const fin=complete?S.finishedAt:Date.now();
+  const left=[!annGoalMet(),F.qDone<5,F.dg<4,!F.refl].filter(Boolean).length;
+  const ds=$("#doneScreen");ds.classList.toggle("incomplete",!complete);
+  $("#dsBadge").textContent=complete?"✓":"!";
+  $("#dsTitle").textContent=complete?"Complete":`Not finished: ${left} part${left>1?"s":""} left`;
+  $("#dsName").textContent=S.name.trim();$("#dsPeriod").textContent="Period "+S.period.trim();
+  const c={know:0,imp:0,q:0,voc:0};S.anns.forEach(a=>c[a.tag]++);
+  const mins=S.startedAt?Math.max(1,Math.round((fin-S.startedAt)/60000)):null;
+  const tile=(miss,big,label,sub)=>`<div class="ds-stat${miss?" miss":""}"><span class="eyebrow">${label}</span><b>${big}</b><small>${sub}</small></div>`;
+  $("#dsStats").innerHTML=
+    tile(!annGoalMet(),S.anns.length,"Annotations",`✓${c.know} !${c.imp} ?${c.q} ★${c.voc} · ${F.notes} with notes`)+
+    tile(F.qDone<5,`${F.qf}/5`,"Checkpoints","right on first try"+(F.qDone<5?` · ${5-F.qDone} unsolved`:""))+
+    tile(F.dg<4,`${F.dg}/4`,"Diagrams built",F.show?"used Show me":"no answers revealed")+
+    tile(false,mins===null?"–":mins>=600?">10 h":mins+" min","Time on task",S.startedAt?"started "+fmtTime(S.startedAt):"");
+  $("#dsReflect").textContent=S.reflect.trim()?("“"+(S.reflect.trim().length>300?S.reflect.trim().slice(0,298)+"…":S.reflect.trim())+"”"):"No reflection yet.";
+  $("#dsAnns").innerHTML=S.anns.slice(-3).reverse().map(a=>`<li><span class="chip t-${a.tag}">${TAGS[a.tag].sym}</span> “${esc(a.text.length>60?a.text.slice(0,58)+"…":a.text)}”${a.note.trim()?" — "+esc(a.note.trim().slice(0,80)):""}</li>`).join("")||"<li>None yet.</li>";
+  const code=packCode(S.name,S.period,{mins:Math.min(1048575,Math.max(0,Math.floor((fin-EPOCH)/60000))),anns:Math.min(63,S.anns.length),qf:F.qf,dg:F.dg,show:F.show,refl:F.refl});
+  $("#dsCode").textContent=code;
+  // watermark
+  const ink=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#172031";
+  const l1=esc(`${S.name.trim()} · P${S.period.trim()}`),l2=esc(`${fmtTime(fin)} · ${code}`);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="380" height="200"><g transform="rotate(-24 190 100)" fill="${ink}" fill-opacity=".09" font-family="sans-serif" font-weight="700" text-anchor="middle"><text x="190" y="92" font-size="20">${l1}</text><text x="190" y="118" font-size="13">${l2}</text></g></svg>`;
+  $("#dsWater").style.backgroundImage=`url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+  const tick=()=>{$("#dsClock").textContent=new Date().toLocaleString([], {weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});};
+  tick();clearInterval(clockT);clockT=setInterval(tick,1000);
+  ds.hidden=false;document.body.style.overflow="hidden";ds.scrollTop=0;$("#dsBack").focus({preventScroll:true});
+}
+function closeDone(){$("#doneScreen").hidden=true;document.body.style.overflow="";clearInterval(clockT);$("#finishBtn").focus({preventScroll:true});}
+$("#finishBtn").addEventListener("click",openDone);
+$("#dsBack").addEventListener("click",closeDone);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#doneScreen").hidden)closeDone();});
+$("#vGo").addEventListener("click",()=>{
+  const r=unpackCode($("#vName").value,$("#vPeriod").value,$("#vCode").value),o=$("#vOut");
+  if(!r){o.className="fb bad";o.textContent="This code does not match that name and period. Check spelling, or the screenshot may have been altered or shared.";return;}
+  o.className="fb good";
+  o.textContent=`Valid. Screen made ${fmtTime(EPOCH+r.mins*60000)} · ${r.anns} annotations · ${r.qf}/5 checkpoints right first try · ${r.dg}/4 diagrams · Show me ${r.show?"used":"not used"} · reflection ${r.refl?"written":"missing"}. Compare these with the screenshot.`;
+});
+const clr=$("#clearAll");let armed=false;
+clr.addEventListener("click",()=>{
+  if(!armed){armed=true;clr.textContent="Tap again to erase all your work";setTimeout(()=>{armed=false;clr.textContent="Clear everything";},4000);return;}
+  S.anns.forEach(a=>removeMark(a.id));S={name:S.name,period:S.period,anns:[],quiz:{},practice:{},reflect:""};save();
+  refl.value="";document.querySelectorAll(".check .opt").forEach(b=>b.classList.remove("right","wrong"));document.querySelectorAll(".check .fb").forEach(f=>f.textContent="");
+  loadScen(0);renderLog();armed=false;clr.textContent="Clear everything";toast("Cleared");
+});
+renderLog();
+})();
+</script>
+
+</body>
+</html>
