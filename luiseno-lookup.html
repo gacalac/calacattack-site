@@ -1,0 +1,2326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Téelamal Powónla – Luiseño ⇄ English lookup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gentium+Plus:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  :root {
+    --bg: #F2F4F1;
+    --surface: #FFFFFF;
+    --ink: #1C2A31;
+    --muted: #566870;
+    --line: #D3DBD7;
+    --accent: #1F5C63;
+    --accent-ink: #FFFFFF;
+    --tint: #E3EEED;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11181B;
+      --surface: #1A2428;
+      --ink: #E6EDEA;
+      --muted: #9CADB3;
+      --line: #2C3A40;
+      --accent: #7CC4C9;
+      --accent-ink: #0F1A1D;
+      --tint: #1D3034;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11181B;
+    --surface: #1A2428;
+    --ink: #E6EDEA;
+    --muted: #9CADB3;
+    --line: #2C3A40;
+    --accent: #7CC4C9;
+    --accent-ink: #0F1A1D;
+    --tint: #1D3034;
+    color-scheme: dark;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+  main {
+    width: min(44rem, 100% - 2rem);
+    margin: 0 auto;
+    padding: 2rem 0 3rem;
+  }
+  .lu, h1, textarea.lu-input, .chars button, .ref .chart td {
+    font-family: "Gentium Plus", "Charis SIL", Georgia, "Times New Roman", serif;
+  }
+  h1 {
+    margin: 0;
+    font-size: 2.4rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+  }
+  .sub { margin: 0.4rem 0 1.5rem; color: var(--muted); }
+
+  .modes {
+    display: flex;
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 3px;
+    gap: 3px;
+    margin-bottom: 0.9rem;
+  }
+  .modes button {
+    font: inherit;
+    font-weight: 600;
+    flex: 1;
+    min-height: 2.75rem;
+    padding: 0 0.4rem;
+    white-space: nowrap;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .modes button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 5.5rem;
+    resize: vertical;
+    padding: 0.8rem 0.9rem;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.3rem;
+    line-height: 1.4;
+  }
+  textarea.lu-input { font-size: 1.45rem; }
+  textarea::placeholder { color: var(--muted); opacity: 0.85; }
+
+  .chars { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .chars[hidden] { display: none; }
+  .chars button {
+    min-width: 2.75rem; min-height: 2.75rem;
+    font-size: 1.3rem;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  button:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  #out { margin-top: 1.6rem; }
+
+  .list { list-style: none; margin: 0; padding: 0; }
+  .row { padding: 0.85rem 0; border-top: 1px solid var(--line); }
+  .row:last-child { border-bottom: 1px solid var(--line); }
+  .row .main { font-size: 1.35rem; line-height: 1.3; }
+  .row .main .lu { font-size: 1.6rem; color: var(--accent); }
+  .row .side { color: var(--muted); font-size: 0.95rem; margin-top: 0.15rem; }
+  .row .side .lu { font-size: 1.1rem; color: var(--accent); }
+  .tag {
+    display: inline-block; margin-left: 0.5rem; padding: 0 0.5rem;
+    border: 1px solid var(--line); border-radius: 999px; font-size: 0.85rem;
+  }
+  .more { margin: 0.8rem 0 0; color: var(--muted); font-size: 0.95rem; }
+
+  .hint {
+    margin: 0 0 1rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--tint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  .hint p { margin: 0; }
+  .hint .fine { margin-top: 0.3rem; color: var(--muted); font-size: 0.92rem; }
+  .hint .lu { color: var(--accent); font-size: 1.15rem; }
+
+  .wfw {
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 0.8rem 0.9rem 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+  .wfw .label { color: var(--muted); font-size: 0.92rem; }
+  .wfw .line { font-size: 1.7rem; line-height: 1.45; margin-top: 0.1rem; overflow-wrap: anywhere; }
+  .wfw .line .lu { color: var(--accent); }
+  .wfw .unk {
+    display: inline-block; padding: 0 0.45rem; border: 1.5px dashed var(--muted);
+    border-radius: 6px; color: var(--muted); font-size: 1.2rem; vertical-align: 0.1em;
+  }
+  .wfw .fine { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.92rem; }
+
+  .pr { padding: 0.7rem 0; border-top: 1px solid var(--line); }
+  .pr:last-child { border-bottom: 1px solid var(--line); }
+  .pr .pick { font-size: 1.2rem; }
+  .pr .pick .lu { font-size: 1.45rem; color: var(--accent); }
+  .pr .src { color: var(--muted); font-size: 0.95rem; }
+  .pr .src .lu { font-size: 1.05rem; color: var(--accent); }
+  .pr .also { color: var(--muted); font-size: 0.95rem; }
+  .pr .also .lu { font-size: 1.1rem; color: var(--accent); }
+
+  .empty p { margin: 0 0 0.7rem; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chips button {
+    font: inherit; min-height: 2.75rem; padding: 0 0.95rem;
+    border: 1.5px solid var(--line); border-radius: 999px;
+    background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .chips button.lu { font-size: 1.2rem; }
+
+
+  .ref { margin-top: 2.2rem; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .ref summary { cursor: pointer; padding: 0.8rem 0.9rem; font-weight: 600; min-height: 2.75rem; }
+  .ref[open] summary { border-bottom: 1px solid var(--line); }
+  .ref table { width: 100%; border-collapse: collapse; margin: 0; }
+  .ref th, .ref td { text-align: left; vertical-align: top; padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--line); }
+  .ref thead th { color: var(--muted); font-weight: 400; font-size: 0.92rem; }
+  .ref tbody th { font-weight: 400; width: 28%; }
+  .ref .chart td { font-size: 1.3rem; color: var(--accent); line-height: 1.4; }
+  .ref .chart td .d { font-family: "Source Sans 3", system-ui, sans-serif; font-size: 0.85rem; color: var(--muted); margin-left: 0.3rem; white-space: nowrap; }
+  .ref .rules { margin: 0; padding: 0.8rem 0.9rem 0.2rem 2rem; font-size: 0.98rem; }
+  .ref .rules li { margin-bottom: 0.6rem; }
+  .ref .rules .lu { color: var(--accent); font-size: 1.12rem; white-space: nowrap; }
+  .ref .src-note { margin: 0; padding: 0 0.9rem 0.9rem; color: var(--muted); font-size: 0.92rem; }
+  .ref .src-note .lu { color: var(--accent); }
+
+
+  .vf { margin: 0.5rem 0 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .vf summary { cursor: pointer; padding: 0.5rem 0.75rem; min-height: 2.75rem; display: flex; align-items: center; color: var(--muted); }
+  .vf summary .lu { color: var(--accent); font-size: 1.15rem; margin: 0 0.3rem; }
+  .vf[open] summary { border-bottom: 1px solid var(--line); }
+  .vtable { width: 100%; border-collapse: collapse; }
+  .vtable th, .vtable td { text-align: left; vertical-align: top; padding: 0.4rem 0.75rem; border-bottom: 1px solid var(--line); font-size: 0.98rem; }
+  .vtable thead th { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+  .vtable tbody th { font-weight: 400; color: var(--muted); width: 42%; }
+  .vtable td .lu { font-size: 1.25rem; color: var(--accent); }
+  .vtable td .alt { color: var(--muted); font-size: 0.9rem; }
+  .vf .fine, .ref .fine { margin: 0; padding: 0.6rem 0.75rem; color: var(--muted); font-size: 0.92rem; }
+  .scroll { overflow-x: auto; }
+  .vrules { margin: 0; padding: 0.8rem 0.9rem 0.2rem 2rem; font-size: 0.98rem; }
+  .vrules li { margin-bottom: 0.6rem; }
+  .vrules .lu { color: var(--accent); font-size: 1.12rem; white-space: nowrap; }
+  .vlist-group { padding: 0.4rem 0.9rem 0.2rem; }
+  .vlist-group h3 { margin: 0.6rem 0 0.2rem; font-size: 1rem; font-weight: 600; }
+  .vlist-group p { margin: 0 0 0.4rem; line-height: 1.9; }
+  .vlist-group .lu { color: var(--accent); font-size: 1.2rem; }
+  .vlist-group .g { color: var(--muted); font-size: 0.9rem; margin: 0 0.5rem 0 0.15rem; }
+  .vlist-group .u { opacity: 0.75; }
+  .sent .notes { margin: 0.7rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; }
+  .sent .notes li { margin-bottom: 0.3rem; }
+  .sent .alts { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  .sent .alts .lu { color: var(--accent); font-size: 1.1rem; }
+
+  .note { margin-top: 2.5rem; color: var(--muted); font-size: 0.92rem; max-width: 38rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Téelamal Powónla</h1>
+  <p class="sub">Luiseño–English vocabulary lookup</p>
+
+  <div class="modes" role="group" aria-label="Translation direction">
+    <button type="button" id="modeEn" aria-pressed="true">English → Luiseño</button>
+    <button type="button" id="modeLu" aria-pressed="false">Luiseño → English</button>
+  </div>
+
+  <label for="q" class="visually-hidden">Text to translate</label>
+  <textarea id="q" rows="3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+  <div class="chars" id="chars" hidden role="group" aria-label="Luiseño letters">
+    <button type="button" data-c="'" aria-label="glottal stop (apostrophe)">'</button>
+    <button type="button" data-c="á">á</button>
+    <button type="button" data-c="é">é</button>
+    <button type="button" data-c="í">í</button>
+    <button type="button" data-c="ó">ó</button>
+    <button type="button" data-c="ú">ú</button>
+    <button type="button" data-c="ş">ş</button>
+  </div>
+
+  <div id="out" aria-live="polite"></div>
+
+
+  <details class="ref" id="ref">
+    <summary>Equative forms: am / are / is, was / were</summary>
+    <table class="chart">
+      <thead><tr><th scope="col">Subject</th><th scope="col">Now</th><th scope="col">Was</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">I</th><td class="lu">nóon</td><td class="lu">nóonil</td></tr>
+        <tr><th scope="row">you</th><td class="lu">'ómmup</td><td class="lu">'ómpil</td></tr>
+        <tr><th scope="row">he / she / it</th><td class="lu">'ivíp <span class="d">very near</span><br>'óonop <span class="d">near</span><br>pó''up <span class="d">mid</span><br>wunáalup <span class="d">far</span></td><td class="lu">pó'pil</td></tr>
+        <tr><th scope="row">we</th><td class="lu">cháamcha</td><td class="lu">cháamchamil</td></tr>
+        <tr><th scope="row">you guys</th><td class="lu">'omómmum</td><td class="lu">'omómmil</td></tr>
+        <tr><th scope="row">they</th><td class="lu">'ivímpum <span class="d">very near</span><br>'óonomumpum <span class="d">near</span><br>pomómpum <span class="d">mid</span><br>wunáalumpum <span class="d">far</span></td><td class="lu">pomómmil</td></tr>
+      </tbody>
+    </table>
+    <ul class="rules">
+      <li><span class="lu">Nóon</span> is <span class="lu">nóo</span> plus the equative suffix <span class="lu">-n</span>. The suffix goes on the first stressed word of the sentence and is used only after a vowel or a <span class="lu">y</span>. After any other consonant it drops: <span class="lu">Konókniyk nóo pó'kwaq.</span></li>
+      <li>The present forms can stand alone with a noun or adjective: <span class="lu">Nóon 'atáax.</span> (I am a human being.)</li>
+      <li>The past forms need <span class="lu">míyquş</span> after the noun or adjective: <span class="lu">Nóonil 'atáax míyquş.</span> (I was a human being.)</li>
+      <li>To ask a question, drop the suffix and add the question word: <span class="lu">Nóo şun 'éxmawish?</span> (Am I dirty?), <span class="lu">'Óm şu no'ó'nan?</span> (Are you my friend?), <span class="lu">Cháam şush páapavichum?</span> (Are we thirsty?)</li>
+      <li>With plural subjects the adjective takes a plural form, such as <span class="lu">háqmawichum</span> (hungry, animate plural).</li>
+    </ul>
+    <p class="src-note">From Book 7, <span class="lu">Háx şu 'Óono</span> (LUS200).</p>
+  </details>
+
+  <details class="ref" id="vref">
+    <summary>Verbs: how they work, and every verb in the app</summary>
+    <ul class="vrules">
+      <li><strong>Is -ing, one subject:</strong> <span class="lu">-q</span> on every verb.</li>
+      <li><strong>Are -ing, several people:</strong> a-verbs take <span class="lu">-an</span>. Type A, i-verbs and other verbs take <span class="lu">-wun</span>.</li>
+      <li><strong>Was / were -ing:</strong> <span class="lu">-quş</span> on every verb.</li>
+      <li><strong>Simple past:</strong> a-verbs drop <span class="lu">a</span> and add <span class="lu">-ya</span>. Type A verbs usually add <span class="lu">-x</span>, and some reduplicate instead. i-verbs drop <span class="lu">i</span> and add <span class="lu">-yax</span>. Other verbs add <span class="lu">-x</span> after u or o, and <span class="lu">-ax</span> after a consonant.</li>
+      <li><strong>Will:</strong> a-verbs and Type A verbs add <span class="lu">-an</span>. i-verbs and verbs ending in u or o add <span class="lu">-n</span>.</li>
+      <li><strong>Will be -ing:</strong> a-verbs add <span class="lu">-xmaan</span>. All others add <span class="lu">-màan</span> (or <span class="lu">-maan</span> after a consonant).</li>
+      <li><strong>Command, to one / to several:</strong> a-verbs add <span class="lu">-x</span> / <span class="lu">-xam</span>. All others add nothing / <span class="lu">-yam</span>.</li>
+      <li><strong>Wants to:</strong> a-verbs add <span class="lu">-xvichuq</span>. All others add <span class="lu">-vichuq</span>.</li>
+    </ul>
+    <p class="fine">Put <span class="lu">qáy</span> before a verb for “not.” For “don’t” in a command, put <span class="lu">Tóşşu</span> (to one person) or <span class="lu">Tóşşum</span> (to several) before the command form. An a-verb ends in <span class="lu">a</span>. A Type A verb also ends in <span class="lu">a</span> but acts like the other classes; Book 7 names the common ones, and any verb ending in <span class="lu">'na</span> or in a consonant (not <span class="lu">l</span>) plus <span class="lu">la</span> is Type A. About 90% of other verbs ending in <span class="lu">a</span> are plain a-verbs. Rules from Books 5, 7 and 8.</p>
+    <div id="vlist"></div>
+  </details>
+
+  <details class="ref" id="nref">
+    <summary>Nouns: possession, plurals, endings, and “to have”</summary>
+    <ul class="vrules">
+      <li><strong>The noun suffix drops.</strong> Most nouns end in a noun suffix (<span class="lu">-sh</span>, <span class="lu">-t</span>, <span class="lu">-l</span>, <span class="lu">-la</span>, <span class="lu">-cha</span>, <span class="lu">-ta</span>). It drops before a possessive prefix or before any of the endings below: <span class="lu">táanat</span> (rug) becomes <span class="lu">notáana</span> (my rug) and <span class="lu">táananga</span> (on the rug).</li>
+      <li><strong>Possessive prefixes:</strong> <span class="lu">no-</span> my, <span class="lu">'o-</span> your, <span class="lu">po-</span> his / her, <span class="lu">cham-</span> our, <span class="lu">'om-</span> your guys’, <span class="lu">pom-</span> their. Family members and body parts are always possessed.</li>
+      <li><strong>Possessed noun as an object:</strong> add <span class="lu">-i</span> after a consonant and <span class="lu">-y</span> after a vowel (<span class="lu">notáanay</span>). A short stressed vowel before the final consonant lengthens (<span class="lu">notúng</span> becomes <span class="lu">notúungi</span>).</li>
+      <li><strong>Endings:</strong> <span class="lu">-nga</span> in / on / at, <span class="lu">-ngay</span> from, <span class="lu">-yuk</span> to (<span class="lu">-yk</span> after a vowel, <span class="lu">-ik</span> after n), <span class="lu">-tal</span> with / using (<span class="lu">-chal</span> is also possible after i, y or x; a short stressed vowel lengthens, as in <span class="lu">kúutal</span>), <span class="lu">-man</span> along with.</li>
+      <li><strong>Animate nouns</strong> (people and animals) take none of those endings. Their plural adds <span class="lu">-um</span>, <span class="lu">-chum</span> (from <span class="lu">-sh</span>) or <span class="lu">-vuktum</span> (from <span class="lu">-kat</span>), and a short stressed vowel in the last syllable lengthens (<span class="lu">pachát</span> becomes <span class="lu">pacháatum</span>). Their object adds <span class="lu">-i</span> (or <span class="lu">-y</span> after a vowel); the plural object adds <span class="lu">-mi</span>.</li>
+      <li><strong>Possessing animate nouns:</strong> there is no way to say “my dog” or “my man.” Animals use <span class="lu">'áshla</span> (<span class="lu">no'áash 'awáal</span>, my dog; <span class="lu">cham'áachum 'awáalum</span>, our dogs). People use <span class="lu">'ó'nan</span> “friend” (<span class="lu">no'ó'nan ya'ásh</span>, my friend, the man). “One who does” nouns use compounds (<span class="lu">néy~húu'unikat</span>, my teacher).</li>
+      <li><strong>-ki possession (Book 8, Lessons 6 and 8):</strong> nouns ending in <span class="lu">-aat</span> and a group of nature words drop the noun suffix and add <span class="lu">-ki</span>: <span class="lu">chóoraat</span> becomes <span class="lu">nochóoraanaki</span> (my coin), <span class="lu">qawíicha</span> becomes <span class="lu">poqawíiki</span>, <span class="lu">matámtash</span> becomes <span class="lu">nomatámtaki</span>. A few have special shapes (<span class="lu">notemékki</span>, <span class="lu">noşú'laki</span>, <span class="lu">nonávki</span>).</li>
+      <li><strong>Verbs as nouns (Lesson 7):</strong> add <span class="lu">-sh</span> after a vowel other than a (<span class="lu">tíiwi</span> → <span class="lu">tíiwish</span>) and after Type A verbs, <span class="lu">-xish</span> after a plain a-verb (<span class="lu">héela</span> → <span class="lu">héelaxish</span>, “a song”), and <span class="lu">-ish</span> after a consonant (<span class="lu">háal</span> → <span class="lu">háalish</span>).</li>
+      <li><strong>A noun possessing a noun (Lesson 14):</strong> put the possessor first in its plain form and give the possessed noun <span class="lu">po-</span> (or <span class="lu">pom-</span> if there is more than one possessor): <span class="lu">ya'ásh ponáq</span> (the man's ear), <span class="lu">hengé'malum pomnáq</span> (the boys' ears), <span class="lu">'oyó' po'ó'nan pokúun</span> (your mother's friend's bag). A possessor can also possess an adjective (<span class="lu">ya'ásh pomíx yót</span>, the man's big one), and <span class="lu">'óonop ya'ásh pomíx</span> means "that is the man's."</li>
+      <li><strong>"To have" (Lesson 16):</strong> there is no verb. The possessor is the prefix and the verb says the thing is there. Animate: <span class="lu">'áawq</span> (one) or <span class="lu">qálwun</span> (several); not having: <span class="lu">'ómmaq</span> / <span class="lu">'ómmaan</span>. Inanimate: <span class="lu">qáala</span> (one) or <span class="lu">wónq</span> (several); <span class="lu">míyq</span> for intangible or mass nouns; <span class="lu">şé'q</span> / <span class="lu">wáachaq</span> for things standing; not having: <span class="lu">yáawaq</span>. Example: <span class="lu">nopiwípwila qáala</span>, "I have a pencil."</li>
+      <li><strong>Inanimate nouns</strong> have no plural form. As objects (Book 6, Lesson 13) <span class="lu">-aat</span> becomes <span class="lu">-aanti</span>, and <span class="lu">-cha</span>, <span class="lu">-ta</span> and <span class="lu">-la</span> drop the vowel after a long vowel: <span class="lu">kíicha</span> becomes <span class="lu">kíish</span>, <span class="lu">tóota</span> becomes <span class="lu">tóot</span>, <span class="lu">páala</span> becomes <span class="lu">páal</span>. After a consonant they add a helping vowel: <span class="lu">pálvunla</span> becomes <span class="lu">pálvunil</span>, and a short stressed vowel lengthens (<span class="lu">kúnla</span> becomes <span class="lu">kúunil</span>, <span class="lu">şú'la</span> becomes <span class="lu">şúu'ul</span>). Five nouns use <span class="lu">u</span> instead of <span class="lu">i</span> (<span class="lu">'ówla</span> becomes <span class="lu">'óowul</span>).</li>
+      <li><strong>Object pronouns (Book 6, Lesson 12):</strong> <span class="lu">néy</span> me, <span class="lu">'óy</span> you, <span class="lu">póy</span> him / her, <span class="lu">cháami</span> us, <span class="lu">'omóomi</span> you guys, <span class="lu">pomóomi</span> them. <span class="lu">this</span> and <span class="lu">that</span> before an animate object: <span class="lu">'ivíiyi</span>, <span class="lu">'óonomi</span>, <span class="lu">ponéeyi</span>, <span class="lu">wunáali</span>.</li>
+    </ul>
+    <p class="fine">From Books 3, 5 and 8 (Lessons 1 to 13). Object forms of other inanimate nouns are taught in Book 6, which is not in the app.</p>
+  </details>
+
+  <details class="ref" id="numref">
+    <summary>Numbers: how Luiseño counts</summary>
+    <ul class="vrules">
+      <li><strong>0 to 10:</strong> <span class="lu">qayhíycha</span>, <span class="lu">supúl</span>, <span class="lu">wéh</span>, <span class="lu">páahay</span>, <span class="lu">wasá'</span>, <span class="lu">maháar</span>, <span class="lu">paváahay</span>, <span class="lu">kavíkvish</span>, <span class="lu">şíw'lash</span>, <span class="lu">nomaawasá'</span>, <span class="lu">táppaat</span>.</li>
+      <li><strong>11 to 19:</strong> <span class="lu">táppaat</span> + the digit + <span class="lu">pa'áq</span> “on top”: <span class="lu">táppaat wéh pa'áq</span> (12).</li>
+      <li><strong>Tens:</strong> the digit + <span class="lu">-kun</span> “times” + <span class="lu">táppaat</span>: <span class="lu">wéhkun táppaat</span> (20), and <span class="lu">wéhkun táppaat supúl pa'áq</span> (21).</li>
+      <li><strong>Hundreds:</strong> <span class="lu">şóttaat</span> (100, never “one hundred”), <span class="lu">wéhkun şóttaat</span> (200). Digits after a hundred come with no <span class="lu">pa'áq</span> (<span class="lu">şóttaat supúl</span>, 101), but teens and tens keep it.</li>
+      <li><strong>Thousands:</strong> <span class="lu">míil</span> (1,000), <span class="lu">şóttaat míil</span> (100,000), then the rest.</li>
+      <li><strong>As an object:</strong> <span class="lu">-aat</span> becomes <span class="lu">-aanti</span> (<span class="lu">táppaanti</span>, <span class="lu">şóttaanti</span>), and zero is <span class="lu">qayhísh</span>.</li>
+      <li><strong>People and animals have their own numerals</strong> (Book 7, Lesson 6; Book 6, Lesson 31): <span class="lu">supúl</span> (object <span class="lu">supúuli</span>), <span class="lu">wéhchum</span>, <span class="lu">páachum</span>, <span class="lu">wasáa'um</span>, <span class="lu">maháarum</span>, <span class="lu">paváahayum</span>, <span class="lu">kavíkvichum</span>, <span class="lu">şíw'lachum</span>, <span class="lu">nomaawasáa'um</span>, <span class="lu">táppaantum</span>. Objects add <span class="lu">-i</span> or <span class="lu">-mi</span> (<span class="lu">wéhchumi</span>, <span class="lu">kavíkvishmi</span>). Higher numbers pluralize <span class="lu">táppaat</span> and <span class="lu">şóttaat</span> (<span class="lu">táppaantum</span>, <span class="lu">şóttaantum</span>) and the digits; the <span class="lu">-kun</span> words stay the same: <span class="lu">kavíkvishkun táppaantum wéhchum pa'áq</span> (72).</li>
+      <li><strong>Counting by:</strong> <span class="lu">súspultal</span> (ones), <span class="lu">wéewihtal</span> (twos), <span class="lu">páavaytal</span>, <span class="lu">wawsá'tal</span>, <span class="lu">mamháartal</span> (fives), <span class="lu">táptappaantal</span> (tens), <span class="lu">şótşottaantal</span> (hundreds).</li>
+    </ul>
+    <p class="fine">From Books 3 and 5.</p>
+  </details>
+
+  <details class="ref" id="qref">
+    <summary>Questions: question words and the marker</summary>
+    <ul class="vrules">
+      <li><strong>Who:</strong> <span class="lu">háx</span> (several: <span class="lu">'axím</span>); as an object <span class="lu">'axíiyi</span> (several: <span class="lu">'axíimi</span>). <strong>What:</strong> <span class="lu">híycha</span> (several: <span class="lu">híycham</span>); as an object <span class="lu">hísh</span> (several: <span class="lu">híshmi</span>). <span class="lu">Híyq</span> and <span class="lu">híx</span> are the verbs “what is” and “say what.”</li>
+      <li><strong>Why:</strong> <span class="lu">híyngay</span>, literally “from what.”</li>
+      <li><strong>Where:</strong> <span class="lu">michá'</span> (at), <span class="lu">micháy</span> (from where), <span class="lu">michíyk</span> (to where). <strong>When:</strong> <span class="lu">míykinga</span>.</li>
+      <li><strong>Which:</strong> <span class="lu">michát</span> (<span class="lu">michát kíicha</span>, which house), <span class="lu">micháatum</span> (which ones), <span class="lu">micháati</span> and <span class="lu">michátmi</span> (as animate objects).</li>
+      <li><strong>How many / how much:</strong> <span class="lu">hík</span> for things, followed by the noun (<span class="lu">hík 'áa'alvish</span>); <span class="lu">híkchum</span> for several people or animals, with the object form <span class="lu">híkchumi</span> (<span class="lu">Híkchum 'amáayum şum qálwun?</span> “How many children are there?”). <strong>What day / month / season:</strong> <span class="lu">híknga</span>, <span class="lu">híknga móynga</span>, <span class="lu">híknga táwpamaynga</span>.</li>
+      <li><strong>The marker:</strong> a small word follows the first word or phrase of the question: <span class="lu">şu</span>, or <span class="lu">şun</span> for “I,” <span class="lu">şush</span> for “we,” <span class="lu">şum</span> for “they” and “you guys.” The books spell it both <span class="lu">su</span> and <span class="lu">şu</span>.</li>
+      <li><strong>Examples:</strong> <span class="lu">Michá' şu hengéemal 'áawq?</span> (Where is the boy?), <span class="lu">Míykinga şu 'óm wukó''aq?</span> (When are you arriving?), <span class="lu">Háx şu 'óono?</span> (Who is that?), <span class="lu">Nóo şun 'éxmawish?</span> (Am I dirty?).</li>
+      <li><strong>Time:</strong> numbers take the endings too: <span class="lu">kavíkvinga</span> “at seven,” <span class="lu">táppaananga supúlnga pa'áq</span> “at eleven.”</li>
+    </ul>
+    <p class="fine">From Book 7, Lesson 5 (Interrogative Words), and Book 4.</p>
+  </details>
+
+  <p class="note" id="note"></p>
+</main>
+
+<script>
+/*CORE-START*/
+const DATA = [["abbreviate","qapútti"],["absent, be","'ómma"],["acorn mush","wíiwish"],["acorn, black oak","kwíila"],["acorn, coastal oak","wi'áaşal"],["add","yúnni"],["advise","péepuxuni"],["afraid, be","şuwóo'"],["Afterlife","Tólmul"],["again","yú'pan"],["always","puyáamangay"],["angry, get angry","wóltu"],["angry, get angry","woltú''a"],["answer","tamáywu"],["appear","chuxí'"],["apple","'áatuwut"],["approach","háaya"],["apron (back)","şixéevish"],["argue","we'éqla"],["arrive","wukó''a"],["arrive","písma"],["arrow","húula"],["art","'éskanaxish"],["ashamed, be ashamed","hamóoya"],["ask","tuvyúng'i"],["bad","'aláxxwish"],["bag","kúnla"],["ball","puráprish"],["bang, bang rocks together","táchla"],["barbecue","wáawa"],["base","potówla"],["basic","potówlangawish"],["basket","túkmal"],["bathe","'áaş"],["bathroom","pisáangalash"],["be located, animate plural","qál"],["be located, animate singular","'áaw"],["be located, inanimate plural","wón"],["be located, inanimate singular","qáala"],["be located, uncountable noun","míyq"],["beans","'éela"],["beat","wuvá'na"],["beautiful","yawáywish"],["bed","kupú''ilash"],["bed wetter","'ayú'volaka"],["beet","kóssaanamal"],["behave","-táax tóşngu"],["believe","'ohó'van"],["berry","píkwla"],["berry (object)","pí'kwil"],["bewitch","píi'"],["bicycle","wéh~chóorakash"],["big","yót"],["big","mómkat"],["bite","kó''i"],["bitter","chíivut"],["bitter, be","chíiv"],["black, have a black stripe","wumóoy"],["blind, be","tomavichú''a"],["block","kíichupish"],["bloom","şóo'"],["blow","xóyyi"],["book","'áa'alvish"],["bother","hiká'chi"],["boy","hengéemal"],["boys","hengé'malum"],["brand","tíkla"],["breastfed, be","chúngna"],["breath, be out of","hakwíisva"],["brick","kíitota"],["broken","'apíth'ax"],["broom","wáakilash"],["brush","wákki"],["bug","'eléelikat"],["build","kíichu"],["building","kíichush"],["burn","ná'"],["bury","táaxan"],["buy","sámsa"],["cactus","náavut"],["Cahuilla","Kwímkawish"],["Cahuilla, in Cahuilla","Kwímkungax"],["call","wáwwi"],["can (fruit)","şulá'na"],["candy","kóşşaat"],["car","qállikat"],["care","yéx'i"],["care, take care of","kwáavichu"],["cartoon","'éskannaat"],["catch","chá'qwi"],["catch (more than one)","yawá'na"],["caterpillar","şakíshla"],["Caucasian","Mómngaash"],["Caucasians","Mómyam"],["cedar","tuvát"],["chair","táwwilash"],["chicken","hanimú'"],["children","'amáayum"],["choke","móonaka"],["chop off","qapútti"],["clam","qápşut"],["clap","patavátti"],["classroom","húu'unilash"],["clean","qayáawaat"],["clean up","'ínni"],["climb","hiláala"],["close","nákki"],["clothes","míyxanish"],["cloud","tuvíicha"],["coin","chóoraat"],["cold","'íitaat"],["cold, be","'íita"],["cold, be (animate nouns)","puráara"],["collapse","lómma"],["color","chuxíllaxish"],["come","wukó''a"],["come down","wórra"],["come out (plural subject)","muyáqqa"],["come out (singular subject)","pulú'cha"],["comfort","páapatu"],["comfortable","yamáqqaat"],["computer","wóoyilash"],["cook","ló'xa"],["cook acorn mush","wíw"],["cookie","sáawokimal"],["copulate","tó'ma"],["cottontail","tóoşaxit"],["cottonwood","'aváaxat"],["count","wóoyi"],["countertop","hivéllaat"],["cover","kótti"],["coyote","'anó'"],["crawl","'eléela"],["crayon","chuxíllaxish"],["crazy","'áachish"],["creation, recite the creation story","tówyaw"],["cross (legs)","tóng'i"],["cross over","chapálla"],["crow","ngáa"],["crushed, be","lapálpa"],["cry","ngáa"],["cube","chórrilash"],["cup","páa'ilash"],["Cupeño","Kwímkawish"],["Cupeño, in Cupeño","Kwímkungax"],["cut","wókki"],["cut into pieces","woká'na"],["cute","yawáywimal"],["cylinder","húukapish 'anákkax"],["dance","pélla"],["dandruff","şixéela"],["deer","şúukat"],["deer (plural)","şúktum"],["delicious","'áx'aat"],["delicious, be","'áx'a"],["descend","wórra"],["diamond","wiyáala"],["dictation","yáxyexish"],["die (one person)","(Tólmuyk) takwáyya"],["die (plural)","(Tólmuyk) táppa"],["Diegueño","Kichámkawish"],["Diegueño, in Diegueño","Kichámkungax"],["different","'awóo"],["difficult","hikáhkash"],["dirt","'éxla"],["dirty","'éxmawish"],["disgusted, be","mulá''a"],["distribute","námxa"],["divide","pakáyyi"],["divided","'apakáyyax"],["do","loví''i"],["doctor","téng'alkat"],["domino","tukurúkkaat"],["door","popúu'uk"],["door (object)","popúuki"],["draw","'éskani"],["drawing","'éskanaxish"],["dream","putí'"],["dried","'awáxvo"],["drink","páa'i"],["driving (away)","kív'ish"],["drop","pé'chaat"],["dry","'awáxvo"],["east, to the east","kwíimik"],["eat","hilá''i"],["eat","náachaxan"],["eat","qwá'"],["eat (acorn mush with fingers)","pé'"],["English, in English","Mómngax"],["enter (more than one person)","şuláaqa"],["enter (one person)","chulúppa"],["eraser(s)","túv'ilash"],["examine","nóolnoli"],["exercise","pisáyk~kív'ish"],["exorcist","tóowuchumi~kíivikat"],["eyebrow","kímmisash"],["faith","'ohó'vanish"],["fall (one person)","hulúkka"],["fart","şíx'i"],["fast","qaléq"],["fat, get fat","wíitu"],["feed","moyóoni"],["feel","míili"],["fetch, fetch wood","kuláaw"],["fiction","núukaat"],["fight","náwvu"],["fight","néqpi"],["fine, be","lóovi"],["fire","kút"],["fire-eater","kút~qwa'íikat"],["fire-fighter","kút~néqpikat"],["first grader","hamúulawish"],["fix","'ayáalka"],["flag","kutúumut"],["flash","xwáyya"],["flood","yáalaxish"],["floor","'éxla"],["flour","máaxish"],["flutter","hémma"],["fly (insect)","ku'áal"],["fly (plural subject)","wáapa"],["fly (singular subject)","wíila"],["fog","mésmal"],["fold","lukúppi"],["food","náachaxanish"],["foot","-'é' potówla"],["forest","yamíicha"],["fork","pakápkish"],["fresh","'íipit"],["friend","-'ó'nan"],["from here","'iváy"],["from there","wunáy"],["funny","'ayá'yish"],["funny, be","'ayá'ya"],["Gabrielino","Tumánqal"],["Gabrielino","Tumánqamal"],["gamble","múx"],["get more than one thing","'ayánni"],["get one thing","kuşánni"],["girl","nawítmal"],["girls","nánnatmalum"],["glass","takíssaat"],["glue","chipéqqilash"],["go","hatí''a"],["go out (more than one person)","muyáqqa"],["go out (one person)","pulú'cha"],["go to sleep","kupú''a"],["going, is am are going","monáa"],["good","polóov"],["good (plural)","póplov(um)"],["goose bumps, have","-táaxaw şówwa"],["grain","şáaxish"],["grandparent, become a","píiwila"],["grass","şáamut"],["ground","'éxla"],["hair","yúula"],["hair, possessed","-yú'"],["hair, possessed object","-yúuy"],["hand","-máa"],["hand, object","-máay"],["happy","héngchish"],["hard","hikáhkash"],["harvest","tó'wi"],["harvested, be","tó'wa"],["hat","yúmpish"],["hat, large","yúmpilaka"],["hat, wear a hat","yúumu"],["hatch","chíil'a"],["hate","hé''a"],["hate","şálla"],["he","see 'that'"],["head","yúula"],["head, possessed","-yú'"],["head, possessed object","-yúúy"],["hear","náqma"],["heat","şéxla"],["Hell","Tólmul"],["help","máamayu"],["help","máamayush"],["hide","hélli"],["hide-and-seek, to play","hélteka"],["hill","qawíimal"],["hire","nóo'olu"],["his/her throat","poxáara"],["hoist","'óori"],["hold more than one thing","'áy"],["hold one thing","yáw"],["hollow, be","hakúuy"],["holy","polóov"],["holy","şuwóşwush"],["hop","pútta"],["hope","hewéesh"],["horse","páaşukat"],["horses","páaşuktum"],["hot, be","şáqqi"],["house","kíicha"],["hug","kalíppi"],["hungry","háqmawish"],["hungry, be(come)","haqlá''a"],["hunt","'áamo"],["hunter","'áamokat"],["hurt","tíwwa"],["indent","lúuki"],["inspect","yixéeli"],["intelligent","yixélval"],["iron","şótti"],["iron (instrument)","şóttilash"],["it","see 'that'"],["jealous, be","náawin"],["jelly","yaráaraat"],["joy","hewéesh"],["jump (more than one person)","wáppa"],["jump (one person)","wílla"],["june bug","tutó'malaka"],["jungle gym","hiláalilash"],["keep an eye on","kwaví'cha"],["keep for oneself","hakáana"],["keyboard","'ikwéllilash"],["kill (more than one object)","qe'ée"],["kill (one object)","mókna"],["kind","'ánkish"],["kindergartener","poróv'orilangawish"],["kindergarteners","poróv'orilayam"],["kinds","'á''ankish"],["kitchen","ló'xalash"],["knife","wókkilash"],["knife, flint","teqét"],["knock down acorns","máw"],["laugh","tóoya"],["laundry, do laundry","páchxam"],["lazy","tóoqish"],["leach","páşka"],["lean","'óyya"],["learn","pilá'chi"],["leave","ngée"],["left, to someone's","-'échvoyk"],["leg","-'é'"],["leg, object","-'éey"],["lemon","chívmal"],["lesson","húu'unish"],["letter","nóolaxpish"],["lick","pilé''i"],["lie on one's side","kéyya"],["lie, tell lies","chipómka"],["light","kút"],["lightning","tóomawut powáak"],["like","má'ma"],["line (of people)","hóowaxish"],["line-leader","pomúchvo"],["listen","náqma"],["little","kihúut"],["little (plural)","kíikat"],["little, a little","wéhmali"],["lizard","qaşílla"],["look at","tóow"],["look down at","húuli"],["look for","háal"],["lot, a lot","múyyuki"],["loud","'éshkutal"],["Luiseño","'atáax"],["lunchbox","pisáatulamal"],["magnet","magnéet"],["make","loví''i"],["man","ya'ásh"],["man, plural (men)","ya'áychum"],["mano","máala"],["marble","puráprimal"],["marry","péewlu"],["marry (for a woman to marry)","kúnglu"],["mate","tó'ma"],["mean","şókkish"],["mean, be","şókkicha"],["meat","wáa'-ish"],["medicine","téng'allish"],["meeting","purú''axish"],["messenger, supernatural","Changíchngish"],["metate","maláal"],["Mexican","Şuşáavit"],["mild, become mild weather","páx'am"],["milk","pít"],["mistake, make a mistake","máaya"],["mistaken, be mistaken","wingé'"],["money","sínnaval"],["moon","móyla"],["mountain","qawíicha"],["mouse","tapáshmal"],["mud","yuxwáala"],["mush, acorn","wíiwish"],["mush, cook acorn mush","wíw"],["name","-túng"],["Native American","'atáax"],["naughty","náanaqvish"],["need","chaqwílla"],["needle","'ulá'nalamal"],["nervous, be","tiqélqa"],["nervous, make","tiqélqi"],["new","'íipit"],["next to","néshkin –nga"],["nickel","kavíkvaat"],["night, at night","túkva"],["night, to spend the night","túuk"],["noise, make","qáaşa"],["none, be","yáawa"],["north, to the north","tumáamik"],["number","wóoyaxpish"],["nurse","kwáavichukat"],["oak (coastal)","wi'áaşal"],["obey","mé'kun"],["ocean","móomat"],["o'clock","ngáa"],["old man","naxánmal"],["old men","nánxalum"],["old woman","néshmal"],["old women","néenishlam"],["open","héth'i"],["oppose","kó'ka"],["out","pisáyk"],["outdoors","pisát"],["over this way","'ivíyk"],["pant","şéx'a"],["pants","yúlkilash"],["paper","pávlash"],["paragraph","'íivaat"],["party","changíllaxish"],["pass","nólla"],["pass something out","námxa"],["patch","chapá'na"],["pencil","piwípwilash"],["pencil sharpener","piwípwilash~şówwilash"],["penguin","yuváttaaanamal"],["penny","'áv'aanamal"],["person","'atáax"],["pick up","hakánni"],["place (singular object)","tavánni"],["plate","péshlish"],["play","yí'yi"],["playdough","tó'xat"],["playground","yí'yilash"],["pluck out","qápla"],["poison oak","'iyáala"],["potato","puvóol"],["pour","şíili"],["praise","yéexi"],["pray","téela"],["prepare","hayámmi"],["preschooler","hamú'~pilá'chilangawish"],["principal","tóşngukat"],["problem","kuráv'axpish"],["properly","'ayáalinik"],["pumpkin","néexish"],["puppy","'awáamal"],["put down (more than one thing)","wuşánni"],["put down (one thing)","tavánni"],["put out (a light)","yupáqqi"],["quack","ngáa"],["question","tuvyúng'ish"],["question mark","tuvyúng'ilash"],["quiet, keep quiet","tará''a"],["rabbit stick","wáakat"],["rabbit, brush rabbit","tóovit"],["rainbow","'aşóonax"],["rainbow-colored","chaparáppaat"],["rattlesnake","şóowut"],["read","nóoli"],["recite (ceremonially)","tówyaw"],["recognize","'ó'na"],["rectangle","wasá'kun matámtash"],["relax","hakwíssa"],["remember","mólli"],["rest","hakwíssa"],["rice","'urúush"],["ride (more than one person)","límma"],["ride (one person)","qálla"],["right, on someone's right","-plonga"],["right, to someone's right","-ployk"],["ripe","'áqwşa"],["rise","héeta"],["river","waníicha"],["road","pét"],["rock","tóota"],["rock back and forth","hóoya"],["rock, from a","tóongay"],["rock, on a","tóonga"],["rock, to a","tóyk"],["room","wéllaat"],["rope","wíichut"],["rug","táanat"],["ruler","churó''ilash"],["run","pó'kwa"],["run","yá'"],["run back and forth","háami"],["sad","chaqwíshqwish"],["salt","'éngla"],["San Clemente Island","Kíimki Haráaşa (animate)"],["sand","'éxval"],["say","yáx"],["scary","şuwóşwush"],["school","pilá'chilash"],["scold","cháng'i"],["seal","pachát"],["search for","háal"],["second grader","powéhlowi"],["secretary","'óolikat"],["see","tíiwi"],["seed","púshla"],["sentence","yaxát"],["sew","'ulá'na"],["shade one's eyes","kímmi"],["shade one's eyes repeatedly","kíimi"],["shaman","púula"],["shamans","púupulum"],["share, not want to share","'á'ya"],["sharp","şówwaat"],["sharpen","şówwi"],["she","see 'that'"],["shell","qéshla"],["shepherd","'ixí'wutmi~kíivikat"],["shoe","wáchxat"],["short","kapápkamal"],["short, plural","kákpamal"],["shoulder, wear over shoulder","'óş"],["shower","şilíssililash"],["sick person","takwáyyaqat"],["sick, to be sick (one person)","takwáyya"],["sick, to be sick (plural)","táppa"],["sing","héela"],["sing nukwáanish songs","nukwáan"],["sit (more than one person)","tavá''a"],["sit (one person)","táwwa"],["skull","qéshlaka"],["sky","túupash"],["slam (shut)","qáppi"],["slap (shut)","qáppi"],["slaughter","qe'ée"],["sleep","kúp"],["sleep, go to sleep","kupú''a"],["slide","chútta"],["slow","mahámhish"],["slow down","máahila"],["slowly","maháati"],["small","kihúut"],["small, plural","kíikat"],["smart","yixélval"],["smell","húşşi"],["smell bad","réeqa"],["smoke","húuşi"],["snack","náachaxanmal"],["snake","píiqwala"],["snore","xaráaya"],["snow","yúuy"],["soft, be soft","yamáqqa"],["song","héelaxish"],["sore, be (of throat)","şaxwáay"],["south, to the south","kíichamik"],["space","kíwvish"],["spade","héyyilamal"],["Spanish, in Spanish","Chilúuyngax"],["Spanish, speak","chilúuy"],["speak (of)","téetila"],["spend","chíwwa"],["spend, to spend the night","túuk"],["spider","kuyée'ewut"],["spill","şílli"],["spin","túuyi"],["spinach","néeqat"],["spirit","tóowish"],["spit out","muláqqi"],["spoon","'íival"],["sprout","changílla"],["squirrel","qéengish"],["stand (more than one person)","purúy"],["stand (more than one thing)","wáacha"],["stand (one person)","wíita"],["stand (one thing, inanimate)","şé'"],["stand (something) up","pórri"],["state","tóşngulash"],["stick","kuláwmal"],["stink","réeqa"],["stinkbug","şísqila"],["stop","máhhi"],["street","pét"],["street, on the","péenga"],["strip","wókkaat"],["stripe, have a black stripe","wumóoy"],["stuck-up","yixé'"],["stuck-up, to be","yixé'tu"],["student","pilá'chikat"],["suddenly","michát 'ánkingay"],["suffer","chaqwíshqwi"],["sun","temét"],["swallow","móoli"],["sweep","wáaki"],["sweet","kóşşaat"],["swim","wáaya"],["sycamore","şivéela"],["T.V.","wáam~tíiwilash"],["take (a person somewhere)","hóttii"],["take (more than one thing)","'ayánni"],["take a while to get somewhere","mahámha"],["take care of","kwáavichu"],["talk about","téetila"],["tall","tavúlvush"],["tall, plural","táatalvish"],["tasty, be","'áx'a"],["teach","húu'uni"],["teacher","húu'unikat"],["tell a tale","tóotupi"],["text","téelat"],["that (far)","wunál"],["that (mid)","pó'"],["that (near)","'óono"],["that (plural), those","'óonomum"],["that (plural), those","pomóm"],["that (plural), those","wunáalum"],["they","see 'that'"],["thicken","pitúpti"],["thin, to get thin","tówya"],["think, think so","-şúnngay"],["third grader","popáahaylowi"],["thirsty","páapavish"],["thought","wóoyaxish"],["throat","xáarash"],["throw (more than one thing)","wí'chi"],["throw (rocks)","píivan"],["thunder","tóomawut"],["times","nimél"],["tired","'amóyyax"],["top, on top","pa'áq"],["touch","mílli"],["track","tupíi"],["treat medicinally","mayíw"],["tree","kuláawut"],["tricycle","páahay~chóorakash"],["turn off","yupáqqi"],["turn on","chúyyi"],["turtle","páa'ila"],["twitch","yurúm"],["ugly","'aláxxwilaka"],["underneath","-tówlanga"],["Underworld","Tólmul"],["urinate","şíi'"],["valley","pálvunla"],["visible, be","chuxílla"],["wake up","ngóyya"],["walk","wukálla"],["want","má'ma"],["want, want to","-vichu"],["wash (clothes)","páchxam"],["wash (wash hair)","yuxwá'cha"],["watch","'áa'ayu"],["watch","tóow"],["water","páala"],["water, from the","páangay"],["water, in the","páanga"],["water, to the","páayk"],["wear","yúlla"],["wear over shoulder","'óş"],["weave","tóonav"],["well","'ayáalinik"],["well enough","'ayáalinik pomléeyu"],["west","payóomik"],["western","payómkawish"],["wet","'ayú'vo"],["whale","koyóowut"],["what says","híyq"],["wheat","şáaxish"],["whisker","-múuşi"],["whisker, object","-múuşiy"],["whisper","şawáay"],["whistle","híkki"],["whistle for a long time","híiki"],["wide","hivélvish"],["willow (arroyo)","şaxát"],["wilt","lavúlva"],["wind","húngla"],["woman","şungáal"],["work (noun)","'owó''axish"],["work (verb)","'owó''a"],["wrestle","cháqwla"],["wring","kwichá'na"],["write","náawi"],["wrong, be","wingé'"],["zebra","wumóoyqat"],["I am","nóon",["i am","i'm"]],["you are","'ómmup",["you are","you're"]],["he/she/it is (very near)","'ivíp",["he is","she is","it is","he's","she's","it's","this is"]],["he/she/it is (near)","'óonop",["he is","she is","it is","he's","she's","it's","that is"]],["he/she/it is (mid)","pó''up",["he is","she is","it is","he's","she's","it's"]],["he/she/it is (far)","wunáalup",["he is","she is","it is","he's","she's","it's"]],["we are","cháamcha",["we are","we're"]],["you guys are","'omómmum",["you guys are"]],["they are (very near)","'ivímpum",["they are","they're","these are"]],["they are (near)","'óonomumpum",["they are","they're","those are"]],["they are (mid)","pomómpum",["they are","they're"]],["they are (far)","wunáalumpum",["they are","they're"]],["I was (equative)","nóonil",["i was"]],["you were (equative)","'ómpil",["you were"]],["he/she/it was (equative)","pó'pil",["he was","she was","it was"]],["we were (equative)","cháamchamil",["we were"]],["you guys were (equative)","'omómmil",["you guys were"]],["they were (equative)","pomómmil",["they were"]],["hungry, animate plural","háqmawichum"],["thirsty, animate plural","páapavichum"],["booklet","'áa'alvimal"],["hunting","'áamosh"],["gear, hunting","'áamolash"],["grounds, hunting","'áamolash"],["season, hunting","'áamolash"],["bath, take a","'áaş"],["be, be like","'áax"],["resemble","'áax"],["seem","'áax"],["hourglass","'apá'pish"],["rotten","'apisá''ax"],["kick","'árri"],["pet","'áshla"],["cowboy","'áshkat"],["crazy, go crazy","'ashtú''a"],["crazy, drive crazy","'ashtu'iní''i"],["eagle, golden","'áşwut"],["pomtéelangax Luiseño, in the Luiseño language","'atáaxum"],["pregnant","'atáxmawish"],["dog","'awáal"],["more","'awóo"],["more, obj","'awóy"],["ponéy sometimes","'awóy"],["like","'axánninik"],["some people, obj","'axíimi"],["someone, obj","'axíiyi"],["some people","'axím"],["have temporarily, pl. obj","'áy"],["hold, pl. obj","'áy"],["know","'ayálli"],["get, pl. obj","'ayánni"],["bean","'éela"],["soccer","'éepuraprish"],["bark, cedar","'éesat"],["bird","'ehéngmay"],["garbage","'eqéşvo"],["trash","'eqéşvo"],["hurry now and then","'ét'eta"],["earth","'éxla"],["land","'éxla"],["desert","'éxval"],["pole, fishing","'í'chilash"],["wíichu-t line, fishing","'í'chilash"],["refrigerator","'íitaat"],["set aside, be","'íiva"],["set aside","'íivi"],["remove","'ínni"],["locket","'iwé''it"],["sock","'iyé'yimal"],["stay","'ókka"],["coat","'ólval"],["jacket","'ólval"],["you","'óm"],["absent, be an","'ómma"],["you guys","'omóm"],["no mention to be made of","for"],["refuse to tell","'óoli"],["secret","'óolish"],["those (near)","'óonomum"],["square shoulders","'óora"],["give","'óovi"],["gift","'óovish"],["blood","'ówla"],["work","'owó''a"],["work","'owó''axish"],["worker","'owó''ikat"],["desk","'owó''ilamal"],["steal","'oyóotu"],["greasewood","'u'út"],["carry a liquid","'úu'"],["dumb","'uví'vish"],["carved, be here and there","cháqchaqa"],["bitter part","chíivut"],["speak, speak Spanish","chilúuy"],["every","chóo'on"],["circle","chóorakash"],["roll","chórra"],["to be born","chóx'a"],["cane","chukáylash"],["put in, sg. obj","chulúppi"],["kiss","chúng'i"],["light","chúyyi"],["cat","gáato"],["bingo","háalish"],["searching, way of","háalish"],["first","hamúula"],["first-grader","hamúulawish"],["hang, sg. obj","háng'i"],["frame","háng'ilash"],["material","hasáhşish"],["turn out (of an event)","hatí''a"],["take away","haválli"],["someone, subj","háx"],["hide now and then","hélhela"],["hide","hélla"],["hide something","hélli"],["fly","hémmi"],["rising, way of","héttaxish"],["raise","hétti"],["dig","héyyi"],["scoundrel","hí'chikat"],["driver","hí'qwikat"],["breath","híksash"],["fish, flying","himéhmish"],["mean, mean what","híx"],["say something","híx"],["what, say what","híx"],["animal","híycha"],["something","híycha"],["reason, for some","híyngay"],["approve of","hóhhi"],["bring","hótti"],["fall, sg. subj","hulúkka"],["wildly","humáhmachi"],["bear","húnwut"],["answer","húrri"],["smell something","húşşi"],["earthworm","káarawut"],["slanted","kachí''aat"],["short, pl","kákpamal"],["dragonfly","kamaríwthi"],["father's older brother, obj., pl","uncle"],["short, sg","kapákpamal"],["worm","kathúumal"],["week","kavíkvish"],["blown, be blown down here and there","káykaya"],["drive out","kív'i"],["father's older brother, sing","uncle"],["sweet, be","kóşşa"],["nectar","kóşşaxish"],["fly","ku'áal"],["search for wood","kuláaw"],["wood","kuláawut"],["marry, for a woman to marry a man","kúnglu"],["married woman","kúngkat"],["pocket","kúnmal"],["pouch","kúnmal"],["bumblebee","kúpşaxla"],["sleep, go to","kupú''a"],["asleep, way of falling","kupú''axish"],["get, sg. obj","kuşánni"],["smoke","kúumit"],["elderberry","kúutpat"],["wipe up","kuvátti"],["care-taker","kwáavichukat"],["acorn, black","kwíila"],["oak, black","kwíila"],["pollute","kwilálli"],["table","laméesa"],["cook, Type A","ló'xa"],["cook","ló'xakat"],["good, be","lóovi"],["leader","lówwikat"],["liking","má'maxish"],["bracelet","máalisash"],["help someone","máamayu"],["aide","máamayukat"],["helper","máamayukat"],["line","matámtash"],["throw, sg. obj","mátti"],["obeying, way of","mé'kunish"],["octopus","méechish"],["pointer","mesé''ilash"],["'axánninik how","michá'"],["church","míisilash"],["force","milút"],["any","mímchapan"],["sometime","míykinga"],["exist, of mass nouns, uncountable nouns","míyx"],["killing, way of","móknash"],["going, is/am/are","monáa"],["month","móyla"],["burn","múlli"],["forget","muróppa"],["horned owl","múuta"],["fill up","múuya"],["fill something","múuyi"],["coloring, way of","múuyish"],["gambling","muxát"],["casino","muxíilash"],["come out, pl. subj","muyáqqa"],["go out, pl. subj","muyáqqa"],["take out, pl. obj","muyáqqi"],["lot, a lot","múyyuk"],["many","múyyuk"],["cafeteria","náachaxanlash"],["become a father","náatu"],["cactus, prickly pear","náavut"],["pear, prickly","náavut"],["jealous, be jealous towards","náawin"],["welcome","namókki"],["pass out","námxa"],["men, old","nánxalum"],["listen to, Type A","náqma"],["understand","naqmá''i"],["waffle","nawáyyaat"],["man, old","naxánmal"],["pattern","neméenemish"],["next to","néshkin"],["relative","néshkinlakat"],["woman, old","néshmal"],["please","néymax"],["contained, be","ngó'"],["run, pl. subj","ngórra"],["wake up","ngóyyi"],["clock, alarm","ngóyyilash"],["dome","nixínxish"],["follow","nónmi"],["boss","nóot"],["chief","nóot"],["reading","nóolish"],["song, ceremonial","nukwáanish"],["pond","páala"],["drinking, way of","páa'ish"],["cow","páaka"],["eagle, bald","páam'ush"],["water, fetch","páaw"],["laundry, do","páchxam"],["laundry, way of doing","páchxamish"],["shoot with gun","pátti"],["just","páy'wish"],["path","pét"],["eat with fingers","pé'"],["married","péewkat"],["couple (married)","péewvuktum"],["dancing, way of","péllaxish"],["lie on ground, pl. subj","pémma"],["dish","péshlish"],["brothers","pétvuktum"],["lazy, be","pí'xwa"],["very","pilék"],["lunch box","pisáatulamal"],["outside","pisáyk"],["break","píth'a"],["now","pitóo"],["still","pitóowili"],["marker","pitúptilash"],["gray hair","piwíila"],["running","pó'kwaxish"],["runner","pó'kwikat"],["fifth-grader","pomháarilowi"],["they","pomóm"],["bandage","póoni"],["just","póoxa"],["right","póoxa"],["porridge","póoyish"],["third-grader","popáahaylowi"],["good, inan. pl","póplov"],["good, an. pl","póplovum"],["garden, tend a","poróv'ori"],["garden","poróv'orilash"],["kindergartner","poróv'orilangawish"],["stand something upright","pórri"],["flowers, full of","poşóomawish"],["flowery","poşóomawish"],["clip","pótti"],["cross arms","pótti"],["clip","póttilash"],["second-grader","powéhlowi"],["get out, sg, subj","pulú'cha"],["take out, sg. obj","pulú'chi"],["dollar","púnnaat"],["collect","purú''i"],["meeting hall","purú''ilash"],["stand up, pl. subj","purúy"],["dream something","putí'"],["dream","putíi'ish"],["roof","púutash"],["roadrunner","púypuy"],["duck","qáatqat"],["be, be located an. pl","qál"],["be, be located inan. sg","qál"],["top, be on top","qalí'"],["quit","qamí''i"],["greet","qánni"],["fall, pl. subj","qaráppa"],["fall, of star or leaf","qárra"],["rat","qáwla"],["quail","qaxáal"],["bachelorette","qáy~kúngkat"],["bachelor","qáy~péewkat"],["pitóowili yet, not yet","qáy"],["fence","qayá''ish"],["clean","qayáawi"],["kill, pl. obj","qe'ée"],["sisters","qésvuktum"],["plow","qíini"],["smell","réeqa"],["buy, Type A","sámsa"],["buying, way of","sámsash"],["fawn","súkmal"],["excrement","şáa'ish"],["baking, way of","şáawokash"],["bread","şáawokish"],["grain, wheat","şáaxish"],["raw","şawót"],["willow, arroyo","şaxát"],["stand, sg. inan. subj","şé'"],["elect","şé''i"],["guess","şé''i"],["shoot","şé''i"],["urine","şíi'ish"],["milk a cow","şíichi"],["spill on its own","şílla"],["saltgrass","şimút"],["be mean","şókkicha"],["mean, way of being","şókkichash"],["press down","şótti"],["star","şú'la"],["jackrabbit","şu'ísh"],["enter, pl. subj","şuláaqa"],["put in, pl. obj","şuláaqi"],["rustle","şúv'a"],["shiver","şuvólku"],["winter, in the winter","şuvóonga"],["amazing, be","şuwóşwu"],["discipline","táaki"],["straighten","táaki"],["long, pl","táatalvish"],["clear, become","takíssa"],["appropriate, be","tákka"],["disappointed, be","tákka"],["proper, be","tákka"],["straight","tákkaat"],["straight, directly","tákkinik"],["surprise","takwáayi"],["be sick an. sg., t. Tólmuyk die","takwáyya"],["seaweed","tanáaxat"],["be sick, an. pl., t. Tólmuyk die","táppa"],["ending","táppaxish"],["finish","táppi"],["shade","táşkish"],["shadow","táşkish"],["spring, in the spring","táşpa"],["sit, pl. subj","tavá''a"],["put, sg. obj","tavánni"],["long","tavúlvush"],["lose","tawáşşi"],["summer, in the summer","táwpa"],["age","táwpash"],["year","táwpash"],["sit, sg. subj","táwwa"],["pray, Type A","téela"],["word","téelamal"],["talk, Type A","téetila"],["speak, Type A","téetila"],["speaking, way of","téetilash"],["heal","téng'al"],["táaki judge","tíiwi"],["táaki-sh justice","tíiwish"],["glasses","tíiwilash"],["throw","tó'kwi"],["cross legs","tóng'i"],["powáak thunderbolt","tóomawut"],["sting","tóqqi"],["tell about","tóotupi"],["rabbit, brush","tóovit"],["laugh at, about","tóoya"],["laughter","tóoyukish"],["sample","tú''i"],["examination","tú''ish"],["carry","túk"],["bark, willow","tukát"],["night, spend now and then","túktuka"],["spend the night now and then","túktuka"],["otter","túkval"],["backpack","tukwánvol"],["north","tumáamik"],["wrinkle","tunáala"],["name","túngla"],["tie","túuchi"],["eraser","túv'ilash"],["pine nut","tuvát"],["cloudy, be","tuvíi'"],["rose","'úshla"],["bark, of dogs","wá''i"],["stand, pl. inan. subj","wáacha"],["stick, rabbit","wáakat"],["water","waláwwali"],["enclosure, ceremonial","wámkish"],["jump, pl. subj","wáppa"],["dry","wáx'a"],["frog","waxáwkila"],["dry","wáxni"],["acorn, sweet","wi'át"],["oak, sweet","wi'át"],["acorn, coast live","wi'áaşal"],["oak, coast live","wi'áaşal"],["sprinkle","wí'chi"],["take off more than one thing","wí'chi"],["dogbane","wíicha"],["make rope","wíichu"],["string","wíichut"],["fly, sg. subj","wíila"],["stand up, sg. subj","wíita"],["kangaroo","wílkawut"],["jump, sg. subj","wílla"],["lie on ground, sg. subj","wíwwa"],["grow","wólla"],["be, be located, inan. pl","wón"],["get down","wórra"],["there, in that","wuná'"],["away","wuníyk"],["put, pl. obj","wuşánni"],["smile","xíima"],["smile","xíimaxish"],["men","ya'áychum"],["gone, be gone, inan","yáawa"],["messenger","yáayayakat"],["endure","yámma"],["last","yámma"],["stay","yámma"],["while, in a","yámminik"],["have temporarily, sg. obj","yáw"],["hold, sg. obj","yáw"],["beautiful, be","yawáywa"],["tell","yáx"],["care about","yéx'i"],["playing, way of","yí'yish"],["toy","yí'yilash"],["masseuse","yóonikat"],["pillow","yúkkavish"],["put on","yúlli"],["marry, said of judge or priest","yúnni"],["snow","yúuyit"],["tile","yuxwáamal"],["zero","qayhíycha"],["one","supúl"],["two","wéh"],["three","páahay"],["four","wasá'"],["five","maháar"],["six","paváahay"],["seven","kavíkvish"],["eight","şíw'lash"],["nine","nomaawasá'"],["ten","táppaat"],["take","kuşánni"],["throw","mátti"],["put down","wuşánni"],["something","hísh"],["friend","'ó'nan"],["grandparent, pat","ká'"],["naxánmal/ya'ásh grandfather, pat","ká'"],["néshmal/şungáal grandmother, pat","ká'"],["son","káamay"],["grandparents, pat. obj","káami"],["grandparent, pat., obj","káayi"],["uncle, father's older brother, pl. possessor","kamú'"],["uncles, father's older brothers","kamúm"],["husband","kúung"],["grandfather, mat. subj","kwá'"],["grandfathers, mat. obj","kwáami"],["grandfather, mat. obj","kwáayi"],["grandfathers, mat. subj","kwám"],["arm","máa"],["'ayó' thumb","máa"],["uncle, father's younger brother, obj","máaşi"],["'ayóoy thumb, obj","máay"],["uncle, father's younger brother","máş"],["strength, pl. possessor","milú'"],["possession","míx"],["strength, sg. possessor","mlo"],["gambling, pl. possessor","muxá'"],["gambling, sg. possessor","mxa"],["father, subj","ná'"],["fathers, obj","náami"],["father, obj","náayi"],["fathers","nám"],["relative","néshkinu"],["aunt, mother's older sister, obj","nóoşi"],["aunt, mother's older sister","nóş"],["alone","oxay"],["on X's own","oxay"],["brother, big","páa'aş"],["aunt, father's sister","páamay"],["brother, big, obj","páaşi"],["brothers, big","páaşum"],["brothers, big, obj","páşmi"],["apple, Adam's","pávkun"],["leaf","pávla"],["husband","péew"],["spouse","péew"],["wife","péew"],["brothers, little, obj","pétmi"],["sister, little","píit"],["sisters, little, obj","pítmi"],["sister, big","qée'is"],["sister, big, obj","qéesi"],["sisters, big","qéesum"],["sisters, big, obj","qésmi"],["flower","şóo"],["daughter","şwáamay"],["uncle, mother's brother","táa'aş"],["uncle, mother's brother, obj","táaşi"],["uncles, mother's brothers","táaşum"],["uncles, mother's brothers, obj","táşmi"],["base","tówla"],["grandmother, mat","tú'"],["grandmothers, mat","túm"],["grandmothers, mat. obj","túumi"],["grandmother, mat. obj","túuyi"],["want","vichu"],["able, be","vota"],["can","vota"],["wing, sg. possessor","wki"],["alone","xa"],["own, on X's own","xa"],["mother","yó'"],["mothers","yóm"],["mother, obj","yóoyi"],["aunt, mother's younger sister","yósmay"],["cousin","yúkşum"],["cousin","yúuku"],["red","'áv'aat"],["green","konóknish"],["dark blue","malómlush"],["yellow","'aşó'şush"],["black","yuváttaat"],["white","xwáyyaat"],["purple","ngáxlul"],["silver","sisínnaval"],["ear","náq"],["little brother","péet"],["big brother","páa'aş"],["little sister","píit"],["big sister","qée'is"],["illness","takwáyyaxish"],["observation tower","húulilash"],["tower","húulilash"],["dogs","'awáalum"],["who","háx"],["what","híyq"],["where","michá'"],["where from","micháy"],["where to","michíyk"],["which","michát"],["which one","michát"],["which ones","micháatum"],["which (animate singular object)","micháati"],["which (animate plural object)","michátmi"],["when","míykinga"],["how many","hík"],["how much","hík"],["why","híyngay"],["what day","híknga"],["what month","híknga móynga"],["what season","híknga táwpamaynga"],["question marker","şu"],["question marker (I)","şun"],["question marker (we)","şush"],["question marker (they, you guys)","şum"],["librarian","'áa'alvilakat"],["library","'áa'alvilash"],["be located (singular, command)","'áa'ma"],["animate","'ahíkya"],["tomorrow","'amu'éxngay"],["past","'anóllax"],["with it","'aşúntal"],["other(s)","'awóm"],["another, with","'awóotal"],["rain","'axíllax"],["know, want to","'ayállivichuwun"],["we","cháam"],["future","chámmakilawish"],["name (our)","chamtúng"],["everyone","chóo'onum"],["above","'éechi"],["office","'éelamawilash"],["garbage, into the","'eqéşvoyk"],["search for (command, plural)","háalyam"],["preschool","hamú'~pilá'chilash"],["prekindergarten","hamú'~poróv'orilash"],["several (animate)","híkchum"],["plural","híkmawish"],["cool, to be","hókki"],["teachers","húu'univuktum"],["new","'íipiti"],["he, very nearby","'iví'"],["these (animate)","'ivím"],["also","'íyq"],["sit up, to","katúmma"],["house, to the","kíyk"],["pronoun","kwáan~tungánnaxvol"],["hawk, red-tailed","kwá'la"],["root","kwíinamush"],["good, is","lóoviq"],["verb","loví''axish"],["cooks","ló'xavuktum"],["Monday","Lúunis"],["handbook","máa'a'alvish"],["helping, with a","máamayukatal"],["aides","máamayuvuktum"],["five (animate)","maháarum"],["who love","má'maqatum"],["translate (command, plural)","maríqqiyam"],["octopuses","méechichum"],["thousand","míil"],["Sunday","Míisish"],["was","míyquş"],["be, will","míyxmaan"],["many (animate)","múyyukum"],["lady, young","nawíil"],["ago","nóllimokwichi"],["I","nóo"],["name (my)","notúng"],["mother (my)","noyó'"],["yes","'ohóo"],["name (your guys')","'omtúng"],["secretaries","'óolivuktum"],["date","'óovaat"],["name (your)","'otúng"],["three (animate)","páachum"],["six (animate)","paváahayum"],["and","pí'"],["learn, you guys (command)","pilá'chiyam"],["present","pitóokawish"],["now it is","pitóop"],["his/her/its book","po'áa'alvi"],["just","po'éek"],["after him/her/it","po'éeman"],["last","poháylowi"],["for (them, inanimate)","pokwáan"],["root (his, her, its)","pokwíinamu"],["Friday","Pomháarilo"],["for (them)","pomkwáan"],["name (their)","pomtúng"],["to them","póomik"],["away from them","póomongay"],["at them","póomoto"],["away from him/her/it","póongay"],["at him/her/it","póoto"],["Wednesday","Popáahaylo"],["shape (its)","potáaxaw"],["shape (its)","potáaxawvi"],["ending (his/her/its)","potáppax"],["name (his/her/its)","potúng"],["Thursday","Powasá''ilo"],["fourth grade","powasá''ilowi"],["Tuesday","Powéhlo"],["into him/her/it","póyk"],["standing, will be (plural)","purúymaan"],["standing, are (plural, animate)","purúywun"],["stand (plural, command)","purúyyam"],["be located, will be (plural, animate)","qálmaan"],["are located (plural, animate)","qálwun"],["inanimate","qáy~'ahíkya"],["incomplete, imperfect","qáy~háylovi''aat"],["irregular","qáy~tóşngungawish"],["freeze, to","şáapa"],["Saturday","Sáavatha"],["hundred","şóttaat"],["singular","supúlmawish"],["together","supúlnga"],["women","şúşngalum"],["winter","şuvóowut"],["mockingbird","tamáawumal"],["ends","táppaq"],["put, want to","tavánnivichuwun"],["put (command, plural)","tavánniyam"],["season","táwpamal"],["eagles, golden eagles","'áşwutum"],["pink","'avá'vash"],["rainbow-colored","chaparáppaantum"],["owl, seashore owl","'éemumal"],["owls, seashore owls","'éemumalum"],["gorilla","goríila"],["gorillas","goríilam"],["bears","húnwutum"],["teachers","húu'univuktumk"],["short (animate plural)","kákpamalum"],["dragonflies","kamaríwthim"],["small, little (animate plural)","kíikatum"],["green (animate plural)","konóknichum"],["goose","lá'la"],["geese","lá'lam"],["blue, dark blue (animate plural)","malómluchum"],["big (animate plural)","mómkatum"],["gray","piwípwish"],["light blue","pixépxish"],["violet","qáasimal"],["violet (animate plural)","qáasimalum"],["golden colored (animate plural)","qwayáqwyichum"],["golden colored","qwayáqwyish"],["trout","sóthwamal"],["trouts","sóthwamalum"],["medium-sized","şúnnganwish"],["tall, long (animate plural)","táatalvichum"],["brown (animate plural)","toxótxuchum"],["brown","toxótxush"],["grasshoppers","wi'éetum"],["grasshopper","wi'ét"],["white (animate plural)","xwáyyaantum"],["condor","yungáavaywut"],["condors","yungáavaywutum"],["black (animate plural)","yuváttaantum"],["bad, animate plural","'aláxxwichum"],["tan","'aléepax"],["tan, animate plural","'aléepaxum"],["yuváttaantum orange, animate plural","'aşó'şuchum"],["red, animate plural","'áv'aantum"],["sad, animate plural","chaqwíshqwichum"],["crickets","chilíkmayum"],["dirty, animate plural","'éxmawichum"],["sand, in the sand","'éxvanga"],["happy, animate plural","héngchichum"],["whales","koyóowutum"],["tree, in the tree(s)","kuláwnga"],["or","mán"],["ocean, in the ocean","mómnga"],["mantises, praying mantises","naxá'chichum"],["sheep, bighorn sheep (plural)","páa'atum"],["gray, animate plural","piwípwichum"],["turquoise, animate plural","pixépxichum"],["mountain(s), in the mountains","qawíinga"],["foxes","qewéewichum"],["middle, in the middle","şúnngan"],["medium-sized, animate plural","şúnnganwichum"],["bottom, on the bottom","tóongax"],["cat","túkmay"],["lion, mountain lion","tú'kwut"],["lions, mountain lions","tú'kwutum"],["beautiful, animate plural","yawáywichum"],["cute, animate plural","yawáywimalum"],["ant","'áanat"],["thin","'alú'mal"],["spaghetti","'alú'maymal"],["children, object","'amáymi"],["ant, small ant","'ánmal"],["yellow, to the yellow","'aşó'şuyk"],["red, in something red","'áv'aananga"],["red, from the red","'áv'aanangay"],["red, to something red","'áv'aanik"],["pink, to the pink part","'avá'vayk"],["grown-up, animate plural","'á'wolum"],["us","cháami"],["upwards","'éshkayik"],["first-grade(rs), animate plural","hamúulawichum"],["happy, object","héngchishmi"],["boy, object","hengéemali"],["short, object singular","kapákpamali"],["seven, to the seven","kavíkviyk"],["little, inanimate object plural","kíikati"],["from the green","konókningay"],["green, to the green","konókniyk"],["blue, from the dark blue","malómlungay"],["big, inanimate plural","mómkati"],["purple, from the purple","ngáxlungay"],["purple, to the purple","ngáxluyk"],["left, to my left","no'échvoyk"],["right, to my right","nóployk"],["curve, object","pakwív'aanti"],["six, to the six","paváahay-yuk"],["gray, to the gray","piwípwiyk"],["blue, to the light blue","pixépxiyk"],["third-grade, animate plural","popáahaylowim"],["fourth-grade, animate plural","powasá''ilowim"],["second, second graders","powéhlowim"],["eight, to the eight","şíw'layk"],["medium-sized, object","şúnnganwichi"],["from the one","supúlngay"],["women, object plural","şúşngalmi"],["ten, from the ten","tápaanangay"],["downwards","tóongaxik"],["brown, to the brown","toxótxuyk"],["HOLOCAUST","TUVÓOQAXISH"],["four, from the four","wasá'ngay"],["four, to the four","wasá'yuk"],["two, from the two","wéhngay"],["two, to the two","wéhyuk"],["diamonds, object","wiyáal"],["man, object","ya'áachi"],["intelligent, animate plural","yixélvalum"],["big, object","yóoti"],["penguin","yuváttaanamal"],["black, on the black part","yuváttaananga"],["black, from the black","yuváttanangay"],["yuváttaanti orange, object","'aşó'şuchi"],["red, object","'áv'aanti"],["delicious","'áx'aanti"],["rainbow-colored","chaparáppaanti"],["bird, object","'ehéngmayi"],["first-graders, object","hamúulawishmi"],["'anákkaxi cylinder, object","húukapish"],["little, object","kihúuti"],["little, object","kíikatmi"],["oval","kwalíkwlish"],["friend, my friend","no'ó'nan"],["friends, my friends","no'ó'nanum"],["that (near), object","'óonomi"],["left, to his/her left","po'échvoyk"],["third-graders, object","popáahaylowimi"],["kindergarteners, object","poróv'orilayami"],["fourth-graders, object","powasá''ilowimi"],["second-graders, object","powéhlowimi"],["mean, object","şókkichi"],["scary, object","şuwóşwuchi"],["ten, to ten","táppaanik"],["ten, object","táppaanti"],["talk, to talk about","tilá''a"],["brown, in the brown","toxótxunga"],["lion, mountain lion, object","tú'kwuti"],["that (far), object","wunáali"],["white, to the white part","xwáyyaanik"],["white, object","xwáyyaanti"],["says, is, is called","yaqáa"],["beautiful, object","yawáywichi"],["penguins, object","yuváttaanamalmi"],["black, object","yuváttaanti"],["book, in a book","'áa'alvinga"],["book, out of the book","'áa'alvingay"],["book, to a book","'áa'alviyk"],["cherry","'áatut"],["located, is located, animate","'áawq"],["ripe, object","'áqwşay"],["pink, object","'avá'vachi"],["capital, object","'éshkawichi"],["ground, on the ground","'éxnga"],["ground, out of the ground","'éxngay"],["Teméeku Temecula","'Éxva"],["sand, out of the sand","'éxvangay"],["sand, to the sand","'éxvayk"],["ground, to the groun","'éxyuk"],["bear, object","húnwuti"],["bears, animate object","húnwutmi"],["here","'ivá'"],["seven, at seven","kavíkvinga"],["house, in the house","kíinga"],["house, out of the house","kíingay"],["house, object","kíish"],["tree, out of the tree","kuláwngay"],["tree, to the tree","kuláwyuk"],["bag, in the bag","kúnnga"],["bag, out of the bag","kúnngay"],["bag, to the bag","kúnnik"],["five, at five","maháarnga"],["ocean, to the ocean","mómyuk"],["nine, at nine","nomaawasá'nga"],["absent, are absent, animate","'ómmaan"],["absent, is absent animate","'ómmaq"],["name, your name, object","'otúungi"],["three, at three","páahaynga"],["water, object","páal"],["skunk, object","páalukuti"],["six, at six","paváahaynga"],["bathroom, in the bathroom","pisáangalanga"],["bathroom, out of the bathroom","pisáangalangay"],["restroom, to the restroom","pisáangalayk"],["'ayáalinik well enough","pomléeyu"],["good, inanimate plural object","póplovi"],["duck, object","qáatqati"],["ducks","qáatqatum"],["mountain, out of the mountain","qawíingay"],["mountain, to the mountain","qawíyk"],["question back at other person","şan"],["eight, at eight","şíw'langa"],["woman, object","şungáali"],["ten, at ten","táppaananga"],["know, I don't know","tée"],["know, I really don't know","tée'ehé''ikwa"],["rock, object","tóot"],["cat, object","túkmayi"],["four, at four","wasá'nga"],["two, at two","wéhnga"],["grasshopper, object","wi'éeti"],["grasshoppers, animate object","wi'étmi"],["located, are located, inanimate","wónq"],["absent, is absent inanimate","yáawaq"],["forest, in the forest","yamíinga"],["forest, out of the forest","yamíingay"],["forest, to the forest","yamíyk"],["scissors","chénkilash"],["to skip","'é'kwa"],["object","lóo'aat"],["subject","lóo'ikat"],["by fives","mamháartal"],["by threes","páavaytal"],["dime","púungku"],["by ones","súspultal"],["quarter","wasá'mal"],["by fours","wawsá'tal"],["by twos","wéewihtal"],["starting, beginning","'angáayi"],["descriptive, adjective","patíichiwut"],["odd","popéewvish"],["to paint","húupi"],["thousands","míimil"],["its place value","poné'chila"],["ones","súspul"],["printer","şáppilash"],["hundreds","şótşottaat"],["tens","táptappaat"],["Táppaat Nomaawasá' Pa'áq Havúşşaxpish 'áv'aat","Nomaawasá'kun"],["to show","huní''i"],["to be noon/midnight","churó''a"],["half","kavíitu"],["before","pómkila"],["at X o'clock","pongáaqala"],["night","túukumit"],["to erase","túv'i"],["p.m., in the afternoon","waxáamkiyk"],["multiply","nimélli"],["multiplication","niméllish"],["division","pakáyyish"],["shout at","qéewi"],["Make, you guys! Do, you guys!","Loví''iyam"],["man is taking many, and that is not good","This"],["who (plural)","'axím"],["who (object)","'axíiyi"],["who (plural object)","'axíimi"],["what (subject)","híycha"],["what (plural subject)","híycham"],["what (object)","hísh"],["what (plural object)","híshmi"],["how many (animate)","híkchum"],["how many (animate object)","híkchumi"],["how much (inanimate)","hík"],["how many (inanimate)","hík"],["one (animate object)","supúuli"],["two (animate)","wéhchum"],["two (animate object)","wéhchumi"],["three (animate object)","páachumi"],["four (animate)","wasáa'um"],["four (animate object)","wasá'mi"],["five (animate object)","maháarmi"],["six (animate object)","paváahaymi"],["seven (animate)","kavíkvichum"],["seven (animate object)","kavíkvishmi"],["eight (animate)","şíw'lachum"],["eight (animate object)","şíw'lashmi"],["nine (animate)","nomaawasáa'um"],["nine (animate object)","nomaawasá'mi"],["ten (animate)","táppaantum"],["ten (animate object)","táppaantumi"],["child","'amáay"],["buffalo","'úuchanat"],["buffaloes","'úuchanatum"],["don't (command to one)","tóşşu"],["don't (command to several)","tóşşum"],["me","néy"],["him, her, it (object)","póy"],["two times","wéhkun"],["three times","páahaykun"],["four times","wasá'kun"],["five times","maháarkun"],["six times","paváahaykun"],["seven times","kavíkvishkun"],["eight times","şíw'lashkun"],["nine times","nomaawasá'kun"],["one hundred (animate)","şóttaantum"],["you (object)","'óy"],["us (object)","cháami"],["you guys (object)","'omóomi"],["them (object)","pomóomi"],["him, her (object)","póy"],["this (animate object)","'ivíiyi"],["that, nearby (animate object)","'óonomi"],["that, pretty nearby (animate object)","ponéeyi"],["that, far (animate object)","wunáali"],["that, pretty nearby (inanimate object)","ponéy"],["curve","pakwív'aat"],["elderberry","kúuta"],["charcoal","túula"],["dew","páavuşla"],["vine","tóowunla"],["larynx","pávkunla"],["Adam's apple","pávkunla"],["wild buckwheat","wuláqla"]];
+
+const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const norm = s => strip(s.toLowerCase()).replace(/[’ʼ‘`´']/g, '').replace(/[-–~()]/g, '').replace(/\s+/g, ' ').trim();
+const collapse = s => s.replace(/(.)\1+/g, '$1');
+
+function enVariants(en) {
+  const v = new Set();
+  const base = en.toLowerCase().replace(/\(.*?\)/g, '').trim();
+  v.add(base);
+  base.split(',').map(x => x.trim()).filter(Boolean).forEach(p => {
+    v.add(p);
+    v.add(p.replace(/^(to|be|get)\s+/, ''));
+  });
+  ['', 'be', 'to', 'get'].forEach(x => v.delete(x));
+  return [...v];
+}
+
+const ENTRIES = DATA.map(([en, lu, ex]) => ({ en, lu, ex: (ex || []).map(x => x.toLowerCase()), enV: enVariants(en), nlu: norm(lu) }));
+
+function group(scored, keyFn, targetFn) {
+  const m = new Map();
+  for (const { e, score } of scored) {
+    const k = keyFn(e);
+    if (!m.has(k)) m.set(k, { key: k, score, targets: [] });
+    const g = m.get(k);
+    g.score = Math.max(g.score, score);
+    const t = targetFn(e);
+    if (!g.targets.includes(t)) g.targets.push(t);
+  }
+  return [...m.values()].sort((a, b) => b.score - a.score);
+}
+
+function stems(q) {
+  const s = new Set();
+  if (q.endsWith('ies')) s.add(q.slice(0, -3) + 'y');
+  if (q.endsWith('es')) s.add(q.slice(0, -2));
+  if (q.endsWith('s') && !q.endsWith('ss')) s.add(q.slice(0, -1));
+  if (q.endsWith('ing')) {
+    const b = q.slice(0, -3); s.add(b); s.add(b + 'e');
+    if (/(.)\1$/.test(b)) s.add(b.slice(0, -1));
+  }
+  if (q.endsWith('ed')) {
+    const b = q.slice(0, -2); s.add(b); s.add(b + 'e');
+    if (/(.)\1$/.test(b)) s.add(b.slice(0, -1));
+    if (q.endsWith('ied')) s.add(q.slice(0, -3) + 'y');
+  }
+  s.delete(q);
+  return [...s].filter(x => x.length >= 2);
+}
+
+function tierEn(e, q) {
+  if (e.ex.includes(q)) return 100;
+  let best = 0;
+  for (let i = 0; i < e.enV.length; i++) {
+    const v = e.enV[i];
+    if (v === q) { if (i === 0) return 100; best = Math.max(best, 90); continue; }
+    if (v.split(/\s+/).includes(q)) best = Math.max(best, 60);
+    else if (q.length >= 3 && v.startsWith(q)) best = Math.max(best, 40);
+    else if (q.length >= 3 && v.includes(q)) best = Math.max(best, 20);
+  }
+  return best;
+}
+
+function searchEn(raw) {
+  let q = raw.toLowerCase().trim().replace(/[’ʼ]/g, "'").replace(/^to\s+/, '').replace(/[^\p{L}\p{N}' -]/gu, '').trim();
+  if (!q) return [];
+  const cands = [[q, 0], ...stems(q).map(s => [s, 5])];
+  const scored = [];
+  for (const e of ENTRIES) {
+    let best = 0;
+    for (const [c, pen] of cands) { const t = tierEn(e, c); if (t) best = Math.max(best, t - pen); }
+    if (best) scored.push({ e, score: best });
+  }
+  return group(scored, e => e.en, e => e.lu);
+}
+
+function searchLu(raw) {
+  const q0 = raw.trim().replace(/[.,;:!?"“”()]/g, '');
+  const nq = norm(q0);
+  if (!nq) return [];
+  const cq = collapse(nq), rq = q0.toLowerCase();
+  const scored = [];
+  for (const e of ENTRIES) {
+    const n = e.nlu;
+    let s = 0;
+    if (e.lu.toLowerCase() === rq) s = 100;
+    else if (n === nq) s = 90;
+    else if (collapse(n) === cq) s = 70;
+    else if (nq.length >= 2 && n.startsWith(nq)) s = 40;
+    else if (nq.length >= 3 && n.includes(nq)) s = 20;
+    if (s) scored.push({ e, score: s });
+  }
+  return group(scored, e => e.lu, e => e.en);
+}
+
+/* Prefix/suffix patterns documented in the course lessons (Lessons 13, 16). Used only as a guess. */
+const POSS = [['cham', 'our'], ['pom', 'their'], ['om', 'your guys’'], ['no', 'my'], ['po', 'his/her/its'], ['o', 'your']];
+const REL = [['ngay', 'from / by'], ['nga', 'in'], ['man', 'along with'], ['tal', 'with / using']];
+const STEMS = {
+  paaw: { show: 'páaw', gloss: 'water; plain form páala' },
+  taskixa: { show: 'táşkixa', gloss: 'shade' },
+  wiiw: { show: 'wíiw', gloss: 'acorn mush' },
+  waak: { show: 'wáak', gloss: 'rabbit stick' },
+  maax: { show: 'máax', gloss: 'flour' },
+  noou: { show: 'nóo’u', gloss: 'chief; plain form nóot' }
+};
+
+function lookupStem(core) {
+  if (STEMS[core]) return STEMS[core];
+  const hits = ENTRIES.filter(e => e.nlu === core);
+  if (hits.length) return { show: hits[0].lu, gloss: [...new Set(hits.map(h => h.en))].join(' / ') };
+  return null;
+}
+
+function analyze(raw) {
+  const w = norm(raw);
+  for (const [p, pg] of [...POSS, ['', null]]) {
+    if (p && !w.startsWith(p)) continue;
+    const rest = w.slice(p.length);
+    for (const [s, sg] of [...REL, ['', null]]) {
+      if (s && !rest.endsWith(s)) continue;
+      if (!p && !s) continue;
+      const core = s ? rest.slice(0, -s.length) : rest;
+      if (core.length < 2) continue;
+      const hit = lookupStem(core);
+      if (hit) return { p, pg, s, sg, hit };
+    }
+  }
+  return null;
+}
+
+const SKIP_EN = new Set(['a', 'an', 'the']);
+
+function translatePhrase(raw, mode) {
+  const search = mode === 'en' ? searchEn : searchLu;
+  const exact = mode === 'en' ? 100 : 90;
+  const trim = mode === 'en' ? /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu : /^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu;
+  const toks = raw.trim().split(/\s+/).map(t => t.replace(trim, '')).filter(Boolean);
+  const rows = [];
+  let i = 0;
+  while (i < toks.length) {
+    if (mode === 'en' && SKIP_EN.has(toks[i].toLowerCase())) { rows.push({ src: toks[i], skipped: true }); i++; continue; }
+    let done = false;
+    for (let len = Math.min(4, toks.length - i); len >= 2; len--) {
+      const sub = toks.slice(i, i + len).join(' ');
+      const r = search(sub);
+      if (r.length && r[0].score >= exact) { rows.push({ src: sub, groups: r }); i += len; done = true; break; }
+    }
+    if (done) continue;
+    const r = search(toks[i]);
+    rows.push({ src: toks[i], groups: r, rev: mode === 'lu' ? analyzeVerbForm(toks[i]) : [], nrev: mode === 'lu' ? analyzeNounForm(toks[i]) : [], hint: mode === 'lu' && (!r.length || r[0].score < 70) ? analyze(toks[i]) : null });
+    i++;
+  }
+  return rows;
+}
+/*CORE-END*/
+/*ENGINE-START*/
+const _strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const _norm = s => _strip(s.toLowerCase()).replace(/[’ʼ‘`´']/g, '').replace(/[-–~()]/g, '').replace(/\s+/g, ' ').trim();
+const VOW = 'aeiouáéíóúàèìòù';
+const isVowel = ch => !!ch && VOW.includes(ch.toLowerCase());
+
+/* Type A verbs named in Books 5, 7 and 8, plus Type A verbs whose plural -wun is attested in the lessons. */
+const TYPE_A_LIST = [
+  'sámsa', "ló'xa", 'náqma', 'téetila', 'máahila', 'píiwila', 'téela', "'á'ya", 'hamóoya', 'mókna', 'tówya', 'wáawa',
+  "yuxwá'cha", 'námxa', 'ngáa', 'písma', "tó'ma", "pí'xwa", 'nixilnixílla', "'ayá'ya", "'éngxa", "'ulángna", 'hakáana',
+  'harúuqa', "haşlá''a", 'héngcha', "hulá'va", 'kapákpa', "kwaví'cha", "páa'aya", "pá'cha", 'péena', 'şáyva', 'şókkicha',
+  "tapá'sa", "'ayáalka", 'hélteka', 'páşka', 'chipómka', 'şéxla', 'cháqwla', "'ó'na", "şulá'na", "'ulá'na", "yawá'na",
+  "woká'na", "wuvá'na", "kwichá'na", "chapá'na"
+];
+const TYPE_A = new Set(TYPE_A_LIST.map(_norm));
+
+/* Type A verbs whose preterit is not simply +x (Book 7, Lesson 20). */
+const PRET_IRREGULAR = {
+  'sámsa': 'sássamsa', "ló'xa": "lóllo'xa", 'písma': 'píppisma', "tó'ma": "tótto'ma", 'mókna': 'mómmokun',
+  'kúnglu': 'kúkkunglu', 'tówyaw': 'tóttowyaw', 'péewlu': 'péppewlu', 'tóonav': 'tóttonav', 'kíichu': 'kíkchu',
+  'náachaxan': 'nánchaxan', 'náawin': 'nánwin', 'kwáavichu': 'kwákwvichu', "téng'al": 'téttingal',
+  'túuk': 'túutuk', "'áaş": "'áa'aş"
+};
+const MONOSYLLABIC_REDUP = new Set(["şóo'", "ná'", 'ngée', "pé'", "píi'", "şíi'", "qwá'", "yá'"]);
+/* Type A verbs listed in Book 7 as forming the preterit with plain -x */
+const TYPE_A_X = new Set(["'á'ya", "'ayá'ya", "'éngxa", "'ulángna", 'hakáana', 'hamóoya', 'harúuqa', "haşlá''a", 'héngcha',
+  "hulá'va", 'kapákpa', "kwaví'cha", 'námxa', 'náqma', "páa'aya", "pá'cha", 'péena', 'şáyva', 'şókkicha', "tapá'sa", 'tówya', 'wáawa',
+  'téetila', 'téela'].map(_norm));
+
+function verbClass(v) {
+  const last = v[v.length - 1];
+  if (last !== 'a') return last === 'i' ? 'i' : 'o';
+  if (TYPE_A.has(_norm(v))) return 'A';
+  if (/'na$/.test(v)) return 'A';
+  if (/[^aeiouáéíóúl]la$/.test(v)) return 'A';
+  return 'a';
+}
+
+function shortenFinal(stem) {
+  const n = stem.length;
+  if (n >= 2 && stem[n - 1] === stem[n - 2] && !isVowel(stem[n - 1])) return stem.slice(0, -1);
+  return stem;
+}
+function stripAcc(ch) { return _strip(ch); }
+
+function preterit(v, cls) {
+  const alt = [];
+  const key = v;
+  if (PRET_IRREGULAR[key]) return { form: PRET_IRREGULAR[key], note: 'reduplicated' };
+  if (MONOSYLLABIC_REDUP.has(key)) {
+    const m = key.match(/^([^aeiouáéíóú]*)([aeiouáéíóú]+)(.*)$/);
+    if (m) {
+      const [, c, vv, rest] = m;
+      const longV = vv.length > 1 ? vv : vv + stripAcc(vv);
+      const shortV = stripAcc(vv[0]);
+      return { form: c + longV + c + shortV + rest, note: 'reduplicated (monosyllabic)' };
+    }
+  }
+  if (cls === 'i') {
+    const stem = v.slice(0, -1);
+    const primary = shortenFinal(stem) + 'yax', second = stem + 'ax';
+    return { form: primary, alt: second !== primary ? second : null };
+  }
+  if (cls === 'a') {
+    const stem = v.slice(0, -1);
+    // an apostrophe before a consonant marks that consonant as long (Rule 4); it drops when the consonant shortens: pulú'cha -> pulúchya
+    const m = stem.match(/^(.*[aeiouáéíóú])'(ch|kw|qw|ng|th|xw|[^aeiouáéíóú'])$/);
+    if (m) return { form: m[1] + m[2] + 'ya', alt: v };
+    const units = stem.replace(/(ch|kw|qw|ng|th|xw)$/, 'C');
+    const prev = units[units.length - 1], prev2 = units[units.length - 2];
+    const cluster = !isVowel(prev) && prev2 && !isVowel(prev2) && prev !== prev2 && prev2 !== "'";
+    if (cluster) return { form: v, note: 'only the plain form exists' };
+    return { form: shortenFinal(stem) + 'ya', alt: v };
+  }
+  if (cls === 'A') {
+    if (TYPE_A_X.has(_norm(v)) || /(ka|la|'na)$/.test(v)) return { form: v + 'x' };
+    return { form: null, note: 'Type A: preterit must be memorized' };
+  }
+  // other verbs
+  const last = v[v.length - 1];
+  return isVowel(last) ? { form: v + 'x' } : { form: v + 'ax' };
+}
+
+function syllableGroups(v) { return (v.match(/[aeiouáéíóúàèìòù]+/gi) || []).length; }
+function simpleFuture(v, cls) {
+  const last = v[v.length - 1];
+  if (cls === 'a' || cls === 'A') {
+    let stem = v;
+    // Rule 5 (Book 8, Lesson 19): three syllables, stressed on the first: the consonant before the final -a lengthens
+    const groups = v.match(/[aeiouáéíóúàèìòù]+/gi) || [];
+    const firstStressed = groups.length && /[áéíóú]/.test(groups[0]);
+    const before = v[v.length - 2], before2 = v[v.length - 3];
+    if (groups.length === 3 && firstStressed && !isVowel(before) && isVowel(before2)) stem = v.slice(0, -1) + before + 'a';
+    return stem + 'an';
+  }
+  if (isVowel(last)) return v + 'n';
+  return null;
+}
+
+function conj(v, cls) {
+  cls = cls || verbClass(v);
+  const last = v[v.length - 1];
+  const a = cls === 'a';
+  const f = {};
+  f.presSg = v + 'q';
+  f.presPl = a ? v + 'an' : v + 'wun';
+  f.impf = v + 'quş';
+  f.cmdSg = a ? v + 'x' : v;
+  f.cmdPl = a ? v + 'xam' : v + 'yam';
+  f.futHab = a ? v + 'xmaan' : (isVowel(last) ? v + 'màan' : v + 'maan');
+  f.futHabAlt = (!a && isVowel(last)) ? v + 'mmaan' : null;
+  f.futSimple = simpleFuture(v, cls);
+  const wbase = a ? v + 'x' : v;
+  f.wantSg = wbase + 'vichuq';
+  f.wantPl = wbase + 'vichuwun';
+  f.pret = preterit(v, cls);
+  return f;
+}
+/*ENGINE-END*/
+if (typeof module !== 'undefined') module.exports = { verbClass, conj, preterit, TYPE_A_LIST, _norm };
+
+/*NUMBERS-START*/
+/* The counting system from Books 3 and 5 */
+const NUM = ['qayhíycha', 'supúl', 'wéh', 'páahay', "wasá'", 'maháar', 'paváahay', 'kavíkvish', "şíw'lash", "nomaawasá'", 'táppaat'];
+const NUM_KUN = [null, null, 'wéhkun', 'páahaykun', "wasá'kun", 'maháarkun', 'paváahaykun', 'kavíkvishkun', "şíw'lashkun", "nomaawasá'kun"];
+const SKIP = { 1: 'súspultal', 2: 'wéewihtal', 3: 'páavaytal', 4: "wawsá'tal", 5: 'mamháartal', 6: 'paváahaytal', 7: 'kavíkvital',
+  8: "şíw'latal", 9: "nomaawasá'tal", 10: 'táptappaantal', 100: 'şótşottaantal', 1000: 'míimiltal' };
+
+/* animate numerals, 1 to 10 (Book 7, Lesson 6): [subject, object] */
+const ANIM = { 1: ['supúl', 'supúuli'], 2: ['wéhchum', 'wéhchumi'], 3: ['páachum', 'páachumi'], 4: ["wasáa'um", "wasá'mi"], 5: ['maháarum', 'maháarmi'],
+  6: ['paváahayum', 'paváahaymi'], 7: ['kavíkvichum', 'kavíkvishmi'], 8: ["şíw'lachum", "şíw'lashmi"], 9: ["nomaawasáa'um", "nomaawasá'mi"], 10: ['táppaantum', 'táppaantumi'] };
+function animateNumber(n, obj) { return ANIM[n] ? ANIM[n][obj ? 1 : 0] : null; }
+
+function groupToLu(g, obj) {                       // 1 to 999
+  const tp = obj ? 'táppaanti' : 'táppaat', sh = obj ? 'şóttaanti' : 'şóttaat';
+  const parts = [];
+  const h = Math.floor(g / 100), r = g % 100;
+  if (h) parts.push(h === 1 ? sh : NUM_KUN[h] + ' ' + sh);
+  if (r) {
+    if (r < 10) parts.push(NUM[r]);
+    else if (r === 10) parts.push(tp);
+    else if (r < 20) parts.push(tp, NUM[r - 10], "pa'áq");
+    else {
+      const t = Math.floor(r / 10), u = r % 10;
+      parts.push(NUM_KUN[t] + ' ' + tp);
+      if (u) parts.push(NUM[u], "pa'áq");
+    }
+  }
+  return parts.join(' ');
+}
+function numberToLu(n, obj) {
+  if (!Number.isInteger(n) || n < 0 || n > 999999) return null;
+  if (n === 0) return obj ? 'qayhísh' : 'qayhíycha';
+  const T = Math.floor(n / 1000), rest = n % 1000;
+  const parts = [];
+  if (T) parts.push(T === 1 ? 'míil' : groupToLu(T, obj) + ' míil');
+  if (rest) parts.push(groupToLu(rest, obj));
+  return parts.join(' ');
+}
+
+/* animate numerals up to 999 (Book 6, Lesson 31): táppaat -> táppaantum, şóttaat -> şóttaantum, digits take their animate forms; -kun words stay */
+function numberToLuAnimate(n, obj) {
+  if (!Number.isInteger(n) || n < 1 || n > 999) return null;
+  return numberToLu(n, false).split(' ').map(w => {
+    if (w === "pa'áq" || /kun$/.test(w)) return w;
+    if (w === 'táppaat') return obj ? 'táppaantumi' : 'táppaantum';
+    if (w === 'şóttaat') return obj ? 'şóttaantumi' : 'şóttaantum';
+    const d = NUM.indexOf(w);
+    return (d >= 1 && d <= 9) ? ANIM[d][obj ? 1 : 0] : w;
+  }).join(' ');
+}
+
+function skipToLu(n) {
+  if (SKIP[n]) return SKIP[n];
+  if (n > 10 && n < 20) return SKIP[10] + ' ' + SKIP[n - 10] + " pa'áq";
+  if (n >= 20 && n < 100 && n % 10 === 0) return NUM_KUN[n / 10] + ' ' + SKIP[10];
+  return null;
+}
+
+/* English number words and digits to an integer */
+const EN_ONES = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+  thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+const EN_TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+function isNumToken(t) { return /^\d{1,6}$/.test(t) || t in EN_ONES || t in EN_TENS || t === 'hundred' || t === 'thousand' || t === 'and'; }
+function englishToNumber(tokens) {
+  const t = tokens.flatMap(x => x.split('-')).filter(x => x !== 'and');
+  if (!t.length) return null;
+  if (t.length === 1 && /^\d{1,6}$/.test(t[0])) return parseInt(t[0], 10);
+  let total = 0, cur = 0, seen = false;
+  for (const w of t) {
+    if (w in EN_ONES) { cur += EN_ONES[w]; seen = true; }
+    else if (w in EN_TENS) { cur += EN_TENS[w]; seen = true; }
+    else if (w === 'hundred') { if (!seen && cur === 0) return null; cur = (cur || 1) * 100; seen = true; }
+    else if (w === 'thousand') { total += (cur || 1) * 1000; cur = 0; seen = true; }
+    else return null;
+  }
+  const n = total + cur;
+  return seen && n >= 0 && n <= 999999 ? n : null;
+}
+function skipFromEnglish(w) {
+  const m = { ones: 1, twos: 2, threes: 3, fours: 4, fives: 5, sixes: 6, sevens: 7, eights: 8, nines: 9, tens: 10, elevens: 11, twelves: 12,
+    thirteens: 13, fourteens: 14, fifteens: 15, sixteens: 16, seventeens: 17, eighteens: 18, nineteens: 19, twenties: 20, thirties: 30,
+    forties: 40, fifties: 50, sixties: 60, seventies: 70, eighties: 80, nineties: 90, hundreds: 100, thousands: 1000 };
+  return m[w] || null;
+}
+
+/* Luiseño numerals to an integer (accepts subject or object forms) */
+function luToNumber(raw) {
+  const toks = raw.trim().replace(/[’ʼ]/g, "'").toLowerCase().split(/\s+/).filter(Boolean).map(_norm);
+  if (!toks.length) return null;
+  const U = {}; NUM.forEach((w, i) => { if (i <= 9) U[_norm(w)] = i; });
+  Object.keys(ANIM).forEach(d => ANIM[d].forEach(w => { U[_norm(w)] = Number(d); }));
+  const K = {}; NUM_KUN.forEach((w, i) => { if (w) K[_norm(w)] = i; });
+  const isTen = w => ['táppaat', 'táppaanti', 'táppaantum', 'táppaantumi'].some(x => w === _norm(x));
+  const isHun = w => ['şóttaat', 'şóttaanti', 'şóttaantum', 'şóttaantumi'].some(x => w === _norm(x));
+  const PA = _norm("pa'áq");
+  const group = ts => {
+    let i = 0, v = 0;
+    if (!ts.length) return null;
+    if (isHun(ts[i])) { v += 100; i++; }
+    else if (K[ts[i]] && ts[i + 1] && isHun(ts[i + 1])) { v += K[ts[i]] * 100; i += 2; }
+    if (i < ts.length && isTen(ts[i])) {
+      v += 10; i++;
+      if (i + 1 < ts.length && U[ts[i]] !== undefined && ts[i + 1] === PA) { v += U[ts[i]]; i += 2; }
+    } else if (i + 1 < ts.length && K[ts[i]] && isTen(ts[i + 1])) {
+      v += K[ts[i]] * 10; i += 2;
+      if (i + 1 < ts.length && U[ts[i]] !== undefined && ts[i + 1] === PA) { v += U[ts[i]]; i += 2; }
+    } else if (i < ts.length && U[ts[i]] !== undefined) { v += U[ts[i]]; i++; }
+    return i === ts.length && v > 0 ? v : null;
+  };
+  if (toks.length === 1 && (toks[0] === _norm('qayhíycha') || toks[0] === _norm('qayhísh'))) return 0;
+  const mi = toks.lastIndexOf(_norm('míil'));
+  if (mi >= 0) {
+    const left = toks.slice(0, mi), right = toks.slice(mi + 1);
+    const T = left.length ? group(left) : 1;
+    const R = right.length ? group(right) : 0;
+    if (T === null || R === null) return null;
+    return T * 1000 + R;
+  }
+  return group(toks);
+}
+
+/* numerals with relational endings (Book 7, Lesson 5): kavíkvinga "at seven", táppaananga supúlnga pa'áq "at eleven" */
+function numWordEnding(w, kind) {
+  let stem;
+  if (w === 'táppaat' || w === 'şóttaat') stem = w.slice(0, -1) + ((kind === 'nga' || kind === 'ngay') ? 'na' : 'n');
+  else if (/sh$/.test(w)) stem = w.slice(0, -2);
+  else stem = w;
+  if (kind === 'nga') return stem + 'nga';
+  if (kind === 'ngay') return stem + 'ngay';
+  if (kind === 'tal') return stem + 'tal';
+  if (kind === 'man') return stem + 'man';
+  const last = stem[stem.length - 1];
+  return last === 'n' ? stem + 'ik' : (/[aeiouáéíóú]$/.test(last) ? stem + 'yk' : stem + 'yuk');
+}
+function numberWithEnding(n, kind) {
+  if (!Number.isInteger(n) || n < 1 || n > 999999) return null;
+  return numberToLu(n, false).split(' ').map(w => ((w === "pa'áq" || /kun$/.test(w)) ? w : numWordEnding(w, kind))).join(' ');
+}
+/*NUMBERS-END*/
+if (typeof module !== 'undefined') module.exports = { numberToLuAnimate, animateNumber, numberWithEnding, numberToLu, luToNumber, englishToNumber, skipToLu, skipFromEnglish, isNumToken };
+
+/*MODULES-START*/
+/* ===== verb inventory ===== */
+const VERB_RAW = [["'áa'ayu","",0,0],["'áaş","wun",0,0],["'áax","wun",0,1],["'árri","",0,0],["'ashtú''a","",0,0],["'ashtu'iní''i","",0,0],["'áx'a","",0,0],["'áy","wun",0,0],["'ayálli","wun",0,0],["'ayánni","wun",0,0],["'eléela","",0,0],["'éskani","wun",0,0],["'íita","",0,0],["'íiva","",0,0],["'íivi","",0,0],["'ínni","wun",0,0],["'ohó'van","wun",0,0],["'ókka","an",0,0],["'ómma","an",0,1],["'óori","",0,0],["'óovi","wun",0,0],["'owó''a","an",0,0],["chaqwílla","an",0,0],["chilúuy","wun",0,0],["chíwwa","an",0,0],["chóx'a","",0,0],["chúng'i","",0,0],["chútta","an",0,0],["háal","wun",0,0],["hakánni","",0,0],["hatí''a","an",0,0],["hélli","",0,0],["héth'i","wun",0,0],["hétti","wun",0,0],["héyyi","wun",0,0],["hiká'chi","wun",0,0],["hilá''i","wun",0,0],["hiláala","an",0,0],["hóhhi","wun",0,0],["hótti","",0,0],["hulúkka","",0,0],["húşşi","wun",0,0],["húu'uni","wun",0,0],["kíichu","wun",0,0],["kív'i","wun",0,0],["kóşşa","",0,0],["kótti","",0,0],["kuláaw","",0,0],["kúnglu","",0,0],["kúp","wun",0,0],["kupú''a","an",0,0],["kuşánni","wun",0,0],["kwáavichu","wun",0,0],["ló'xa","",0,0],["lómma","",0,0],["lóovi","wun",0,0],["loví''i","wun",0,0],["má'ma","an",0,0],["máamayu","wun",0,0],["mátti","wun",0,0],["míili","wun",0,0],["mílli","wun",0,0],["moyóoni","",0,0],["muróppa","an",0,0],["múuya","",0,0],["múuyi","wun",0,0],["muyáqqa","an",0,0],["muyáqqi","",0,0],["ná'","",0,0],["náachaxan","wun",0,0],["náawi","wun",0,0],["náawin","wun",0,0],["námxa","",0,0],["náqma","wun",0,0],["naqmá''i","wun",0,0],["ngée","wun",0,0],["ngó'","",0,0],["ngóyyi","",0,0],["nónmi","wun",0,0],["nóoli","wun",0,0],["páapatu","",0,0],["páchxam","wun",0,0],["pé'","wun",0,0],["péewlu","",0,0],["pélla","an",0,0],["pilá'chi","wun",0,0],["pó'kwa","an",0,0],["pulú'cha","",0,0],["pulú'chi","wun",0,0],["purúy","wun",0,1],["putí'","wun",0,0],["pútta","an",0,0],["qál","wun",0,1],["qamí''i","wun",0,0],["qaráppa","an",0,0],["qayáawi","wun",0,0],["qe'ée","wun",0,0],["qwá'","wun",0,0],["réeqa","",0,0],["sámsa","wun",0,0],["şé'","",0,0],["şé''i","wun",0,1],["şíi'","",0,0],["şílli","wun",0,0],["şókkicha","wun",0,0],["şóo'","",0,0],["şótti","wun",0,0],["şuláaqa","an",0,0],["şuláaqi","",0,0],["şúv'a","",0,0],["şuwóo'","wun",0,0],["táaki","wun",0,0],["táaxan","wun",0,0],["tákka","",0,0],["takwáayi","",0,0],["takwáyya","",0,0],["táppa","an",0,0],["táppi","wun",0,0],["tavá''a","an",0,0],["tavánni","wun",0,0],["táwwa","",0,0],["téela","wun",0,0],["téetila","",0,0],["téng'al","wun",0,0],["tíiwi","wun",0,0],["tíwwa","",0,0],["tóng'i","wun",0,0],["tóonav","wun",0,0],["tóotupi","",0,0],["tóow","wun",0,0],["tóoya","an",0,0],["tú''i","wun",0,0],["túk","wun",0,0],["túuchi","",0,0],["wáacha","",0,0],["wáaya","an",0,0],["wáppa","",0,0],["wáwwi","",0,0],["wáx'a","",0,0],["wí'chi","",0,0],["wíila","",0,0],["wíita","",0,1],["wílla","",0,0],["wíwwa","",0,0],["wókki","wun",0,0],["wólla","an",0,0],["wón","",0,1],["wóoyi","wun",0,0],["wórra","an",0,0],["wukálla","an",0,0],["wukó''a","an",0,0],["wuşánni","",0,0],["yá'","",0,0],["yáawa","",0,1],["yámma","an",0,0],["yáw","wun",0,0],["yéx'i","",0,0],["yí'yi","wun",0,0],["yúnni","wun",0,0],["qapútti","wun",0,0],["wóltu","wun",0,0],["woltú''a","an",0,0],["tamáywu","wun",0,0],["chuxí'","wun",0,0],["háaya","",0,0],["písma","wun",0,0],["hamóoya","wun",0,0],["tuvyúng'i","wun",0,0],["táchla","",0,0],["'áaw","",0,1],["qáala","",0,1],["wuvá'na","wun",0,0],["píi'","",0,0],["chíiv","",0,0],["wumóoy","",0,0],["xóyyi","",0,0],["wákki","",0,0],["şulá'na","wun",0,0],["chá'qwi","",0,0],["yawá'na","wun",0,0],["móonaka","",0,0],["patavátti","wun",0,0],["nákki","wun",0,0],["puráara","an",0,0],["wíw","wun",0,0],["tó'ma","wun",0,0],["ngáa","wun",0,0],["woká'na","wun",0,0],["mulá''a","",0,0],["pakáyyi","wun",0,0],["páa'i","wun",0,0],["chulúppa","",0,0],["şíx'i","",0,0],["wíitu","wun",0,0],["náwvu","wun",0,0],["néqpi","wun",0,0],["'ayáalka","wun",0,0],["xwáyya","an",0,0],["wáapa","an",0,0],["lukúppi","wun",0,0],["'ayá'ya","wun",0,0],["múx","",0,0],["tó'wi","wun",0,0],["yúumu","",0,0],["chíil'a","an",0,0],["hé''a","",0,0],["şéxla","wun",0,0],["hélteka","wun",0,0],["nóo'olu","wun",0,0],["hakúuy","",0,0],["şáqqi","",0,0],["kalíppi","wun",0,0],["'áamo","wun",0,0],["lúuki","wun",0,0],["kwaví'cha","wun",0,0],["hakáana","wun",0,0],["mókna","wun",0,0],["máw","",0,0],["páşka","wun",0,0],["'óyya","",0,0],["kéyya","an",0,0],["chipómka","wun",0,0],["húuli","wun",0,0],["páx'am","",0,0],["máaya","",0,0],["wingé'","",0,0],["tiqélqi","",0,0],["túuk","wun",0,0],["mé'kun","wun",0,0],["yéexi","wun",0,0],["hayámmi","wun",0,0],["tará''a","",0,0],["'ó'na","wun",0,0],["mólli","wun",0,0],["héeta","",0,0],["hóoya","",0,0],["'á'ya","wun",0,0],["'óş","",0,0],["héela","an",0,0],["nukwáan","wun",0,0],["yúuy","",0,0],["şaxwáay","",0,0],["túuyi","wun",0,0],["yixé'tu","wun",0,0],["pitúpti","",0,0],["tówya","wun",0,0],["píivan","wun",0,0],["tupíi","wun",0,0],["mayíw","",0,0],["yurúm","",0,0],["ngóyya","",0,0],["yúlla","",0,0],["şawáay","wun",0,0],["híiki","wun",0,0],["cháqwla","wun",0,0],["kwichá'na","wun",0,0],["'ét'eta","",1,0],["'óoli","",1,0],["'óora","",1,0],["chórra","",1,0],["chulúppi","",1,0],["chúyyi","",1,0],["hakwíssa","",1,0],["háng'i","",1,0],["haválli","",1,0],["hélhela","",1,0],["hélla","",1,0],["hémmi","",1,0],["húrri","",1,0],["kuvátti","",1,0],["kwilálli","",1,0],["múlli","",1,0],["namókki","",1,0],["ngórra","",1,0],["pátti","",1,0],["pémma","",1,0],["pí'xwa","",1,0],["píth'a","",1,0],["poróv'ori","",1,0],["pórri","",1,0],["pótti","",1,0],["purú''i","",1,0],["qánni","",1,0],["qárra","",1,0],["qíini","",1,0],["şíichi","",1,0],["şíili","",1,0],["şílla","",1,0],["takíssa","",1,0],["tawáşşi","",1,0],["tó'kwi","",1,0],["tóqqi","",1,0],["túktuka","",1,0],["wá''i","",1,0],["wáaki","",1,0],["wáxni","",1,0],["xíima","",1,0],["yawáywa","",1,0],["yúlli","",1,0],["yupáqqi","",1,0]];   // [headword, plural evidence ('an' | 'wun' | ''), unverified, irregular]
+const VERBS = new Map();
+for (const [lu, pl, unv, irr] of VERB_RAW) VERBS.set(lu, { lu, cls: verbClass(lu), pl, unverified: !!unv, irregular: !!irr });
+
+const GLOSSES = new Map();   // Luiseño headword -> English glosses
+for (const e of ENTRIES) { if (!GLOSSES.has(e.lu)) GLOSSES.set(e.lu, []); const g = GLOSSES.get(e.lu); if (!g.includes(e.en)) g.push(e.en); }
+
+function prettyGloss(g) {
+  let m = g.match(/^(.+), be(?: an\.)?$/);
+  if (m) return 'be ' + m[1];
+  m = g.match(/^(.+), to be$/);
+  if (m) return 'be ' + m[1];
+  return g.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+}
+function verbGloss(v) { return prettyGloss((GLOSSES.get(v.lu) || [v.lu])[0]); }
+
+function classLabel(v) {
+  if (v.cls === 'i') return 'i-verb';
+  if (v.cls === 'o') return 'other verb (ends in a consonant, u or o)';
+  if (v.cls === 'A') return TYPE_A.has(_norm(v.lu)) ? 'Type A verb (named or shown in the books)' : "Type A verb (by the -'na / consonant + la rule)";
+  return v.pl === 'an' ? 'a-verb (its plural -an appears in the lessons)' : 'a-verb (assumed: no lesson sentence shows its plural)';
+}
+
+const TENSE_LABEL = {
+  presSg: 'present, one subject', presPl: 'present, more than one subject', impf: 'was/were -ing',
+  pret: 'simple past', futHab: 'will be -ing', futSimple: 'will', cmdSg: 'command to one person',
+  cmdPl: 'command to two or more people', wantSg: 'wants to, one subject', wantPl: 'want to, more than one subject'
+};
+
+/* reverse index: inflected form -> verbs */
+const REV = new Map();
+function addRev(form, v, key) {
+  if (!form) return;
+  const k = form.toLowerCase();
+  if (!REV.has(k)) REV.set(k, []);
+  const list = REV.get(k);
+  const hit = list.find(x => x.v === v);
+  if (hit) { if (!hit.keys.includes(key)) hit.keys.push(key); } else list.push({ v, keys: [key] });
+}
+for (const v of VERBS.values()) {
+  if (v.irregular) continue;
+  const f = conj(v.lu, v.cls);
+  for (const key of ['presSg', 'presPl', 'impf', 'futHab', 'futSimple', 'cmdSg', 'cmdPl', 'wantSg', 'wantPl']) addRev(f[key], v, key);
+  addRev(f.futHabAlt, v, 'futHab');
+  addRev(f.pret.form, v, 'pret'); addRev(f.pret.alt, v, 'pret');
+}
+function analyzeVerbForm(raw) {
+  const k = raw.trim().replace(/[’ʼ]/g, "'").toLowerCase();
+  let hits = REV.get(k);
+  if (!hits) {
+    const nk = _norm(k);
+    for (const [form, list] of REV) { if (_norm(form) === nk) { hits = list; break; } }
+  }
+  return hits || [];
+}
+function revLabel(h) { return h.keys.map(k => TENSE_LABEL[k]).join(' / '); }
+
+/* ===== English verb handling ===== */
+const IRREG_PAST = { ate: 'eat', ran: 'run', saw: 'see', went: 'go', came: 'come', sat: 'sit', stood: 'stand', drank: 'drink', wrote: 'write',
+  gave: 'give', took: 'take', made: 'make', sang: 'sing', swam: 'swim', slept: 'sleep', bought: 'buy', heard: 'hear', spoke: 'speak',
+  knew: 'know', told: 'tell', held: 'hold', left: 'leave', fell: 'fall', found: 'find', got: 'get', threw: 'throw', brought: 'bring',
+  taught: 'teach', built: 'build', lost: 'lose', kept: 'keep', dug: 'dig', did: 'do', had: 'have', said: 'say', wore: 'wear', drew: 'draw',
+  began: 'begin', flew: 'fly', grew: 'grow', rose: 'rise', shot: 'shoot', sold: 'sell', sent: 'send', hid: 'hide', broke: 'break', woke: 'wake' };
+const PRON = { i: '1s', you: '2s', he: '3s', she: '3s', it: '3s', we: '1p', they: '3p', 'you guys': '2p', 'you all': '2p' };
+const PRON_LU = { '1s': 'nóo', '2s': "'óm", '3s': "pó'", '1p': 'cháam', '2p': "'omóm", '3p': 'pomóm' };
+const PRON_FUT = { '1s': 'nóonupo', '2s': "'ómmup", '3s': "pó'po", '1p': 'cháamchapo', '2p': "'omómmo", '3p': 'pomómmo' };
+const PRON_EN = { '1s': 'I', '2s': 'you', '3s': 'he/she/it', '1p': 'we', '2p': 'you guys', '3p': 'they' };
+const AUX = new Set(['am', 'is', 'are', 'was', 'were', 'will', 'do', 'does', 'did', 'not', 'be']);
+const DET = new Set(["o'clock", 'oclock', 'some', 'the', 'a', 'an', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those']);
+const PREP = new Set(['to', 'in', 'at', 'on', 'from', 'with', 'for', 'of', 'by', 'into', 'onto', 'under', 'about']);
+
+function expandContractions(t) {
+  const m = { "i'm": ['i', 'am'], "you're": ['you', 'are'], "he's": ['he', 'is'], "she's": ['she', 'is'], "it's": ['it', 'is'],
+    "we're": ['we', 'are'], "they're": ['they', 'are'], "don't": ['do', 'not'], "doesn't": ['does', 'not'], "didn't": ['did', 'not'],
+    "won't": ['will', 'not'], "isn't": ['is', 'not'], "aren't": ['are', 'not'], "wasn't": ['was', 'not'], "weren't": ['were', 'not'] };
+  return t.flatMap(x => m[x] || [x]);
+}
+
+function verbForms(tok) {
+  const out = [];
+  if (IRREG_PAST[tok]) out.push({ lemma: IRREG_PAST[tok], kind: 'past' });
+  out.push({ lemma: tok, kind: 'base' });
+  const undouble = b => (/(.)\1$/.test(b) ? [b.slice(0, -1)] : []);
+  if (tok.endsWith('ing') && tok.length > 4) { const b = tok.slice(0, -3); [b, b + 'e', ...undouble(b)].forEach(l => out.push({ lemma: l, kind: 'ing' })); }
+  if (tok.endsWith('ed') && tok.length > 3) { const b = tok.slice(0, -2); [b, b + 'e', ...undouble(b)].forEach(l => out.push({ lemma: l, kind: 'past' })); if (tok.endsWith('ied')) out.push({ lemma: tok.slice(0, -3) + 'y', kind: 'past' }); }
+  if (tok.endsWith('ies')) out.push({ lemma: tok.slice(0, -3) + 'y', kind: 's' });
+  if (tok.endsWith('es')) out.push({ lemma: tok.slice(0, -2), kind: 's' });
+  if (tok.endsWith('s') && !tok.endsWith('ss')) out.push({ lemma: tok.slice(0, -1), kind: 's' });
+  return out;
+}
+function verbsForLemma(lemma) {
+  const out = [];
+  for (const e of ENTRIES) {
+    if (tierEn(e, lemma) >= 90) { const v = VERBS.get(e.lu); if (v && !out.some(o => o.v.lu === e.lu)) out.push({ v, gloss: e.en }); }
+  }
+  return out;
+}
+function glossPenalty(v) {
+  const gl = (GLOSSES.get(v.lu) || []).join(' ').toLowerCase();
+  let p = 0;
+  if (/pl\. obj|more than one|plural|pl\. subj/.test(gl)) p += 2;
+  if (/now and then/.test(gl)) p += 1;
+  if (v.unverified) p += 1;
+  return p;
+}
+function resolvePhrasal(tok, next) {
+  if (!next || AUX.has(tok) || DET.has(tok) || PRON[tok]) return null;
+  for (const f of verbForms(tok)) {
+    const vs = verbsForLemma(f.lemma + ' ' + next);
+    if (vs.length) { vs.sort((a, b) => glossPenalty(a.v) - glossPenalty(b.v)); return { kind: f.kind, lemma: f.lemma + ' ' + next, verbs: vs }; }
+  }
+  return null;
+}
+function resolveVerb(tok) {
+  if (AUX.has(tok) || DET.has(tok) || PRON[tok] || PREP.has(tok)) return null;
+  for (const f of verbForms(tok)) { const vs = verbsForLemma(f.lemma); if (vs.length) { vs.sort((a, b) => glossPenalty(a.v) - glossPenalty(b.v)); return { kind: f.kind, lemma: f.lemma, verbs: vs }; } }
+  return null;
+}
+
+/* ===== sentence frames ===== */
+function lookupNoun(head) {
+  const markedPlural = /^(men|women|children|people)$/.test(head) || /[^s]s$/.test(head);
+  if (head === 'men') { const e = ENTRIES.find(x => x.en === 'man, plural (men)'); if (e) return { noun: e.lu, plural: true, applied: true }; }
+  const pick = g => g.targets.find(tg => !VERBS.has(tg));
+  let g = searchEn(head).filter(x => x.score >= 90 && x.targets.some(tg => !VERBS.has(tg)));
+  if (g.length) {
+    const exact = g[0].key.toLowerCase().replace(/\(.*?\)/g, '').trim() === head || (g[0].score === 100);
+    return { noun: pick(g[0]), plural: markedPlural, applied: !markedPlural || exact };
+  }
+  return { noun: null, plural: markedPlural, applied: false };
+}
+
+function parseClause(raw) {
+  const cm = raw.match(/^(.*\S),\s*([^,]+?)\s*[.!?]*$/);
+  if (cm) {
+    const sub = parseClause(cm[1]);
+    if (sub && sub.imperative) {
+      const tail = cm[2].toLowerCase().trim();
+      if (/^you (guys|all)$/.test(tail)) sub.addressPl = true;
+      else { const n = lookupNoun(tail.split(/\s+/).pop()); sub.vocative = { en: tail, noun: n.noun }; if (n.plural) sub.addressPl = true; }
+      return sub;
+    }
+  }
+  return parseClause1(raw);
+}
+function parseClause1(raw) {
+  let t = raw.toLowerCase().replace(/[’]/g, "'").replace(/[.!?,;:]/g, ' ').split(/\s+/).filter(Boolean).filter(x => x !== 'please');
+  t = splitNumHyphen(expandContractions(t));
+  if (t.length < 2 && !(t.length === 1 && resolveVerb(t[0]))) return null;
+  let now = false;
+  if (t[0] === 'now' && t.length > 2) { now = true; t = t.slice(1); }
+  const neg = t.includes('not');
+  t = t.filter(x => x !== 'not');
+  let plural = false, person = null, subjectTokens = [], i = 0, addressPl = false, subjPoss = null, subjRaw = null;
+
+  // trailing "you guys" in a command
+  if (t.length > 2 && ((t[t.length - 2] === 'you' && (t[t.length - 1] === 'guys' || t[t.length - 1] === 'all')))) {
+    if (resolveVerb(t[0]) || t[0] === 'do') { addressPl = true; t = t.slice(0, -2); }
+  }
+  // negative command "do not eat"
+  let imperative = false;
+  if (t[0] === 'do' && t.length >= 2) { imperative = true; i = 1; }
+  else if (!PRON[t[0]] && !(t[0] === 'you' && PRON[t[0] + ' ' + t[1]]) && resolveVerb(t[0]) && !DET.has(t[0])) imperative = true;
+
+  if (!imperative) {
+    if (t[0] === 'you' && (t[1] === 'guys' || t[1] === 'all')) { person = '2p'; i = 2; subjectTokens = [t[0] + ' ' + t[1]]; }
+    else if (PRON[t[0]]) { person = PRON[t[0]]; i = 1; subjectTokens = [t[0]]; }
+    else {
+      while (i < t.length && !AUX.has(t[i]) && !(i > 0 && resolveVerb(t[i]))) { subjectTokens.push(t[i]); i++; }
+      subjRaw = subjectTokens.slice();
+      const possTok = subjectTokens.find(x => POSS_EN[x]);
+      subjPoss = possTok ? POSS_EN[possTok] : null;
+      subjectTokens = subjectTokens.filter(x => !DET.has(x) && !POSS_EN[x]);
+      if (!subjectTokens.length) return null;
+    }
+  }
+  // auxiliaries
+  const aux = [];
+  while (i < t.length && AUX.has(t[i])) { aux.push(t[i]); i++; }
+  // "want to" frame
+  let want = false;
+  if (!aux.length && /^want(s|ed)?$/.test(t[i] || '') && t[i + 1] === 'to') { want = true; i += 2; if (/^wanted$/.test(t[i - 2])) return null; }
+  const vt = t[i];
+  if (!vt) return null;
+  let rv = resolveVerb(vt);
+  let consumed = 1;
+  const ph = resolvePhrasal(vt, t[i + 1]);
+  if (ph) { rv = ph; consumed = 2; }
+  if (!rv) return null;
+  const rest = t.slice(i + consumed);
+
+  let tense = null;
+  if (imperative) { tense = 'imp'; if (rv.kind !== 'base') return null; }
+  else {
+    const a = aux.join(' ');
+    if (want) tense = 'want';
+    else if (/^(am|is|are)$/.test(a)) { if (rv.kind !== 'ing') return null; tense = 'presSg'; }
+    else if (/^(was|were)$/.test(a)) { if (rv.kind !== 'ing') return null; tense = 'impf'; }
+    else if (a === 'will') { if (rv.kind !== 'base') return null; tense = 'futSimple'; }
+    else if (a === 'will be') { if (rv.kind !== 'ing') return null; tense = 'futHab'; }
+    else if (a === 'did') { if (rv.kind !== 'base') return null; tense = 'pret'; }
+    else if (a === 'do' || a === 'does') { if (rv.kind !== 'base') return null; tense = 'presSg'; }
+    else if (a === '') { tense = rv.kind === 'past' ? 'pret' : (rv.kind === 'base' || rv.kind === 's') ? 'presSg' : null; }
+    if (!tense) return null;
+  }
+
+  // subject number
+  let subject = null;
+  if (!imperative) {
+    if (person) { plural = person.endsWith('p'); subject = { person, en: subjectTokens[0] }; }
+    else {
+      const head = subjectTokens[subjectTokens.length - 1];
+      const fn = findNoun(head);
+      const n = fn ? { noun: fn.n.lu, plural: fn.plural, applied: true, entry: fn.n } : lookupNoun(head);
+      const numToks = subjectTokens.filter(x => isNumToken(x) && x !== 'and');
+      const nv = numToks.length ? englishToNumber(numToks) : null;
+      plural = n.plural || (nv !== null && nv !== 1);
+      subject = { noun: n.noun, entry: n.entry || null, poss: subjPoss, en: head, plural, applied: n.applied, extra: subjectTokens.length > 1, tokens: subjRaw };
+    }
+  }
+  return { neg, now, imperative, addressPl, subject, plural, tense, want, rv, rest, wantFrame: want };
+}
+
+const NUM_OBJ = { 'táppaat': 'táppaanti', 'qayhíycha': 'qayhísh', 'şóttaat': 'şóttaanti' };
+const POSS_EN = { my: '1s', your: '2s', his: '3s', her: '3s', its: '3s', our: '1p', their: '3p' };
+const PREP_REL = { in: 'nga', at: 'nga', on: 'nga', from: 'ngay', to: 'yuk', into: 'yuk', toward: 'yuk', towards: 'yuk', with: 'tal' };
+const REL_EN = { nga: 'in', ngay: 'from', yuk: 'to', tal: 'with', man: 'along with' };
+const IRREG_PL_EN = { children: 'child', men: 'man', women: 'woman', mice: 'mouse', feet: 'foot', teeth: 'tooth', people: 'person' };
+const OBJ_PRON = { me: 'néy', you: "'óy", him: 'póy', her: 'póy', us: 'cháami', them: 'pomóomi' };
+let PLURAL_TO_SING = null;
+function findNoun(tok) {
+  if (!PLURAL_TO_SING) PLURAL_TO_SING = new Map([...STORED_PLURAL].map(([s, p]) => [p, s]));
+  const pluralish = /[^s]s$/.test(tok) && !IRREG_PL_EN[tok];
+  const cands = [[tok, false, pluralish ? 100 : 90]];
+  if (IRREG_PL_EN[tok]) cands.unshift([IRREG_PL_EN[tok], true, 90]);
+  else if (pluralish) {
+    cands.push([tok.slice(0, -1), true, 90]);
+    if (tok.endsWith('ies')) cands.push([tok.slice(0, -3) + 'y', true, 90]);
+    if (tok.endsWith('es')) cands.push([tok.slice(0, -2), true, 90]);
+  }
+  for (const [c, pl, min] of cands) {
+    for (const g of searchEn(c).filter(x => x.score >= min)) {
+      for (const t of g.targets) {
+        if (VERBS.has(t)) continue;
+        if (NOUNS.has(t)) return { n: NOUNS.get(t), plural: pl };
+        if (PLURAL_TO_SING.has(t) && NOUNS.has(PLURAL_TO_SING.get(t))) return { n: NOUNS.get(PLURAL_TO_SING.get(t)), plural: true };
+      }
+    }
+  }
+  return null;
+}
+
+
+/* noun phrases with no verb: "my rug", "in the house", "two red pencils", "the man's teacher" */
+function buildNounPhrase(raw) {
+  const t = splitNumHyphen(raw.toLowerCase().replace(/[’]/g, "'").replace(/[.!?,;:]/g, ' ').split(/\s+/).filter(Boolean));
+  const DEM = { this: "'ivíp", that: "'óonop", it: "pó''up" };
+  if (t.length >= 4 && DEM[t[0]] && t[1] === 'is' && /('s|s')$/.test(t[t.length - 1])) {
+    const notes0 = [];
+    const ns0 = npStream(t.slice(2), 'subj', notes0);
+    if (ns0.flags.poss && ns0.parts.length) {
+      const text = [DEM[t[0]], ...ns0.parts.map(p => p.out), ns0.flags.possessorPlural ? 'pom-míx' : 'pomíx'].join(' ');
+      return { text, parts: [{ src: raw.trim(), out: text }], notes: [...new Set(notes0), 'A possessor plus pomíx means “…’s” (that is the man’s). With more than one possessor it is pom-míx.'], noun: null };
+    }
+  }
+  while (t.length > 2 && DET.has(t[0]) && !POSS_EN[t[0]]) t.shift();
+  if (t.length < 2) return null;
+  if (t.length === 2 && /'s$/.test(t[0])) {
+    const pos = findNoun(t[0].slice(0, -2)), head = findNoun(t[1]);
+    if (pos && pos.n.animate && head && /kat$/.test(head.n.lu)) {
+      const a = nounForm(pos.n, { role: 'obj', plural: pos.plural }), b = nounForm(head.n, { plural: head.plural });
+      return { text: a.form + '~' + b.form, parts: [{ src: raw.trim(), out: a.form + '~' + b.form }], notes: ['A “one who does” noun can be possessed by a noun as a compound: the possessor takes its object form (ya’áachi~húu’unikat “the man’s teacher”). This works for verbs that take an object, like teach.'], noun: head.n };
+    }
+  }
+  if (t.some(x => AUX.has(x) || PRON[x] || x === 'have' || x === 'has')) return null;
+  if (t.some(x => resolveVerb(x) && !findNoun(x) && !findAdj(x))) return null;
+  const notes = [];
+  const ns = npStream(t, 'subj', notes);
+  const f = ns.flags;
+  if (!(f.poss || f.prep || f.num || f.adj) || !ns.parts.length) return null;
+  const text = ns.parts.map(p => p.out).join(' ');
+  return { text, parts: ns.parts, notes: [...new Set(notes)], noun: f.firstNoun };
+}
+
+function lookupWord(tok) {
+  if (OBJ_PRON[tok]) return { lu: OBJ_PRON[tok], approx: false };
+  const g = searchEn(tok).filter(x => x.score >= 90);
+  if (!g.length) return null;
+  const nonVerb = g[0].targets.find(tg => !VERBS.has(tg)) || g[0].targets[0];
+  return { lu: NUM_OBJ[nonVerb] || nonVerb, approx: false };
+}
+
+const splitNumHyphen = t => t.flatMap(x => (x.includes('-') && x.split('-').every(p => isNumToken(p))) ? x.split('-') : [x]);
+
+function findAdj(tok) {
+  for (const g of searchEn(tok).filter(x => x.score === 100)) for (const t of g.targets) if (ADJS.has(t)) return ADJS.get(t);
+  return null;
+}
+
+/* translate a stream of English tokens as noun phrases: possessors, numerals, adjectives, nouns, endings */
+function npStream(toks, defaultRole, notes, initPoss) {
+  const parts = [];
+  const flags = { dictNoun: false, usedNoun: false, poss: !!initPoss, prep: false, num: false, adj: false, firstNoun: null, firstPlural: false, firstTok: null, possessorPlural: false };
+  let prep = null, poss = initPoss || null, numToks = [], adjs = [];
+  const flush = () => {
+    if (numToks.length) {
+      const n = englishToNumber(numToks);
+      let out;
+      if (prep && n != null) {
+        out = numberWithEnding(n, prep);
+        if (out === null) { notes.push('The ending could not be applied to ' + n + '.'); out = numberToLu(n, false); }
+        else if (prep === 'tal' || prep === 'man') notes.push('The lessons show numbers with -nga, -ngay and -yuk (kavíkvinga “at seven,” şóttaanangay supúlngay “from 101”). The -tal and -man forms follow the same pattern.');
+        flags.prep = true; prep = null;
+      } else out = n == null ? '?' : numberToLu(n, defaultRole === 'obj');
+      parts.push({ src: numToks.join(' '), out, note: 'number' });
+      flags.num = true; numToks = [];
+    }
+    adjs.forEach(x => { parts.push({ src: x.en, out: x.a.lu, note: 'adjective' }); flags.adj = true; });
+    adjs = [];
+  };
+  for (let k = 0; k < toks.length; k++) {
+    let tok = toks[k];
+    if (tok === 'and' && numToks.length && toks[k + 1] && isNumToken(toks[k + 1]) && toks[k + 1] !== 'and') continue;
+    if (tok === 'along' && toks[k + 1] === 'with') { flush(); prep = 'man'; flags.prep = true; k++; continue; }
+    if (PREP_REL[tok]) { flush(); prep = PREP_REL[tok]; flags.prep = true; continue; }
+    if (tok === 'by' && toks[k + 1] && skipFromEnglish(toks[k + 1]) && !numToks.length) {
+      const s = skipToLu(skipFromEnglish(toks[k + 1]));
+      parts.push({ src: 'by ' + toks[k + 1], out: s || '?', note: 'counting by' });
+      if (!s) notes.push('The books give “counting by” forms for 1 to 20, the tens, 100 and 1,000 only.');
+      k++; continue;
+    }
+    if (PREP.has(tok)) { notes.push('“' + tok + '” is expressed with an ending on the next word in Luiseño, which is not applied here.'); continue; }
+    if (POSS_EN[tok]) { poss = POSS_EN[tok]; flags.poss = true; continue; }
+    if (DET.has(tok)) continue;
+    if ((tok === 'one' || tok === 'ones') && adjs.length && poss && !numToks.length) {
+      const x = adjs.pop();
+      const pf = adjPossessed(x.a, poss, defaultRole === 'obj' && !prep ? 'obj' : 'subj');
+      parts.push({ src: POSS_LABEL[poss] + ' ' + x.en + ' one', out: pf.form, note: 'possessed adjective' });
+      poss = null; flags.adj = true; continue;
+    }
+    {
+      let base = null;
+      if (/'s$/.test(tok)) base = tok.slice(0, -2); else if (/s'$/.test(tok)) base = tok.slice(0, -1);
+      const pf = base ? findNoun(base) : null;
+      if (pf) {
+        flush();
+        const nf = nounForm(pf.n, { poss, plural: pf.plural, role: 'subj' });
+        parts.push({ src: (poss ? POSS_LABEL[poss] + ' ' : '') + tok, out: nf.form || pf.n.lu, note: 'possessor' });
+        nf.notes.forEach(x => notes.push(x));
+        poss = pf.plural ? '3p' : '3s'; flags.poss = true; flags.possessorPlural = pf.plural;
+        continue;
+      }
+    }
+    let fnd2 = null;
+    if (toks[k + 1]) fnd2 = findNoun(tok + ' ' + toks[k + 1]);
+    {
+      let ad2 = null, used2 = 1;
+      if (!fnd2) {
+      if (toks[k + 1]) { ad2 = findAdj(tok + ' ' + toks[k + 1]); if (ad2) used2 = 2; }
+      if (!ad2) ad2 = findAdj(tok);
+      if (ad2 && !isNumToken(tok)) { adjs.push({ a: ad2, en: used2 === 2 ? tok + ' ' + toks[k + 1] : tok }); k += used2 - 1; continue; }
+      }
+    }
+    if (!fnd2 && isNumToken(tok) && tok !== 'and') { numToks.push(tok); continue; }
+    const fnd = fnd2 || findNoun(tok);
+    if (fnd2) { tok = tok + ' ' + toks[k + 1]; k++; }
+    if (fnd) {
+      flags.usedNoun = true;
+      const role = prep || defaultRole;
+      let num = null;
+      if (numToks.length) { num = englishToNumber(numToks); numToks = []; flags.num = true; }
+      const plural = fnd.plural || (num !== null && num > 1);
+      if (!flags.firstNoun) { flags.firstNoun = fnd.n; flags.firstPlural = plural; flags.firstTok = tok; }
+      const inPP = !!prep;
+      if (num !== null) {
+        if (prep) notes.push('Numbers take their own endings after a relational suffix (for example páahay-yuk “to three”). That is not applied here.');
+        let numOut = numberToLu(num, role === 'obj');
+        if (fnd.n.animate) {
+          const an = numberToLuAnimate(num, role === 'obj');
+          if (an) numOut = an; else notes.push('Animate nouns have their own numerals. The books give them up to 999, so the ordinary number is shown for ' + num + '.');
+        }
+        parts.push({ src: String(num), out: numOut, note: fnd.n.animate ? 'animate number' : 'number', pp: inPP });
+      }
+      const nf = nounForm(fnd.n, { poss, plural, role });
+      const src = (prep ? REL_EN[prep] + ' ' : '') + (poss ? POSS_LABEL[poss] + ' ' : '') + tok;
+      parts.push({ src, out: nf.form || fnd.n.lu, note: prep ? 'ending -' + prep : (nf.form && nf.form !== fnd.n.lu && role === 'obj' ? 'object form' : null), pp: inPP });
+      nf.notes.forEach(x => notes.push(x));
+      if (nf.alt && nf.alt.length) notes.push('Also possible: ' + nf.alt.join(', ') + '.');
+      const used = adjs.slice().reverse(); adjs = [];
+      used.forEach(x => {
+        flags.adj = true;
+        let af, note = 'adjective';
+        if (['nga', 'ngay', 'yuk', 'tal', 'man'].includes(role) && !fnd.n.animate) af = adjCase(x.a, role);
+        else if (fnd.n.animate) { const r = adjAgree(x.a, { plural, role }); af = r.form; if (r.note) notes.push(r.note); }
+        else af = x.a.lu;
+        if (poss && !fnd.n.animate) notes.push('How an adjective agrees with a possessed noun is not covered in the lessons I have, so “' + x.en + '” is shown without an ending.');
+        if (!['nga', 'ngay', 'yuk', 'tal', 'man'].includes(role) && !fnd.n.animate && role !== 'obj') note = 'adjective follows the noun';
+        parts.push({ src: x.en, out: af, note, pp: inPP });
+      });
+      if (used.length > 1) notes.push('Luiseño lists the adjectives after the noun in the reverse of the English order (wókkilatal sisínnavatal yóotal, “with a big silver knife”).');
+      prep = null; poss = null;
+      continue;
+    }
+    const ad = findAdj(tok);
+    if (ad) { adjs.push({ a: ad, en: tok }); continue; }
+    flush();
+    if (poss) { notes.push('“' + POSS_LABEL[poss] + '” was not applied to “' + tok + '” because its noun suffix is not marked in the vocabulary lists.'); poss = null; }
+    if (prep) { notes.push('“' + REL_EN[prep] + ' ' + tok + '”: the ending -' + prep + ' needs a noun with a known noun suffix, which “' + tok + '” does not have in the vocabulary lists.'); prep = null; }
+    const w = lookupWord(tok);
+    if (w && !OBJ_PRON[tok]) flags.dictNoun = true;
+    parts.push({ src: tok, out: w ? (w.approx ? '~' + w.lu : w.lu) : '?', note: w ? null : 'not in the glossary' });
+  }
+  flush();
+  return { parts, flags };
+}
+
+function buildNumber(raw) {
+  const t = splitNumHyphen(raw.toLowerCase().replace(/,/g, '').replace(/[.!?;:]/g, ' ').split(/\s+/).filter(Boolean));
+  if (!t.length || !t.every(isNumToken) || (t.length === 1 && t[0] === 'and')) return null;
+  const n = englishToNumber(t);
+  if (n === null) return null;
+  const T = Math.floor(n / 1000);
+  return { n, subject: numberToLu(n, false), object: numberToLu(n, true), skip: skipToLu(n), animate: numberToLuAnimate(n, false), animateObj: numberToLuAnimate(n, true), predicted: T >= 2 && T <= 99 };
+}
+
+
+/* "to have" (Book 8, Lesson 16): there is no verb; the possessor is a prefix and the verb says where the thing is */
+const MASS_EN = new Set(['water', 'illness', 'sickness', 'pain', 'fear', 'time']);
+const STAND_EN = new Set(['tower']);
+const inWordSet = (set, tok) => { const h = (tok || '').split(' ').pop(); return set.has(h) || set.has(h.replace(/s$/, '')); };
+function tryHave(raw) {
+  let t = raw.toLowerCase().replace(/[’]/g, "'").replace(/[.!?,;:]/g, ' ').split(/\s+/).filter(Boolean);
+  t = splitNumHyphen(expandContractions(t));
+  const hi = t.findIndex(x => x === 'have' || x === 'has');
+  if (hi < 1 || hi === t.length - 1) return null;
+  const before = t.slice(0, hi), after = t.slice(hi + 1);
+  if (before.some(x => ['will', 'did', 'was', 'were', 'am', 'is', 'are', 'be'].includes(x))) return null;
+  const neg = before.includes('not');
+  const subj = before.filter(x => !AUX.has(x));
+  if (!subj.length) return null;
+  const parts = [], notes = [];
+  let person = null;
+  const two = subj.join(' ');
+  if (two === 'you guys' || two === 'you all') person = '2p';
+  else if (subj.length === 1 && PRON[subj[0]]) person = PRON[subj[0]];
+  else {
+    const sp = npStream(subj, 'subj', notes);
+    if (!sp.flags.usedNoun) return null;
+    sp.parts.forEach(p => parts.push(p));
+    person = sp.flags.firstPlural ? '3p' : '3s';
+  }
+  let neg2 = neg, aft = after;
+  if (aft[0] === 'no') { neg2 = true; aft = aft.slice(1); }
+  const ns = npStream(aft, 'subj', notes, person);
+  if (!ns.flags.usedNoun) return null;
+  ns.parts.forEach(p => parts.push(p));
+  const n = ns.flags.firstNoun, pl = !!ns.flags.firstPlural;
+  let verb;
+  if (n.animate) verb = neg2 ? (pl ? "'ómmaan" : "'ómmaq") : (pl ? 'qálwun' : "'áawq");
+  else if (neg2) verb = 'yáawaq';
+  else if (inWordSet(STAND_EN, ns.flags.firstTok)) verb = pl ? 'wáachaq' : "şé'q";
+  else if (inWordSet(MASS_EN, ns.flags.firstTok)) verb = 'míyq';
+  else verb = pl ? 'wónq' : 'qáala';
+  parts.push({ src: neg2 ? 'don’t have' : 'have', out: verb, note: 'there is no verb “to have”' });
+  notes.push('Luiseño has no verb “to have.” The possessor is the prefix on the noun, and the verb says that the thing is (or is not) there.');
+  if (!n.animate && !neg2 && !inWordSet(STAND_EN, ns.flags.firstTok)) notes.push('For things that stand somewhere, such as a tower, the books use şé’q (one) or wáachaq (several). Intangible or mass nouns, like an illness or water, take míyq.');
+  notes.push('Only the present tense is covered; the lessons give no other tenses of these verbs.');
+  return { parts, verb: null, alts: [], notes: [...new Set(notes)], text: parts.map(p => p.out).join(' '), have: true };
+}
+
+/* questions (Book 7, Lesson 5): a question word, then a marker (şu, şun, şush, şum), then the rest */
+const QMARK = { '1s': 'şun', '1p': 'şush', '2p': 'şum', '3p': 'şum' };
+const DEM_LU = { that: "'óono", this: "'iví'" };
+const AUXQ = new Set(['do', 'does', 'did', 'is', 'are', 'am', 'was', 'were', 'will']);
+function qMarker(c) {
+  if (c && c.subject && c.subject.person) return QMARK[c.subject.person] || 'şu';
+  if (c && c.plural) return 'şum';
+  return 'şu';
+}
+function qNotes(base) {
+  return [...(base ? base.notes : []), 'Luiseño marks a question with şu (şun for “I,” şush for “we,” şum for “they” and “you guys”) right after the first word or phrase. The books spell it both su and şu.'];
+}
+function tryQuestion(raw) {
+  let t = raw.toLowerCase().replace(/[’]/g, "'").replace(/[.!?,;:]/g, ' ').split(/\s+/).filter(Boolean);
+  t = splitNumHyphen(expandContractions(t));
+  if (t.length < 2) return null;
+  const endsQ = /\?\s*$/.test(raw.trim());
+  const mk = (parts, base, c, extra) => {
+    const withMarker = parts;
+    return { parts: withMarker, verb: base ? base.verb : null, alts: base ? base.alts : [], notes: [...new Set([...qNotes(base), ...(extra || [])])], text: withMarker.map(p => p.out).join(' ') + '?', question: true };
+  };
+  const statement = (s) => { const c = parseClause(s); const r = buildSentence(s); return (c && r && !r.irregular) ? { c, r } : null; };
+  const verbIndex = (arr, from) => { for (let i = from; i < arr.length; i++) { const rv = resolveVerb(arr[i]); if (rv && !AUX.has(arr[i])) return i; } return -1; };
+  const W = t[0];
+
+  // who (háx, 'axím; objects 'axíiyi, 'axíimi)
+  if (W === 'who' || W === 'whom') {
+    if (t.length === 3 && W === 'who' && ['is', 'are', 'am'].includes(t[1]) && (PRON[t[2]] || DEM_LU[t[2]])) {
+      const pn = PRON[t[2]];
+      const out = pn ? PRON_LU[pn] : DEM_LU[t[2]];
+      return mk([{ src: 'who', out: 'háx' }, { src: '', out: pn ? (QMARK[pn] || 'şu') : 'şu', note: 'question marker' }, { src: t[2], out }], null, null);
+    }
+    const r = t.slice(1);
+    if (r.length && AUXQ.has(r[0])) {
+      const vi = verbIndex(r, 1);
+      if (vi > 1) {
+        const s = statement(r.slice(1, vi).join(' ') + ' ' + r[0] + ' ' + r.slice(vi).join(' '));
+        if (!s) return null;
+        return mk([{ src: 'who (object)', out: "'axíiyi" }, { src: '', out: qMarker(s.c), note: 'question marker' }, ...s.r.parts], s.r, s.c, ['’Axíiyi is “who” as an object (’axíimi if the answer is several people); háx is “who” as a subject (’axím for several).']);
+      }
+    }
+    const s = statement('he ' + t.slice(1).join(' '));
+    if (!s) return null;
+    return mk([{ src: 'who', out: 'háx' }, { src: '', out: 'şu', note: 'question marker' }, ...s.r.parts.slice(1)], s.r, s.c);
+  }
+  // what (híycha subject, hísh object)
+  if (W === 'what' && !(['is', 'are'].includes(t[1]) && t[t.length - 1] === 'name')) {
+    const r = t.slice(1);
+    if (!r.length) return null;
+    if (AUXQ.has(r[0])) {
+      const vi = verbIndex(r, 1);
+      if (vi > 1) {
+        const s = statement(r.slice(1, vi).join(' ') + ' ' + r[0] + ' ' + r.slice(vi).join(' '));
+        if (!s) return null;
+        return mk([{ src: 'what (object)', out: 'hísh' }, { src: '', out: qMarker(s.c), note: 'question marker' }, ...s.r.parts], s.r, s.c, ['Hísh is “what” as an object (híshmi for several things); híycha is “what” as a subject (híycham for several).']);
+      }
+    }
+    if (verbIndex(r, 0) >= 0 || (AUXQ.has(r[0]) && verbIndex(r, 1) === 1)) {
+      const s = statement('it ' + r.join(' '));
+      if (!s) return null;
+      return mk([{ src: 'what (subject)', out: 'híycha' }, { src: '', out: 'şu', note: 'question marker' }, ...s.r.parts.slice(1)], s.r, s.c);
+    }
+    return null;
+  }
+  // how many / how much (hík inanimate; híkchum, híkchumi animate)
+  if (W === 'how' && (t[1] === 'many' || t[1] === 'much')) {
+    const much = t[1] === 'much';
+    const r = t.slice(2);
+    const ai = r.findIndex(x => AUXQ.has(x));
+    if (ai < 0) return null;
+    const after = r.slice(ai);
+    if (ai === 0) {
+      const vi = verbIndex(r, 1);
+      if (vi < 0) return null;
+      const s = statement(r.slice(1, vi).join(' ') + ' ' + r[0] + ' ' + r.slice(vi).join(' '));
+      if (!s) return null;
+      return mk([{ src: 'how ' + t[1], out: 'hík' }, { src: '', out: qMarker(s.c), note: 'question marker' }, ...s.r.parts], s.r, s.c, ['For people or animals (“how many of them”) Luiseño uses híkchum, and híkchumi as an object.']);
+    }
+    const nounToks = r.slice(0, ai);
+    const notes = [];
+    const existential = ['is', 'are'].includes(after[0]) && (after[1] === 'there' || verbIndex(after, 1) < 0);
+    const np = npStream(nounToks, existential ? 'subj' : 'obj', notes);
+    if (!np.flags.usedNoun) return null;
+    const n = np.flags.firstNoun;
+    const qw = n.animate ? (existential ? 'híkchum' : 'híkchumi') : 'hík';
+    if (existential) {
+      const loc = after.slice(1).filter(x => x !== 'there');
+      const lp = loc.length ? npStream(loc, 'subj', notes) : { parts: [] };
+      const verb = n.animate ? 'qálwun' : (much ? 'míyq' : 'wónq');
+      return { parts: [{ src: 'how ' + t[1], out: qw }, ...np.parts, { src: '', out: n.animate ? 'şum' : 'şu', note: 'question marker' }, ...lp.parts, { src: 'be located', out: verb }],
+        verb: null, alts: [], question: true, notes: [...new Set([...qNotes(null), ...notes, 'Hík is used for things (hík for how much, and for how many with an inanimate noun); híkchum is for several people or animals. Míyq is the “is located” verb for uncountable things, wónq for several inanimate things, and qálwun for several animate ones.'])],
+        text: ['how many', ...np.parts, 'x'].length ? [qw, ...np.parts.map(p => p.out), n.animate ? 'şum' : 'şu', ...lp.parts.map(p => p.out), verb].join(' ') + '?' : '' };
+    }
+    const vi = verbIndex(after, 1);
+    if (vi < 0) return null;
+    const s = statement(after.slice(1, vi).join(' ') + ' ' + after[0] + ' ' + after.slice(vi).join(' '));
+    if (!s) return null;
+    return mk([{ src: 'how ' + t[1], out: qw }, ...np.parts, { src: '', out: qMarker(s.c), note: 'question marker' }, ...s.r.parts], s.r, s.c, notes);
+  }
+  // where, when, why
+  if (W === 'where' || W === 'when' || W === 'why') {
+    let qw = { where: "michá'", when: 'míykinga', why: 'híyngay' }[W];
+    let r = t.slice(1);
+    if (W === 'where' && r.length > 1 && r[r.length - 1] === 'to') { qw = 'michíyk'; r = r.slice(0, -1); }
+    else if (W === 'where' && r.length > 1 && r[r.length - 1] === 'from') { qw = 'micháy'; r = r.slice(0, -1); }
+    if (!r.length || !AUXQ.has(r[0])) return null;
+    const vi = verbIndex(r, 1);
+    if (vi < 0) {
+      if (W !== 'where' || !['is', 'are'].includes(r[0]) || r.length < 2) return null;
+      const notes = [];
+      const sp = npStream(r.slice(1), 'subj', notes);
+      if (!sp.flags.usedNoun) return null;
+      const n = sp.flags.firstNoun, pl = !!sp.flags.firstPlural;
+      const verb = n.animate ? (pl ? 'qálwun' : "'áawq") : (pl ? 'wónq' : 'qáala');
+      return mk([{ src: 'where', out: qw }, { src: '', out: (pl && n.animate) ? 'şum' : 'şu', note: 'question marker' }, ...sp.parts, { src: 'be located', out: verb }], null, null, [...notes, 'Where something is uses the “is located” verbs: ’áawq / qálwun for animate nouns and qáala / wónq for inanimate ones.']);
+    }
+    const s = statement(r.slice(1, vi).join(' ') + ' ' + r[0] + ' ' + r.slice(vi).join(' '));
+    if (!s) return null;
+    return mk([{ src: W, out: qw }, { src: '', out: qMarker(s.c), note: 'question marker' }, ...s.r.parts], s.r, s.c);
+  }
+  // what is your name
+  if (W === 'what' && ['is', 'are'].includes(t[1]) && t[t.length - 1] === 'name' && t.length === 4 && POSS_EN[t[2]]) {
+    const p = POSS_EN[t[2]];
+    return mk([{ src: 'what', out: 'híyq' }, { src: '', out: 'şu', note: 'question marker' }, { src: t[2] + ' name', out: POSS_PREFIX[p] + 'túng' }], null, null);
+  }
+  // which house
+  if (W === 'which' && t.length >= 2 && !t.slice(1).some(x => AUX.has(x))) {
+    const notes = [];
+    const np = npStream(t.slice(1), 'subj', notes);
+    if (!np.flags.usedNoun) return null;
+    return { parts: [{ src: 'which', out: 'michát' }, ...np.parts], verb: null, alts: [], notes: [...new Set(notes)], text: ['michát', ...np.parts.map(p => p.out)].join(' ') + '?', question: true };
+  }
+  // yes / no questions
+  if (AUXQ.has(W) && t[1] !== 'not' && (endsQ || ['do', 'does', 'did', 'will'].includes(W)) && t.length >= 3) {
+    const vi = verbIndex(t, 1);
+    if (vi < 0) return null;
+    const s = statement(t.slice(1, vi).join(' ') + ' ' + W + ' ' + t.slice(vi).join(' '));
+    if (!s) return null;
+    const ps = s.r.parts;
+    return mk([ps[0], { src: '', out: qMarker(s.c), note: 'question marker' }, ...ps.slice(1)], s.r, s.c);
+  }
+  return null;
+}
+
+let ORDER_SOV = false;   // 'hyb' puts objects before the verb and place phrases after it
+function buildSentence(raw) {
+  const qs = tryQuestion(raw);
+  if (qs) return qs;
+  const hv = tryHave(raw);
+  if (hv) return hv;
+  const c = parseClause(raw);
+  if (!c) return null;
+  let cands = c.rv.verbs.map(x => x.v);
+  const pluralObj = c.rest.some(tok => /^(some|two|three|four|five|six|seven|eight|nine|ten|many)$/.test(tok) || (/[^s]s$/.test(tok) && !DET.has(tok)));
+  if (pluralObj) {
+    const plv = cands.filter(x => /pl\. obj|more than one/.test((GLOSSES.get(x.lu) || []).join(' ').toLowerCase()));
+    if (plv.length) cands = [...plv, ...cands.filter(x => !plv.includes(x))];
+  }
+  const v = cands[0];
+  const parts = [];
+  const notes = [];
+  const alts = cands.slice(1).map(x => x.lu);
+  if (v.irregular) return { irregular: v, parts: [], notes: ['This verb is irregular in the books, so its forms are not generated.'], verb: v, alts };
+  const f = conj(v.lu, v.cls);
+  const gloss = verbGloss(v);
+  let verbForm, verbNote;
+
+  if (c.now) parts.push({ src: 'now', out: 'pitóo' });
+  if (c.imperative) {
+    const form = c.addressPl ? f.cmdPl : f.cmdSg;
+    const lead = c.neg ? (c.addressPl ? 'Tóşşum' : 'Tóşşu') : null;
+    if (lead) parts.push({ src: 'don’t', out: lead });
+    parts.push({ src: gloss, out: form, note: TENSE_LABEL[c.addressPl ? 'cmdPl' : 'cmdSg'], isVerb: true });
+  } else {
+    const pron = c.subject.person
+      ? (c.tense === 'futSimple' ? PRON_FUT[c.subject.person] : PRON_LU[c.subject.person])
+      : null;
+    if (pron) parts.push({ src: c.subject.en, out: pron });
+    else if (c.subject.entry || c.subject.extra) {
+      const ns = npStream(c.subject.tokens || [c.subject.en], 'subj', notes);
+      ns.parts.forEach(p => parts.push(p));
+    } else {
+      parts.push({ src: c.subject.en, out: c.subject.noun || '?', note: c.subject.noun ? null : 'not in the glossary' });
+      if (c.subject.poss) notes.push('“' + POSS_LABEL[c.subject.poss] + '” was not applied to “' + c.subject.en + '” because its noun suffix is not marked in the vocabulary lists.');
+      if (c.subject.plural && !c.subject.applied) notes.push('The plural form of the subject noun is not generated, so the dictionary form is shown. The verb is still given in its plural form.');
+    }
+    if (c.neg) parts.push({ src: 'not', out: 'qáy' });
+    let key = c.tense;
+    const inanimSubj = c.subject && c.subject.entry && !c.subject.entry.animate;
+    if (c.tense === 'presSg' && c.plural && !inanimSubj) key = 'presPl';
+    if (c.tense === 'want') key = c.plural ? 'wantPl' : 'wantSg';
+    verbForm = f[key];
+    verbNote = TENSE_LABEL[key];
+    if (key === 'pret') {
+      verbForm = f.pret.form;
+      if (!verbForm) { verbForm = f.impf; verbNote = 'Type A preterit must be memorized; showing the was/were -ing form'; notes.push('The simple past of ' + v.lu + ' is not predictable from its shape (Type A), so the was/were -ing form is shown instead.'); }
+      else if (f.pret.alt) notes.push('Also possible for the past: ' + f.pret.alt + '.');
+    }
+    if (key === 'futSimple' && !verbForm) { verbForm = f.futHab; verbNote = 'will be -ing'; notes.push('No simple future rule was found for verbs that end in a consonant, so the “will be -ing” form is shown.'); }
+    if (key === 'futHab' && f.futHabAlt) notes.push('Also: ' + f.futHabAlt + '.');
+    parts.push({ src: gloss, out: verbForm, note: verbNote, isVerb: true });
+  }
+  if (c.vocative) parts.push({ src: c.vocative.en, out: c.vocative.noun || '?', note: 'person addressed' });
+  const nsr = npStream(c.rest, 'obj', notes);
+  if (ORDER_SOV === true) { const vi0 = parts.findIndex(p => p.isVerb); parts.splice(vi0 < 0 ? parts.length : vi0, 0, ...nsr.parts); }
+  else if (ORDER_SOV === 'hyb') { const vi0 = parts.findIndex(p => p.isVerb); parts.splice(vi0 < 0 ? parts.length : vi0, 0, ...nsr.parts.filter(p => !p.pp)); nsr.parts.filter(p => p.pp).forEach(p => parts.push(p)); }
+  else nsr.parts.forEach(p => parts.push(p));
+  const dictNoun = nsr.flags.dictNoun;
+  const animKnown = !c.imperative && c.subject && c.subject.entry;
+  if (!c.imperative && c.plural && c.tense === 'presSg' && !animKnown && (!c.subject.person || c.subject.person === '3p')) notes.push('If the subject is an inanimate thing (such as a computer), even a plural one takes the singular -q form: ' + f.presSg + '.');
+  if (nsr.parts.some(p => !p.pp && p.note !== 'number') && !c.imperative) notes.push('Book 6 says the most common order is subject, object, verb, but Luiseño order is flexible. This keeps the English order, which the exercises in Book 5 also use.');
+  if (dictNoun) notes.push('Some words after the verb are shown in dictionary form because their noun suffix is not marked in the vocabulary lists, so no object or relational ending was added.');
+  if (!c.imperative && c.subject.person === '3s') notes.push('Third person “he/she/it” uses pó’ (mid distance). Other distances: ’iví’ (very near), ’óono (near), wunál (far).');
+  if (!c.imperative && c.tense === 'futSimple') notes.push('Future subjects take a future ending (nóonupo, pó’po, …); the plain pronoun also works for singular subjects.');
+  return { parts, verb: v, alts, notes: [...new Set(notes)], text: parts.map(p => p.out).join(' ') };
+}
+/*MODULES-END*/
+if (typeof module !== 'undefined') module.exports = { buildSentence, parseClause, analyzeVerbForm, VERBS, REV };
+
+/*NOUNS-START*/
+/* ===== noun inventory (Book 8 vocabulary, which marks where the noun suffix begins) ===== */
+const NOUN_RAW = [["'áa'alvish","'áa'alvi","sh",0,0],["'áa'alvimal","'áa'alvima","l",0,0],["'áamosh","'áamo","sh",0,0],["'áamolash","'áamola","sh",0,0],["'apá'pish","'apá'pi","sh",0,0],["'áshla","'ásh","la",0,1],["'áshkat","'áshka","t",0,1],["'áşwut","'áşwu","t",0,1],["'atáxmawish","'atáxmawi","sh",0,0],["'aváaxat","'aváax","at",0,0],["'awáal","'awáa","l",0,1],["'áx'aat","'áx'aa","t",0,0],["'éela","'ée","la",0,0],["'éepuraprish","'éepurapri","sh",0,0],["'éesat","'éesa","t",0,0],["'éngla","'éng","la",0,0],["'éxla","'éx","la",0,0],["'éxmawish","'éxmawi","sh",0,0],["'éxval","'éxva","l",0,0],["'í'chilash","'í'chila","sh",0,0],["'íipit","'íipi","t",0,0],["'íitaat","'íitaa","t",0,0],["'íival","'íiva","l",0,0],["'íivaat","'íivaa","t",0,0],["'iwé''it","'iwé''","it",0,0],["'iyé'yimal","'iyé'yima","l",0,0],["'o","'o","",0,0],["'ó'nan","'ó'nan","",1,1],["'ohó'vanish","'ohó'van","ish",0,0],["'ólval","'ólva","l",0,0],["'om","'om","",0,0],["'óolish","'óoli","sh",0,0],["'óolikat","'óolika","t",0,1],["'óovish","'óovi","sh",0,0],["'ówla","'ów","la",0,0],["'owó''axish","'owó''ax","ish",0,0],["'owó''ikat","'owó''ika","t",0,0],["'owó''ilamal","'owó''ilama","l",0,0],["'u'út","'u'ú","t",0,0],["'uví'vish","'uví'vi","sh",0,0],["cham","cham","",0,0],["chíivut","chíiv","ut",0,0],["chóoraat","chóoraa","t",0,0],["chóorakash","chóoraka","sh",0,0],["chukáylash","chukáyla","sh",0,0],["churó''ilash","churó''ila","sh",0,0],["chuxíllaxish","chuxíllax","ish",0,0],["háalish","háal","ish",0,0],["hamúulawish","hamúulawi","sh",0,1],["háng'ilash","háng'ila","sh",0,0],["héelaxish","héelax","ish",0,0],["hengéemal","hengéema","l",0,1],["héttaxish","héttax","ish",0,0],["hí'chikat","hí'chika","t",0,0],["hí'qwikat","hí'qwika","t",0,0],["híksash","híksa","sh",0,0],["himéhmish","himéhmi","sh",0,1],["híycha","híy","cha",0,1],["húnwut","húnwu","t",0,1],["húula","húu","la",0,0],["húu'unikat","húu'unika","t",0,1],["húu'unilash","húu'unila","sh",0,0],["ká'","ká'","",1,1],["káamay","káamay","",1,1],["káami","káami","",1,1],["káarawut","káarawu","t",0,0],["káayi","káayi","",1,1],["kachí''aat","kachí''aa","t",0,0],["kamúm","kamúm","",1,1],["kapákpamal","kapákpama","l",0,0],["kathúumal","kathúuma","l",0,1],["kavíkvish","kavíkvi","sh",0,0],["kíicha","kíi","cha",0,0],["kíichush","kíichu","sh",0,0],["kíichupish","kíichupi","sh",0,0],["kóşşaat","kóşşaa","t",0,0],["kóşşaxish","kóşşax","ish",0,0],["kút","kú","t",0,0],["ku'áal","ku'áa","l",0,1],["kuláawut","kuláaw","ut",0,0],["kuláwmal","kuláwma","l",0,0],["kúnla","kún","la",0,0],["kúngkat","kúngka","t",0,1],["kúnmal","kúnma","l",0,0],["kúpşaxla","kúpşax","la",0,0],["kupú''axish","kupú''ax","ish",0,0],["kupú''ilash","kupú''ila","sh",0,0],["kutúumut","kutúumu","t",0,0],["kúumit","kúumi","t",0,0],["kúung","kúung","",1,1],["kúutpat","kúutpa","t",0,0],["kuyée'ewut","kuyée'ewu","t",0,1],["kwá'","kwá'","",1,1],["kwáami","kwáami","",1,1],["kwáavichukat","kwáavichuka","t",0,0],["kwáayi","kwáayi","",1,1],["kwám","kwám","",1,1],["kwíila","kwíi","la",0,0],["ló'xakat","ló'xaka","t",0,1],["ló'xalash","ló'xala","sh",0,0],["lówwikat","lówwika","t",0,1],["má'maxish","má'max","ish",0,0],["máa","máa","",1,0],["máalisash","máalisa","sh",0,0],["máamayush","máamayu","sh",0,0],["máamayukat","máamayuka","t",0,1],["máaşi","máaşi","",1,1],["máaxish","máax","ish",0,0],["máay","máay","",1,0],["máş","máş","",1,1],["matámtash","matámta","sh",0,0],["mé'kunish","mé'kun","ish",0,0],["méechish","méechi","sh",0,1],["mesé''ilash","mesé''ila","sh",0,0],["míisilash","míisila","sh",0,0],["milút","milú","t",0,0],["míx","míx","",1,0],["míyxanish","míyxan","ish",0,0],["mlo","mlo","",1,0],["móknash","mókna","sh",0,0],["móomat","móom","at",0,0],["móyla","móy","la",0,0],["múuta","múu","ta",0,1],["múuyish","múuyi","sh",0,0],["muxát","muxá","t",0,0],["muxíilash","muxíila","sh",0,0],["mxa","mxa","",1,0],["ná'","ná'","",1,1],["náachaxanish","náachaxan","ish",0,0],["náachaxanlash","náachaxanla","sh",0,0],["náachaxanmal","náachaxanma","l",0,0],["náami","náami","",1,0],["náavut","náav","ut",0,0],["náayi","náayi","",1,1],["nám","nám","",1,0],["nawáyyaat","nawáyyaa","t",0,0],["nawítmal","nawítma","l",0,1],["naxánmal","naxánma","l",0,1],["néeqat","néeq","at",0,0],["néexish","néex","ish",0,0],["neméenemish","neméenemi","sh",0,0],["néshkinlakat","néshkinlaka","t",0,1],["néshkinu","néshkinu","",1,1],["néshmal","néshma","l",0,1],["ngóyyilash","ngóyyila","sh",0,0],["nixínxish","nixínxi","sh",0,0],["no","no","",0,0],["nóot","nóo","t",0,0],["nóolish","nóoli","sh",0,0],["nóoşi","nóoşi","",1,1],["nóş","nóş","",1,1],["nukwáanish","nukwáan","ish",0,0],["oxay","oxay","",1,0],["páala","páa","la",0,0],["páa'aş","páa'aş","",1,1],["páa'i","páa'i","",1,0],["páa'ish","páa'i","sh",0,0],["páa'ilash","páa'ila","sh",0,0],["páam'ush","páam'u","sh",0,1],["páamay","páamay","",1,1],["páapavish","páapavi","sh",0,0],["páaşi","páaşi","",1,1],["páaşukat","páaşuk","at",0,1],["páaşum","páaşum","",1,0],["páchxamish","páchxam","ish",0,0],["pálvunla","pálvun","la",0,0],["páşmi","páşmi","",1,0],["pávkun","pávkun","",1,0],["pávla","pávla","",1,0],["pávlash","pávla","sh",0,0],["pét","pé","t",0,0],["péew","péew","",1,1],["péllaxish","péllax","ish",0,0],["péshlish","péshli","sh",0,0],["pétmi","pétmi","",1,0],["píiqwala","píiqwa","la",0,1],["píit","píit","",1,1],["píkwla","píkw","la",0,0],["pilá'chikat","pilá'chika","t",0,1],["pilá'chilash","pilá'chila","sh",0,0],["pisáatulamal","pisáatulama","l",0,0],["pít","pí","t",0,0],["pítmi","pítmi","",1,0],["pitúptilash","pitúptila","sh",0,0],["piwíila","piwíi","la",0,0],["piwípwilash","piwípwila","sh",0,0],["po","po","",0,0],["pó'kwaxish","pó'kwax","ish",0,0],["pó'kwikat","pó'kwika","t",0,0],["pom","pom","",0,0],["póoyish","póoy","ish",0,0],["poróv'orilash","poróv'orila","sh",0,0],["poróv'orilangawish","poróv'orilangawi","sh",0,0],["poşóomawish","poşóomawi","sh",0,0],["póttilash","póttila","sh",0,0],["puráprish","purápri","sh",0,0],["purú''ilash","purú''ila","sh",0,0],["putíi'ish","putíi'","ish",0,0],["púutash","púuta","sh",0,0],["qállikat","qállika","t",0,0],["qawíicha","qawíi","cha",0,0],["qaxáal","qaxáa","l",0,1],["qáy~kúngkat","qáy~kúngka","t",0,0],["qáy~péewkat","qáy~péewka","t",0,0],["qayá''ish","qayá''","ish",0,0],["qée'is","qée'is","",1,1],["qéesi","qéesi","",1,1],["qéesum","qéesum","",1,0],["qéshla","qésh","la",0,0],["qésmi","qésmi","",1,0],["sáawokimal","sáawokima","l",0,0],["sámsash","sámsa","sh",0,0],["sínnaval","sínnava","l",0,0],["súkmal","súkma","l",0,0],["şáa'ish","şáa'","ish",0,0],["şáamut","şáam","ut",0,0],["şáawokash","şáawoka","sh",0,0],["şáawokish","şáawoki","sh",0,0],["şáaxish","şáax","ish",0,0],["şawót","şawó","t",0,0],["şaxát","şaxá","t",0,0],["şíi'ish","şíi'","ish",0,0],["şimút","şimú","t",0,0],["şókkichash","şókkicha","sh",0,0],["şókkish","şókki","sh",0,0],["şóo","şóo","",1,0],["şóowut","şóowu","t",0,0],["şú'la","şú'","la",0,0],["şu'ísh","şu'í","sh",0,0],["şungáal","şungáa","l",0,1],["Şuşáavit","Şuşáavi","t",0,0],["şúukat","şúuk","at",0,1],["şwáamay","şwáamay","",1,1],["táa'aş","táa'aş","",1,1],["táanat","táana","t",0,0],["táaşi","táaşi","",1,1],["táaşum","táaşum","",1,1],["takíssaat","takíssaa","t",0,0],["tákkaat","tákkaa","t",0,0],["tanáaxat","tanáaxa","t",0,0],["tapáshmal","tapáshma","l",0,1],["táppaxish","táppax","ish",0,0],["táşkish","táşki","sh",0,0],["táşmi","táşmi","",1,1],["tavúlvush","tavúlvu","sh",0,0],["táwpash","táwpa","sh",0,0],["táwwilash","táwwila","sh",0,0],["téelamal","téelama","l",0,0],["téetilash","téetila","sh",0,0],["téng'alkat","téng'alka","t",0,1],["tíiwish","tíiwi","sh",0,0],["tíiwilash","tíiwila","sh",0,0],["Tólmul","Tólmu","l",0,0],["tóota","tóo","ta",0,0],["tóoqish","tóoqi","sh",0,0],["tóovit","tóovi","t",0,1],["tóoyukish","tóoyuk","ish",0,0],["tóşngukat","tóşnguka","t",0,1],["tówla","tówla","",1,0],["tú'","tú'","",1,1],["tú''ish","tú''i","sh",0,0],["tukát","tuká","t",0,0],["túkmal","túkma","l",0,0],["túkval","túkva","l",0,1],["tukwánvol","tukwánvo","l",0,0],["túm","túm","",1,1],["tunáala","tunáa","la",0,0],["túngla","túng","la",0,0],["túumi","túumi","",1,1],["túuyi","túuyi","",1,1],["túv'ilash","túv'ila","sh",0,0],["tuvát","tuvá","t",0,0],["'úshla","'úsh","la",0,0],["vichu","vichu","",1,0],["vota","vota","",1,0],["wáa'ish","wáa'","ish",0,0],["wáakat","wáak","at",0,0],["wáakilash","wáakila","sh",0,0],["wáchxat","wáchxa","t",0,0],["wámkish","wámki","sh",0,0],["waníicha","waníi","cha",0,0],["waxáwkila","waxáwki","la",0,1],["wi'át","wi'á","t",0,0],["wi'áaşal","wi'áaşa","l",0,0],["wíicha","wíi","cha",0,0],["wíichut","wíichu","t",0,0],["wíiwish","wíiw","ish",0,0],["wílkawut","wílkawu","t",0,0],["wiyáala","wiyáa","la",0,0],["wki","wki","",1,0],["wókkilash","wókkila","sh",0,0],["xa","xa","",1,0],["xíimaxish","xíimax","ish",0,0],["ya'ásh","ya'á","sh",0,1],["yáayayakat","yáayayaka","t",0,0],["yamíicha","yamíi","cha",0,0],["yawáywish","yawáywi","sh",0,0],["yawáywimal","yawáywima","l",0,0],["yaxát","yaxá","t",0,0],["yáxyexish","yáxyex","ish",0,0],["yí'yish","yí'yi","sh",0,0],["yí'yilash","yí'yila","sh",0,0],["yixélval","yixélva","l",0,0],["yó'","yó'","",1,1],["yóm","yóm","",1,0],["yóonikat","yóonika","t",0,0],["yóoyi","yóoyi","",1,1],["yósmay","yósmay","",1,1],["yúkkavish","yúkkavi","sh",0,0],["yúkşum","yúkşum","",1,1],["yúmpish","yúmpi","sh",0,0],["yúula","yúu","la",0,0],["yúuku","yúuku","",1,1],["yúuyit","yúuy","it",0,0],["yuxwáala","yuxwáa","la",0,0],["yuxwáamal","yuxwáama","l",0,0],["temét","temé","t",0,0],["wóoyilash","wóoyila","sh",0,0],["náq","náq","",1,0],["péet","péet","",1,1],["takwáyyaxish","takwáyyax","ish",0,0],["húulilash","húulila","sh",0,0],["'amáay","'amáay","",0,1],["'úuchanat","'úuchana","t",0,1],["pakwív'aat","pakwív'aa","t",0,0],["kúuta","kúu","ta",0,0],["túula","túu","la",0,0],["páavuşla","páavuş","la",0,0],["tóowunla","tóowun","la",0,0],["pávkunla","pávkun","la",0,0],["wuláqla","wuláq","la",0,0],["húngla","húng","la",0,0]];   // [headword, root, noun suffix, inalienable, animate]
+const NOUNS = new Map();
+for (const [lu, root, suffix, inal, anim] of NOUN_RAW) NOUNS.set(lu, { lu, root, suffix, inal: !!inal, animate: !!anim });
+
+const POSS_PREFIX = { '1s': 'no', '2s': "'o", '3s': 'po', '1p': 'cham', '2p': "'om", '3p': 'pom' };
+const POSS_LABEL = { '1s': 'my', '2s': 'your', '3s': 'his/her/its', '1p': 'our', '2p': 'your guys’', '3p': 'their' };
+
+/* irregular possessed stems named in Book 8, Lessons 4 and 5 */
+const POSS_IRREG = { 'kúnla': 'kúun', "'éxla": "'éex", "'áshla": "'áash", "'éngla": "'éeng", 'şúnla': 'şúun', 'páala': 'páaw',
+  'nóot': "nóo'u", 'néshkinlakat': 'néshkinu', 'táşkish': 'táşkixa' };
+
+/* plural forms of animate nouns that the dictionary lists (singular -> plural) */
+const STORED_PLURAL = new Map();
+for (const e of ENTRIES) {
+  const m = e.en.match(/^(.*?)(ies|s)$/);
+  if (!m) continue;
+  const sing = m[2] === 'ies' ? m[1] + 'y' : m[1];
+  const s = ENTRIES.find(x => x.en === sing);
+  if (s && s.lu !== e.lu && !STORED_PLURAL.has(s.lu)) STORED_PLURAL.set(s.lu, e.lu);
+}
+{ const man = ENTRIES.find(x => x.en === 'man, plural (men)'); if (man) STORED_PLURAL.set("ya'ásh", man.lu); }
+for (const [pl, sg] of Object.entries(IRREG_PL_EN)) { const p = ENTRIES.find(x => x.en === pl), s = ENTRIES.find(x => x.en === sg); if (p && s && !STORED_PLURAL.has(s.lu)) STORED_PLURAL.set(s.lu, p.lu); }
+
+const _ACUTE = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u' };
+const _CONS = "[^aeiouáéíóúàèìòù']";
+/* ...[consonant][stressed vowel] at the end -> long vowel (kú -> kúu) */
+function lengthEndVowel(s) {
+  const m = s.match(new RegExp('^(.*' + _CONS + "|.*')([áéíóú])$"));
+  return m ? m[1] + m[2] + _ACUTE[m[2]] : s;
+}
+/* ...[stressed vowel][single final consonant] -> long vowel (notúng -> notúung) */
+function lengthStressedBeforeFinal(s) {
+  const m = s.match(new RegExp('^(.*' + _CONS + ")([áéíóú])(ng|ch|sh|" + _CONS + ')$'));
+  return m ? m[1] + m[2] + _ACUTE[m[2]] + m[3] : s;
+}
+const endsVowel = s => isVowel(s[s.length - 1]);
+
+
+/* -ki possession (Book 8, Lessons 6, 8, 9): drop the noun suffix, add -ki, then the prefix */
+const KI_EXC = { 'temét': 'temékki', 'kwíila': 'kwíkki', "şú'la": "şú'laki", 'náavut': 'návki', 'şáamut': 'şámki', 'chíivut': 'chívki', 'néexish': 'néxki' };
+const KI_LIST = new Set(["'éxval","matámtash","móyla","neméenemish","puráprish","qawíicha","sínnaval","şaxát","tavúlvush","táwpash","yuxwáala"]);
+function _c1c2(root) {
+  const sk = _strip(root.toLowerCase()).replace(/[aeiou']/g, '');
+  return sk.length === 4 && sk[1] === sk[3];
+}
+function kiStem(n) {
+  if (KI_EXC[n.lu]) return KI_EXC[n.lu];
+  if (/aat$/.test(n.lu)) return n.lu.slice(0, -1) + 'naki';
+  if (n.lu === "'iyé'yish" || n.lu === 'hivélvish') return null;
+  if (KI_LIST.has(n.lu) || (n.suffix === 'sh' && _c1c2(n.root))) return lengthEndVowel(n.root) + 'ki';
+  return null;
+}
+
+function possStem(n) {
+  if (POSS_IRREG[n.lu]) return POSS_IRREG[n.lu];
+  const k = kiStem(n);
+  if (k) return k;
+  if (n.suffix === 'l' && /ma$/.test(n.root)) return n.root + 'y';
+  return n.root;
+}
+
+function illative(stem) {
+  const last = stem[stem.length - 1];
+  if (last === 'n') return stem + 'ik';
+  if (isVowel(last)) return stem + 'yk';
+  return stem + 'yuk';
+}
+
+/* a relational suffix on a noun: locative nga, ablative ngay, illative yuk, instrumental tal, concomitant man */
+function relational(n, kind, poss) {
+  let stem = poss ? POSS_PREFIX[poss] + possStem(n) : (/aat$/.test(n.lu) ? n.lu.slice(0, -1) + ((kind === 'nga' || kind === 'ngay') ? 'na' : 'n') : n.root);
+  if (poss && n.root === 'máax') stem = POSS_PREFIX[poss] + 'máx';
+  if (poss && ['kúnla', "'éxla", "'áshla", "'éngla", 'şúnla'].includes(n.lu)) stem = POSS_PREFIX[poss] + n.root;
+  if (poss && n.root === 'wáak') stem = POSS_PREFIX[poss] + 'wáaka';
+  const alt = [];
+  let form;
+  if (kind === 'nga') form = stem + 'nga';
+  else if (kind === 'ngay') form = stem + 'ngay';
+  else if (kind === 'yuk') form = illative(stem);
+  else if (kind === 'man') form = stem + 'man';
+  else if (kind === 'tal') {
+    const s2 = (poss || /aat$/.test(n.lu)) ? stem : lengthEndVowel(stem);
+    form = s2 + 'tal';
+    if (/[iyx]$/.test(s2)) alt.push(s2 + 'chal');
+  }
+  return { form, alt };
+}
+
+/* plural of an animate noun */
+function pluralOf(n) {
+  if (STORED_PLURAL.has(n.lu)) return { form: STORED_PLURAL.get(n.lu), predicted: false };
+  const lu = n.lu;
+  let f = null;
+  if (/kat$/.test(lu)) f = lu.slice(0, -3) + 'vuktum';
+  else if (/sh$/.test(lu)) { const st = lu.slice(0, -2); f = lengthEndVowel(st) + 'chum'; }   // a short stressed vowel lengthens (şu'ísh -> şu'íichum)
+  else if (/[lty]$/.test(lu)) f = lengthStressedBeforeFinal(lu) + 'um';
+  else if (/i$/.test(lu)) f = lu + 'm';
+  return { form: f, predicted: true };
+}
+
+/* object form of an animate noun (singular or plural) */
+function animateObject(n, plural) {
+  if (plural) {
+    const p = pluralOf(n);
+    if (!p.form) return null;
+    const pf = p.form;
+    if (/(vuktum|aantum|im)$/.test(pf)) return pf + 'i';
+    if (/chum$/.test(pf)) return pf.slice(0, -4) + 'shmi';
+    if (/um$/.test(pf)) return pf.slice(0, -2) + 'mi';
+    return pf + 'mi';
+  }
+  const lu = n.lu;
+  if (/sh$/.test(lu)) return lengthEndVowel(lu.slice(0, -2)) + 'chi';
+  return lu + (endsVowel(lu) ? 'y' : 'i');
+}
+
+
+/* inanimate objects (Book 6, Lesson 13): -aat -> -aanti; -cha -> -sh, -ta -> -t, -la -> -l after a long vowel;
+   after a consonant the helping vowel i (u for five nouns) is added, and a short stressed vowel lengthens (kúnla -> kúunil) */
+const U_LA = new Set(["şú'la", "'ówla", 'pávkunla', 'wuláqla', 'húngla']);
+function lengthenRule4(stem) {
+  const m = stem.match(/^(.*?)([áéíóú])(ng|ch|sh|[^aeiouáéíóú']|')$/);
+  return m ? m[1] + m[2] + _ACUTE[m[2]] + m[3] : stem;
+}
+function inanimateObject(n) {
+  const lu = n.lu;
+  if (/aat$/.test(lu)) return { form: lu.slice(0, -3) + 'aanti', known: true };
+  const m = lu.match(/^(.+)(la|cha|ta)$/);
+  if (!m) return { form: lu, known: /(sh|t|l)$/.test(lu) };
+  const stem = m[1], end = m[2];
+  const out = end === 'cha' ? 'sh' : end === 'ta' ? 't' : 'l';
+  const lastV = /[aeiouáéíóú]$/.test(stem);
+  if (lastV) return { form: stem + out, known: true };
+  const hv = U_LA.has(lu) ? 'u' : 'i';
+  return { form: lengthenRule4(stem) + hv + out, known: true };
+}
+
+/* inanimate noun, possessed or not */
+function inanimateForm(n, o) {
+  const notes = [];
+  if (o.poss) {
+    const stem = POSS_PREFIX[o.poss] + possStem(n);
+    if (o.role === 'obj') {
+      let s = stem;
+      s = lengthStressedBeforeFinal(s);
+      return { form: s + (endsVowel(s) ? 'y' : 'i'), notes };
+    }
+    return { form: stem, notes };
+  }
+  if (o.role === 'obj') {
+    const r = inanimateObject(n);
+    if (!r.known) notes.push('No object rule was found for ' + n.lu + ', so the dictionary form is shown.');
+    return { form: r.form, notes };
+  }
+  return { form: n.lu, notes };
+}
+
+
+/* Animate nouns cannot normally be possessed (Book 8, Lesson 15). Animals use 'áshla (no'áash 'awáal "my dog"),
+   people use 'ó'nan "friend" (no'ó'nan ya'ásh "my friend, the man"), and "one who does" nouns use compounds (néy~húu'unikat "my teacher"). */
+const ANIMAL_RE = /\b(dog|bear|deer|coyote|bird|quail|mouse|rabbit|horse|cat|spider|eagle|fish|snake|worm|fly|animal|otter|octopus|owl)\b/;
+function animateKind(n) {
+  if (n.lu === "'áshla") return 'pet';
+  if (/kat$/.test(n.lu)) return 'agent';
+  if (ANIMAL_RE.test((GLOSSES.get(n.lu) || []).join(' ').toLowerCase())) return 'animal';
+  return 'person';
+}
+function possessedAnimate(n, o) {
+  const kind = animateKind(n), px = POSS_PREFIX[o.poss], pl = !!o.plural, obj = o.role === 'obj';
+  const notes = [];
+  if (kind === 'pet') {
+    const f = pl ? (obj ? px + "'áshmi" : px + "'áachum") : (obj ? px + "'áashi" : px + "'áash");
+    return { form: f, notes };
+  }
+  const base = nounForm(n, { plural: pl, role: obj ? 'obj' : 'subj' });
+  base.notes.forEach(x => notes.push(x));
+  if (kind === 'agent') {
+    if (o.poss === '1s' || o.poss === '1p') {
+      notes.push('Nouns meaning “one who does something” are possessed as compounds with an object pronoun (néy~húu’unikat “my teacher”). This works for verbs that take an object, like teach, but not for others, like cook.');
+      return { form: (o.poss === '1s' ? 'néy' : 'cháami') + '~' + base.form, notes };
+    }
+    return { form: null, notes: ['The books show this kind of possession only for “my” and “our” (néy~, cháami~), so no form is built for other possessors.'] };
+  }
+  let h;
+  if (kind === 'person') {
+    h = pl ? (obj ? px + "'ó'nanmi" : px + "'ó'nanum") : (obj ? px + "'ó'nani" : px + "'ó'nan");
+    notes.push('Luiseño has no way to say “my ' + 'boy / girl / man / woman.” The books use a helping word: “my friend, the man” (no’ó’nan ya’ásh).');
+    if (pl) notes.push('The plural of ’ó’nan with a possessor is predicted from the usual rule and not shown in the lessons.');
+  } else {
+    h = pl ? (obj ? px + "'áshmi" : px + "'áachum") : (obj ? px + "'áashi" : px + "'áash");
+    notes.push('Luiseño has no way to say “my dog.” Animals are possessed with ’áshla, “pet”: no’áash ’awáal, “my pet, the dog.”');
+    if (obj && !pl) notes.push('The singular object ' + h + ' is predicted; the lessons show only the plural object (-’áshmi).');
+  }
+  return { form: h + ' ' + base.form, notes };
+}
+
+/* every form the app can build for one noun */
+function nounForm(n, o) {
+  o = o || {};
+  const role = o.role || 'subj';
+  if (n.animate) {
+    if (['nga', 'ngay', 'yuk', 'tal', 'man'].includes(role)) return { form: null, notes: ['Animate nouns do not take -nga, -ngay, -yuk, -tal or -man. The books use separate words instead (póoto “on,” póongay “from,” póyk “to,” po’éesh “along with”).'] };
+    if (o.poss && !n.inal) return possessedAnimate(n, o);
+    let base;
+    const notes0 = [];
+    if (o.poss) base = POSS_PREFIX[o.poss] + possStem(n);
+    else { base = n.lu; if (n.inal) notes0.push(n.lu + ' is always possessed (my, your, his/her…), so it is shown without a possessor.'); }
+    const notes = [...notes0];
+    if (o.plural && o.poss && n.inal) {
+      const stem = POSS_PREFIX[o.poss] + possStem(n);
+      const f = stem + (endsVowel(stem) ? 'm' : 'um');
+      notes.push('The plural of a possessed family noun is predicted from the usual -um rule; nopéetum is the only example in the lessons.');
+      return { form: role === 'obj' ? (/um$/.test(f) ? f.slice(0, -2) + 'mi' : f + 'i') : f, notes };
+    }
+    if (o.plural) {
+      const p = pluralOf(n);
+      if (!p.form) return { form: n.lu, notes: ['No rule for the plural of ' + n.lu + ' was found; the singular is shown.'] };
+      if (p.predicted) notes.push('The plural ' + p.form + ' is predicted from a rule and not seen in the lessons.');
+      return { form: role === 'obj' ? animateObject(n, true) : p.form, notes };
+    }
+    if (role === 'obj') {
+      let f;
+      if (o.poss || n.inal) {
+        const b = o.poss ? base : n.lu;
+        const m = b.match(/^(.*)([áéíóú])'$/);
+        f = m ? m[1] + m[2] + _ACUTE[m[2]] + 'yi' : lengthStressedBeforeFinal(b) + (endsVowel(b) ? 'y' : 'i');
+        if (m) notes.push('Family nouns ending in a stressed vowel and a glottal stop drop the glottal stop, lengthen the vowel and add -yi in the object form (Book 8, Lesson 1).');
+      } else f = animateObject(n, false);
+      return { form: f, notes };
+    }
+    return { form: base, notes };
+  }
+  if (['nga', 'ngay', 'yuk', 'tal', 'man'].includes(role)) {
+    const r = relational(n, role, o.poss);
+    return { form: r.form, alt: r.alt, notes: [] };
+  }
+  return inanimateForm(n, { poss: o.poss, role });
+}
+
+/* all forms, for the noun panel and the reverse index */
+function allNounForms(n) {
+  const out = [];
+  const add = (form, desc) => { if (form) out.push([form, desc]); };
+  if (!n.inal) {
+    add(n.lu, 'the noun itself');
+    if (n.animate) {
+      const p = pluralOf(n); add(p.form, 'plural');
+      add(animateObject(n, false), 'object'); add(animateObject(n, true), 'plural object');
+    } else {
+      for (const k of ['nga', 'ngay', 'yuk', 'tal', 'man']) { const r = relational(n, k, null); add(r.form, REL_DESC[k]); (r.alt || []).forEach(a => add(a, REL_DESC[k])); }
+      add(inanimateForm(n, { role: 'obj' }).form, 'object');
+    }
+  }
+  if (!n.animate || n.inal) {
+    for (const p of Object.keys(POSS_PREFIX)) {
+      const f0 = nounForm(n, { poss: p, role: 'subj' });
+      add(f0.form, POSS_LABEL[p] + ' ' + n.lu);
+      if (!n.animate) {
+        add(nounForm(n, { poss: p, role: 'obj' }).form, POSS_LABEL[p] + ' ' + n.lu + ' (object)');
+        for (const k of ['nga', 'ngay', 'yuk', 'tal', 'man']) { const r = relational(n, k, p); add(r.form, REL_DESC[k] + ' ' + POSS_LABEL[p] + ' ' + n.lu); (r.alt || []).forEach(a => add(a, REL_DESC[k] + ' ' + POSS_LABEL[p] + ' ' + n.lu)); }
+      }
+    }
+  }
+  return out;
+}
+const REL_DESC = { nga: 'in / on / at', ngay: 'from', yuk: 'to', tal: 'with (using)', man: 'along with' };
+
+
+/* Lesson 7: a verb becomes a noun meaning "the act of ..." with -sh */
+const DERIVED_NOUN = new Map();
+const DERIVED_BY_VERB = new Map();
+{
+  const EXC = { 'náqmash': 'famous (not “hearing”)', 'tóowish': 'spirit, ghost (not “seeing”)' };
+  for (const v of VERBS.values()) {
+    if (v.irregular) continue;
+    const last = v.lu[v.lu.length - 1];
+    let d, root, suffix;
+    if (v.cls === 'A' || (last !== 'a' && isVowel(last))) { d = v.lu + 'sh'; root = v.lu; suffix = 'sh'; }
+    else if (v.cls === 'a') { d = v.lu + 'xish'; root = v.lu + 'x'; suffix = 'ish'; }
+    else { d = v.lu + 'ish'; root = v.lu; suffix = 'ish'; }
+    DERIVED_NOUN.set(d, v.lu);
+    DERIVED_BY_VERB.set(v.lu, d);
+    if (!NOUNS.has(d)) {
+      NOUNS.set(d, { lu: d, root, suffix, inal: false, animate: false, derived: v.lu });
+      if (!GLOSSES.has(d)) GLOSSES.set(d, [EXC[d] || 'the act of ' + verbGloss(v)]);
+    }
+  }
+}
+
+const NREV = new Map();
+for (const n of NOUNS.values()) {
+  for (const [form, desc] of allNounForms(n)) {
+    const k = form.toLowerCase();
+    if (!NREV.has(k)) NREV.set(k, []);
+    const l = NREV.get(k);
+    if (!l.some(x => x.n === n && x.desc === desc)) l.push({ n, desc });
+  }
+}
+function analyzeNounForm(raw) {
+  const k = raw.trim().replace(/[’ʼ]/g, "'").toLowerCase();
+  let hits = NREV.get(k);
+  if (!hits) { const nk = _norm(k); for (const [f, l] of NREV) { if (_norm(f) === nk) { hits = l; break; } } }
+  return (hits || []).filter(h => h.desc !== 'the noun itself');
+}
+/*NOUNS-END*/
+if (typeof module !== 'undefined') module.exports = { NOUNS, nounForm, allNounForms, analyzeNounForm, relational, pluralOf, STORED_PLURAL };
+
+/*ADJS-START*/
+/* adjectives: the colors from Book 3 plus the descriptive words in the glossary */
+const ADJ_RAW = [["'áv'aat",""],["konóknish",""],["malómlush",""],["'aşó'şush",""],["yuváttaat",""],["xwáyyaat",""],["ngáxlul",""],["sisínnaval",""],["yót","mómkatum"],["mómkat","mómkatum"],["kihúut","kíikatum"],["polóov","póplovum"],["tavúlvush","táatalvichum"],["kapákpamal","kákpamalum"],["'éxmawish",""],["páapavish",""],["háqmawish",""],["yawáywish",""],["yawáywimal",""],["yixélval",""],["şókkish",""],["tóoqish",""],["'áachish",""],["héngchish",""],["chaqwíshqwish",""],["hikáhkash",""],["mahámhish",""],["hivélvish",""],["'aláxxwish",""],["qayáawaat",""],["'áx'aat",""]];   // [headword, irregular plural or '']
+const ADJS = new Map();
+for (const [lu, pl] of ADJ_RAW) {
+  let root, suffix;
+  if (/aat$/.test(lu)) { root = lu.slice(0, -3); suffix = 'aat'; }
+  else if (/sh$/.test(lu)) { root = lu.slice(0, -2); suffix = 'sh'; }
+  else if (/[tl]$/.test(lu)) { root = lu.slice(0, -1); suffix = lu.slice(-1); }
+  else { root = lu; suffix = ''; }
+  ADJS.set(lu, { lu, root, suffix, plural: pl || '', adj: true });
+}
+
+/* case agreement with an inanimate noun (Book 8, Lesson 22): wókkilatal sisínnavatal yóotal */
+function adjCase(a, kind) {
+  let stem = a.suffix === 'aat' ? a.lu.slice(0, -1) + ((kind === 'nga' || kind === 'ngay') ? 'na' : 'n') : a.root;
+  if (kind !== 'yuk' && a.suffix === 't') stem = lengthEndVowel(stem);       // yó -> yóo before -tal, -nga, -ngay, -man, but not -yk
+  if (kind === 'nga') return stem + 'nga';
+  if (kind === 'ngay') return stem + 'ngay';
+  if (kind === 'man') return stem + 'man';
+  if (kind === 'tal') return stem + 'tal';
+  return illative(stem);
+}
+
+/* possessing an adjective (Book 8, Lesson 9): nomalómluki, no'áv'aanaki, nomíx yót */
+function c1c2(root) {
+  const sk = _strip(root.toLowerCase()).replace(/[aeiou']/g, '');
+  return sk.length === 4 && sk[1] === sk[3];
+}
+function adjPossessed(a, poss, role) {
+  const px = POSS_PREFIX[poss];
+  let f, predicted = false;
+  if (a.suffix === 'aat') f = px + a.lu.slice(0, -1) + 'naki';
+  else if (a.suffix === 'sh' && c1c2(a.root)) f = px + lengthEndVowel(a.root) + 'ki';
+  else { f = px + 'míx ' + a.lu; }
+  if (role === 'obj' && !/ míx /.test(f) && !/míx /.test(f)) f = f + (endsVowel(f) ? 'y' : 'i');
+  return { form: f };
+}
+
+/* plural and object agreement with an animate noun (Book 5) */
+function adjPlural(a) {
+  if (a.plural) return a.plural;
+  if (a.suffix === 'sh') return a.root + 'chum';
+  if (a.suffix === 'l') return a.lu + 'um';
+  return null;
+}
+function adjAgree(a, o) {
+  const pl = !!o.plural, obj = o.role === 'obj';
+  if (pl) {
+    const p = adjPlural(a);
+    if (!p) return { form: a.lu, note: 'no plural form found' };
+    if (!obj) return { form: p };
+    if (/um$/.test(p)) return { form: p.slice(0, -2) + 'mi' };
+    return { form: p + 'mi' };
+  }
+  if (!obj) return { form: a.lu };
+  if (a.suffix === 'sh') return { form: lengthEndVowel(a.root) + 'chi' };
+  if (a.suffix === 'aat') return { form: a.lu.slice(0, -3) + 'aanti' };
+  return { form: lengthStressedBeforeFinal(a.lu) + (endsVowel(a.lu) ? 'y' : 'i') };
+}
+
+/* reverse index for adjective forms */
+for (const a of ADJS.values()) {
+  const add = (form, desc) => {
+    if (!form || /\s/.test(form)) return;
+    const k = form.toLowerCase();
+    if (!NREV.has(k)) NREV.set(k, []);
+    const l = NREV.get(k);
+    if (!l.some(x => x.n === a && x.desc === desc)) l.push({ n: a, desc });
+  };
+  Object.keys(POSS_PREFIX).forEach(p => add(adjPossessed(a, p, 'subj').form, POSS_LABEL[p] + ' ' + a.lu + ' one'));
+  ['nga', 'ngay', 'yuk', 'tal', 'man'].forEach(k => add(adjCase(a, k), REL_DESC[k] + ' (agreeing with an inanimate noun)'));
+  const pl = adjPlural(a);
+  if (pl) { add(pl, 'plural'); add(adjAgree(a, { plural: true, role: 'obj' }).form, 'plural object'); }
+  add(adjAgree(a, { role: 'obj' }).form, 'object');
+}
+/*ADJS-END*/
+if (typeof module !== 'undefined') module.exports = { ADJS, adjCase, adjPossessed, adjAgree, adjPlural };
+
+/* ---------- interface ---------- */
+let mode = 'en';
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+function luSpan(text) { const s = el('span', 'lu', text); s.lang = 'lui'; return s; }
+function joinInto(parent, items, make, sep) {
+  items.forEach((it, i) => { if (i) parent.append(sep || ', '); parent.append(make(it)); });
+}
+
+const EXAMPLES = {
+  en: ['Where is the boy?', 'I have a pencil', 'with a big silver knife', '137'],
+  lu: ['páala', 'wéhkun táppaat supúl pa’áq', 'kíinga', 'notáanay']
+};
+const PLACEHOLDER = {
+  en: 'Type an English word or short sentence',
+  lu: 'Type a Luiseño word or phrase. Accents and apostrophes are optional.'
+};
+
+function renderEmpty(out) {
+  const box = el('div', 'empty');
+  box.append(el('p', null, 'Try one of these:'));
+  const chips = el('div', 'chips');
+  EXAMPLES[mode].forEach(t => {
+    const b = el('button', mode === 'lu' ? 'lu' : '', t);
+    b.type = 'button';
+    b.addEventListener('click', () => { $('q').value = t.replace(/’/g, "'"); render(); $('q').focus(); });
+    chips.append(b);
+  });
+  box.append(chips);
+  out.append(box);
+}
+
+function hintEl(h) {
+  const box = el('div', 'hint');
+  const p = el('p');
+  p.append('Possibly ');
+  const parts = [];
+  if (h.p) parts.push([h.p + '-', h.pg]);
+  parts.push([h.hit.show, h.hit.gloss]);
+  if (h.s) parts.push(['-' + h.s, h.sg]);
+  parts.forEach(([form, gloss], i) => {
+    if (i) p.append(' + ');
+    p.append(luSpan(form), ' (' + gloss + ')');
+  });
+  box.append(p, el('p', 'fine', 'A guess based on the possessive and relational patterns in the lessons. This exact form is not in the glossary.'));
+  return box;
+}
+
+function emptyMsg(raw) {
+  const msg = mode === 'en'
+    ? 'No match for “' + raw.trim() + '”. Try the base form of the word (“run” rather than “running”) or a synonym.'
+    : 'No match for “' + raw.trim() + '”. The search ignores accents and apostrophes, so try fewer letters.';
+  return el('p', 'more', msg);
+}
+
+/* ----- verb forms panel ----- */
+function verbFormsPanel(v) {
+  const det = el('details', 'vf');
+  const sum = el('summary');
+  sum.append('Forms of ', luSpan(v.lu), '(' + verbGloss(v) + ')');
+  det.append(sum);
+  if (v.irregular) {
+    det.append(el('p', 'fine', 'Irregular verb. The books teach its forms one by one (for example ’áawq and qálwun for “be located”), so they are not generated here.'));
+    return det;
+  }
+  const f = conj(v.lu, v.cls);
+  const rows = [
+    ['is -ing (one subject)', f.presSg], ['are -ing (several people)', f.presPl], ['was / were -ing', f.impf],
+    ['simple past', f.pret.form, f.pret.alt, f.pret.note], ['will', f.futSimple], ['will be -ing', f.futHab, f.futHabAlt],
+    ['command to one person', f.cmdSg], ['command to several', f.cmdPl], ['wants to (one)', f.wantSg], ['want to (several)', f.wantPl],
+    ['noun: the act of ' + verbGloss(v), DERIVED_BY_VERB.get(v.lu)]
+  ];
+  const wrap = el('div', 'scroll');
+  const tb = el('table', 'vtable');
+  const body = el('tbody');
+  rows.forEach(([label, form, alt, note]) => {
+    const tr = el('tr');
+    tr.append(el('th', null, label));
+    tr.setAttribute('role', 'row');
+    tr.firstChild.scope = 'row';
+    const td = el('td');
+    if (form) td.append(luSpan(form)); else td.append(el('span', 'alt', note || 'not available'));
+    if (form && alt) { td.append(' ', el('span', 'alt', 'or '), luSpan(alt)); }
+    if (form && note) td.append(' ', el('span', 'alt', '(' + note + ')'));
+    tr.append(td);
+    body.append(tr);
+  });
+  tb.append(body); wrap.append(tb); det.append(wrap);
+  det.append(el('p', 'fine', classLabel(v) + '.' + (v.unverified ? ' This verb is not seen conjugated in any lesson, so treat its forms as predictions.' : '')));
+  return det;
+}
+
+function revEl(hits, raw) {
+  const box = el('div', 'hint');
+  hits.slice(0, 3).forEach(h => {
+    const p = el('p');
+    p.append(luSpan(raw.trim()), ' is a form of ', luSpan(h.v.lu), ' (' + verbGloss(h.v) + '): ' + revLabel(h) + '.');
+    box.append(p);
+  });
+  return box;
+}
+
+
+/* ----- noun forms panel ----- */
+function nounGloss(n) { return prettyGloss((GLOSSES.get(n.lu) || [n.lu])[0]); }
+function addRow(body, label, node, extra) {
+  const tr = el('tr');
+  const th = el('th', null, label); th.scope = 'row';
+  tr.append(th);
+  const td = el('td');
+  td.append(node);
+  if (extra) td.append(' ', el('span', 'alt', extra));
+  tr.append(td);
+  body.append(tr);
+}
+function spans(forms, sep) {
+  const w = el('span');
+  joinInto(w, forms, luSpan, sep || ' · ');
+  return w;
+}
+function nounFormsPanel(n) {
+  const det = el('details', 'vf');
+  const sum = el('summary');
+  sum.append('Forms of ', luSpan(n.lu), '(' + nounGloss(n) + ')');
+  det.append(sum);
+  const wrap = el('div', 'scroll');
+  const tb = el('table', 'vtable');
+  const body = el('tbody');
+  const g = nounGloss(n);
+  if (n.animate) {
+    const p = pluralOf(n);
+    if (p.form) addRow(body, 'more than one', spans([p.form]), p.predicted ? '(predicted from a rule)' : null);
+    addRow(body, 'object', spans([nounForm(n, { role: 'obj' }).form]));
+    if (p.form) addRow(body, 'more than one, object', spans([nounForm(n, { role: 'obj', plural: true }).form]));
+    Object.keys(POSS_PREFIX).forEach(k => {
+      const a = nounForm(n, { poss: k }), b = nounForm(n, { poss: k, role: 'obj' });
+      if (a.form) addRow(body, POSS_LABEL[k] + ' ' + g, spans([a.form, b.form]), 'subject · object');
+    });
+  } else {
+    if (!n.inal) addRow(body, 'object', spans([nounForm(n, { role: 'obj' }).form]));
+    Object.keys(POSS_PREFIX).forEach(k => addRow(body, POSS_LABEL[k] + ' ' + g, spans([nounForm(n, { poss: k }).form, nounForm(n, { poss: k, role: 'obj' }).form]), 'subject · object'));
+    ['nga', 'ngay', 'yuk', 'tal', 'man'].forEach(k => {
+      const a = n.inal ? null : relational(n, k, null), b = relational(n, k, '1s');
+      const forms = [];
+      if (a) { forms.push(a.form); (a.alt || []).forEach(x => forms.push(x)); }
+      const node = el('span');
+      if (forms.length) { node.append(spans(forms, ' or '), el('span', 'alt', '  my: ')); }
+      node.append(spans([b.form, ...(b.alt || [])], ' or '));
+      addRow(body, REL_DESC[k], node);
+    });
+  }
+  tb.append(body); wrap.append(tb); det.append(wrap);
+  let msg;
+  if (n.animate) msg = 'Animate noun (a person or animal). It takes no -nga, -ngay, -yuk, -tal or -man; the books use separate words (póoto “on,” póongay “from,” póyk “to,” po’éesh “along with”).' + (n.inal ? '' : ' Animate nouns are not normally possessed: the possessed rows use the books’ workarounds (’áshla for animals, ’ó’nan “friend” for people, néy~ and cháami~ for “one who does” nouns).');
+  else msg = 'Inanimate noun, so it has no plural form. Other possessors work the same way as “my”: change no- to ’o-, po-, cham-, ’om- or pom-.';
+  if (n.inal) msg += ' It is always possessed.';
+  if (n.derived) msg += ' Made from the verb ' + n.derived + ' by Lesson 7’s rule (“the act of …”).';
+  det.append(el('p', 'fine', msg + ' Forms follow the rules in Books 3, 5 and 8; check unfamiliar ones against the lessons.'));
+  return det;
+}
+function nounRevEl(hits, raw) {
+  const box = el('div', 'hint');
+  hits.slice(0, 3).forEach(h => {
+    const p = el('p');
+    const desc = h.desc.replace(h.n.lu, nounGloss(h.n));
+    p.append(luSpan(raw.trim()), ' is a form of ', luSpan(h.n.lu), ' (' + nounGloss(h.n) + '): ' + desc + '.');
+    box.append(p);
+  });
+  return box;
+}
+
+
+function adjFormsPanel(a) {
+  const det = el('details', 'vf');
+  const sum = el('summary');
+  sum.append('Forms of ', luSpan(a.lu), '(' + prettyGloss((GLOSSES.get(a.lu) || [a.lu])[0]) + ')');
+  det.append(sum);
+  const wrap = el('div', 'scroll'), tb = el('table', 'vtable'), body = el('tbody');
+  Object.keys(POSS_PREFIX).forEach(k => { const f = adjPossessed(a, k, 'subj').form; addRow(body, POSS_LABEL[k] + ' (one)', spans([f])); });
+  ['nga', 'ngay', 'yuk', 'tal', 'man'].forEach(k => addRow(body, REL_DESC[k], spans([adjCase(a, k)])));
+  const pl = adjPlural(a);
+  if (pl) { addRow(body, 'with several animate nouns', spans([pl])); addRow(body, '…as an object', spans([adjAgree(a, { plural: true, role: 'obj' }).form])); }
+  addRow(body, 'with one animate noun, as an object', spans([adjAgree(a, { role: 'obj' }).form]));
+  tb.append(body); wrap.append(tb); det.append(wrap);
+  det.append(el('p', 'fine', 'Adjective forms follow Book 8, Lessons 9 and 22 (possessing adjectives, and agreeing with an inanimate noun in the locative, ablative, illative, instrumental and concomitant) and Book 5 (plural and object agreement with animate nouns). The adjective comes after the noun and takes the same ending. The “one” forms are what “my red one” needs.'));
+  return det;
+}
+
+function renderNumber(out, s) {
+  const box = el('div', 'wfw sent');
+  box.append(el('div', 'label', 'Number: ' + s.n.toLocaleString('en-US')));
+  const line = el('div', 'line');
+  line.append(luSpan(s.subject));
+  box.append(line);
+  const ul = el('ul', 'notes');
+  const add = (label, form) => { const li = el('li'); li.append(label + ': ', luSpan(form)); ul.append(li); };
+  if (s.object !== s.subject) add('as the object of a verb', s.object);
+  if (s.animate) { add('counting people or animals', s.animate); add('…as the object of a verb', s.animateObj); }
+  if (s.skip) add('counting by ' + s.n.toLocaleString('en-US'), s.skip);
+  if (ul.children.length) box.append(ul);
+  if (s.predicted) box.append(el('p', 'fine', 'The lessons show thousands only from 100,000 up (şóttaat míil, “one hundred thousand”). Smaller thousands here follow the same pattern.'));
+  box.append(el('p', 'fine', 'From the counting system in Books 3 and 5: ' + 'the number is built from tens (wéhkun táppaat “two times ten”), pa’áq “on top,” hundreds (şóttaat) and míil “thousand.” There is no “one hundred”; Luiseño says şóttaat.'));
+  out.append(box);
+}
+function luNumberEl(n, raw) {
+  const box = el('div', 'hint');
+  const p = el('p');
+  p.append(luSpan(raw.trim()), ' is the number ' + n.toLocaleString('en-US') + '.');
+  box.append(p);
+  return box;
+}
+
+function renderList(out, groups, raw) {
+  if (!groups.length) { out.append(emptyMsg(raw)); return; }
+  const ul = el('ul', 'list');
+  let panels = 0;
+  groups.slice(0, 12).forEach(g => {
+    const li = el('li', 'row');
+    const main = el('div', 'main'), side = el('div', 'side');
+    if (mode === 'en') { joinInto(main, g.targets, luSpan); side.textContent = g.key; }
+    else { main.textContent = g.targets.join(' · '); side.append(luSpan(g.key)); }
+    if (g.score < 60) side.append(el('span', 'tag', g.score >= 40 ? 'starts with your text' : 'contains your text'));
+    li.append(main, side);
+    const verbTargets = mode === 'en' ? g.targets.filter(t => VERBS.has(t)) : (VERBS.has(g.key) ? [g.key] : []);
+    verbTargets.forEach(t => { if (panels < 4) { li.append(verbFormsPanel(VERBS.get(t))); panels++; } });
+    const nounTargets = mode === 'en' ? g.targets.filter(t => NOUNS.has(t) && !VERBS.has(t)) : (NOUNS.has(g.key) && !VERBS.has(g.key) ? [g.key] : []);
+    nounTargets.forEach(t => { if (panels < 4) { li.append(nounFormsPanel(NOUNS.get(t))); panels++; } });
+    const adjTargets = mode === 'en' ? g.targets.filter(t => ADJS.has(t)) : (ADJS.has(g.key) ? [g.key] : []);
+    adjTargets.forEach(t => { if (panels < 4) { li.append(adjFormsPanel(ADJS.get(t))); panels++; } });
+    ul.append(li);
+  });
+  out.append(ul);
+  if (groups.length > 12) out.append(el('p', 'more', (groups.length - 12) + ' more. Type more letters to narrow it down.'));
+}
+
+function renderPhrase(out, rows) {
+  const wfw = el('div', 'wfw');
+  wfw.append(el('div', 'label', 'Word for word'));
+  const line = el('div', 'line');
+  const detail = el('div');
+  const mk = t => (mode === 'en' ? luSpan(t) : document.createTextNode(t));
+  let first = true;
+  rows.forEach(r => {
+    const pr = el('div', 'pr');
+    const src = el('div', 'src');
+    if (mode === 'lu') src.append(luSpan(r.src)); else src.append(r.src);
+
+    if (r.skipped) {
+      src.append(' (article, not translated)');
+      pr.append(src);
+    } else if (r.groups && r.groups.length) {
+      const g = r.groups[0];
+      const approx = g.score < 60;
+      const pick = el('div', 'pick');
+      if (approx) pick.append('~ ');
+      pick.append(mk(g.targets[0]));
+      pr.append(pick, src);
+      if (approx) pr.append(el('div', 'also', 'closest match, not exact'));
+      const alts = g.targets.slice(1);
+      r.groups.slice(1).filter(x => x.score === g.score).slice(0, 4)
+        .forEach(x => x.targets.forEach(t => { if (!alts.includes(t) && alts.length < 4) alts.push(t); }));
+      if (alts.length) {
+        const also = el('div', 'also');
+        also.append('also: ');
+        joinInto(also, alts, mk);
+        pr.append(also);
+      }
+      if (!first) line.append(' ');
+      first = false;
+      if (approx) line.append('~');
+      line.append(mk(g.targets[0]));
+    } else if (r.nrev && r.nrev.length && !(r.rev && r.rev.length)) {
+      const h = r.nrev[0];
+      const text = nounGloss(h.n) + ' (' + h.desc.replace(h.n.lu, nounGloss(h.n)) + ')';
+      pr.append(el('div', 'pick', text), src);
+      if (!first) line.append(' ');
+      first = false;
+      line.append(nounGloss(h.n));
+    } else if (r.rev && r.rev.length) {
+      const h = r.rev[0];
+      const text = verbGloss(h.v) + ' (' + revLabel(h) + ')';
+      pr.append(el('div', 'pick', text), src);
+      if (!first) line.append(' ');
+      first = false;
+      line.append(verbGloss(h.v));
+    } else {
+      pr.append(src);
+      if (r.hint) pr.append(hintEl(r.hint)); else pr.append(el('div', 'also', 'not in the glossary'));
+      if (!first) line.append(' ');
+      first = false;
+      line.append(el('span', 'unk', '?'));
+    }
+    detail.append(pr);
+  });
+  wfw.append(line);
+  wfw.append(el('p', 'fine', 'Each word is looked up on its own, in the order you typed it. Luiseño word order and endings (possessive prefixes, plural -m, relational suffixes) are not applied, so treat this as a vocabulary aid, not a finished sentence.'));
+  out.append(wfw, detail);
+}
+
+function renderSentence(out, s) {
+  const box = el('div', 'wfw sent');
+  box.append(el('div', 'label', s.question ? 'Question' : 'Sentence'));
+  if (s.irregular) {
+    box.append(el('p', 'fine', 'The verb here is ' + s.irregular.lu + ', which the books treat as irregular, so no forms are generated. Look it up by itself to see what the books say.'));
+    out.append(box);
+    out.append(verbFormsPanel(s.irregular));
+    return;
+  }
+  const line = el('div', 'line');
+  s.parts.forEach((p, i) => {
+    if (i) line.append(' ');
+    if (p.out === '?') line.append(el('span', 'unk', '?'));
+    else line.append(luSpan(p.out));
+  });
+  if (s.question) line.append('?');
+  box.append(line);
+  const notes = el('ul', 'notes');
+  (s.notes || []).forEach(n => notes.append(el('li', null, n)));
+  if (s.notes && s.notes.length) box.append(notes);
+  if (s.alts && s.alts.length) {
+    const a = el('p', 'alts');
+    a.append('Other verbs that can mean this: ');
+    joinInto(a, s.alts.slice(0, 4), lu => { const w = el('span'); w.append(luSpan(lu), ' (' + verbGloss(VERBS.get(lu)) + ')'); return w; });
+    box.append(a);
+  }
+  box.append(el('p', 'fine', 'Built word by word, with the verb forms from the rules in Books 5, 7 and 8. Check the notes before using it.'));
+  out.append(box);
+  const detail = el('div');
+  s.parts.forEach(p => {
+    const pr = el('div', 'pr');
+    const pick = el('div', 'pick');
+    if (p.out === '?') pick.append('?'); else pick.append(luSpan(p.out));
+    pr.append(pick);
+    pr.append(el('div', 'src', p.src + (p.note ? ' (' + p.note + ')' : '')));
+    detail.append(pr);
+  });
+  out.append(detail);
+  if (s.verb) out.append(verbFormsPanel(s.verb));
+}
+
+function renderNounPhrase(out, s) {
+  const box = el('div', 'wfw sent');
+  box.append(el('div', 'label', 'Noun phrase'));
+  if (!s.text) {
+    box.append(el('p', 'fine', s.notes[0] || 'No form could be built.'));
+  } else {
+    const line = el('div', 'line');
+    line.append(luSpan(s.text));
+    box.append(line);
+  }
+  if (s.text && s.notes.length) { const ul = el('ul', 'notes'); s.notes.forEach(x => ul.append(el('li', null, x))); box.append(ul); }
+  box.append(el('p', 'fine', 'Built from the noun rules in Books 3, 5 and 8. Check the notes before using it.'));
+  out.append(box);
+  if (s.noun) out.append(s.noun.adj ? adjFormsPanel(s.noun) : nounFormsPanel(s.noun));
+}
+
+function render() {
+  const raw = $('q').value;
+  const out = $('out');
+  out.replaceChildren();
+  if (!raw.trim()) { renderEmpty(out); return; }
+  const search = mode === 'en' ? searchEn : searchLu;
+  const exact = mode === 'en' ? 100 : 90;
+  const toks = raw.trim().split(/\s+/);
+  const whole = search(raw);
+  if (mode === 'en') {
+    const nm = buildNumber(raw);
+    if (nm) { renderNumber(out, nm); if (toks.length > 1 || !whole.length) return; }
+  } else {
+    const nv = luToNumber(raw);
+    if (nv !== null) { out.append(luNumberEl(nv, raw)); if (toks.length > 1 || !whole.length) return; }
+  }
+  if (mode === 'en' && toks.length >= 2 && !(whole.length && whole[0].score >= 100)) {
+    const s = buildSentence(raw);
+    if (s) { renderSentence(out, s); return; }
+    const np = buildNounPhrase(raw);
+    if (np) { renderNounPhrase(out, np); return; }
+  }
+  if (toks.length === 1) {
+    if (mode === 'lu') {
+      const rev = analyzeVerbForm(raw);
+      const nrev = analyzeNounForm(raw);
+      if (rev.length) out.append(revEl(rev, raw));
+      if (nrev.length) out.append(nounRevEl(nrev, raw));
+      if (!rev.length && !nrev.length && (!whole.length || whole[0].score < 70)) {
+        const h = analyze(raw);
+        if (h) out.append(hintEl(h));
+      }
+      if ((rev.length || nrev.length) && !whole.length) {
+        if (rev.length) out.append(verbFormsPanel(rev[0].v));
+        if (nrev.length) out.append(nrev[0].n.adj ? adjFormsPanel(nrev[0].n) : nounFormsPanel(nrev[0].n));
+        return;
+      }
+    }
+    renderList(out, whole, raw);
+  } else if (whole.length && whole[0].score >= exact) {
+    renderList(out, whole, raw);
+  } else {
+    renderPhrase(out, translatePhrase(raw, mode));
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  $('modeEn').setAttribute('aria-pressed', String(m === 'en'));
+  $('modeLu').setAttribute('aria-pressed', String(m === 'lu'));
+  $('chars').hidden = m !== 'lu';
+  const q = $('q');
+  q.classList.toggle('lu-input', m === 'lu');
+  q.placeholder = PLACEHOLDER[m];
+  render();
+}
+
+function buildVerbList() {
+  const host = $('vlist');
+  const groups = [
+    ['Type A verbs', v => v.cls === 'A' && !v.irregular],
+    ['a-verbs', v => v.cls === 'a' && !v.irregular],
+    ['i-verbs', v => v.cls === 'i' && !v.irregular],
+    ['Other verbs (end in a consonant, u or o)', v => v.cls === 'o' && !v.irregular],
+    ['Irregular verbs (forms not generated)', v => v.irregular]
+  ];
+  const all = [...VERBS.values()];
+  const sorter = (a, b) => _norm(a.lu).localeCompare(_norm(b.lu));
+  groups.forEach(([title, test]) => {
+    const list = all.filter(test).sort(sorter);
+    if (!list.length) return;
+    const box = el('div', 'vlist-group');
+    box.append(el('h3', null, title + ' (' + list.length + ')'));
+    const p = el('p');
+    list.forEach(v => {
+      const w = el('span', v.unverified ? 'u' : '');
+      w.append(luSpan(v.lu), el('span', 'g', verbGloss(v)));
+      p.append(w);
+    });
+    box.append(p);
+    host.append(box);
+  });
+  host.append(el('p', 'fine', 'Faded entries are not seen conjugated in any lesson. Plain a-verbs are marked “assumed” in the forms panel when no lesson sentence shows their plural.'));
+}
+
+$('modeEn').addEventListener('click', () => setMode('en'));
+$('modeLu').addEventListener('click', () => setMode('lu'));
+$('q').addEventListener('input', render);
+document.querySelectorAll('#chars button').forEach(b => b.addEventListener('click', () => {
+  const t = $('q');
+  const s = t.selectionStart == null ? t.value.length : t.selectionStart;
+  const e = t.selectionEnd == null ? s : t.selectionEnd;
+  t.setRangeText(b.dataset.c, s, e, 'end');
+  t.focus();
+  render();
+}));
+
+buildVerbList();
+$('note').textContent = 'Built from the course vocabulary lists (Book 8 and the glossary) and the rules in Books 3, 5, 7 and 8: ' +
+  new Set(DATA.map(d => d[1])).size + ' Luiseño words, ' + VERBS.size + ' verbs, ' + NOUNS.size + ' nouns with known noun suffixes and ' + ADJS.size + ' adjectives. Check unfamiliar forms against the lessons before using them in a sentence.';
+setMode('en');
+
+</script>
+</body>
+</html>
