@@ -1,4 +1,4 @@
-# nPlot iPad edition (6.22i)
+# nPlot iPad edition (6.24i)
 
 A fork of nPlot 6.20 by Geoff Nunes (https://noragulfa.com/nPlot/), adapted for iPads by Alan Calac, St. Ignatius College Prep, with the author's permission.
 
@@ -7,6 +7,17 @@ A fork of nPlot 6.20 by Geoff Nunes (https://noragulfa.com/nPlot/), adapted for 
 Upload this whole folder (index.html, nplot.js, nplot.css, images/) to the web server, for example `calacattack.com/nplot/`. The site must be served over **https**, because Safari only allows clipboard access on secure pages.
 
 **Font:** nPlot uses the Bahnschrift font, which Geoff serves from `noragulfa.com/fonts/`. That file is not included here. Without it, the page falls back to DIN Alternate on iPads and to the system sans-serif elsewhere, and the layout still fits. Bahnschrift is a Microsoft font, so check its license before you copy it to `fonts/bahnschrift.ttf` next to index.html.
+
+## Fixed in 6.24i
+
+- In Professional Mode, a fit with zero uncertainty (points that match the model exactly, as in a graph made by Copy Slopes) rounded its constants to whole numbers: 2.834 showed as 3. It now shows six significant figures. This bug is in the original 6.20 as well.
+- In Professional Mode, a constant whose uncertainty was 100 or more got stray decimal places (for example 1230.0 ± 350.0). Also in the original.
+
+## New in 6.23i
+
+- **Graph the slopes in a new tab.** After Copy Slopes, the message has a "Graph these slopes in a new tab" button. A second nPlot opens with the slopes in Sheet 1, the same x axis, and the y axis labeled "slope of position" in matching units (for example m/s). The original stays open in its own tab. Pressing and holding Copy Slopes offers the same thing.
+- **New Graph in New Tab** (in the Recall Graph panel, and in the Copy Slopes press-and-hold menu) opens a blank nPlot. New tabs always start with empty sheets, even though browsers copy a tab's session data when they open a new one.
+- Bug fix: a fitted constant of exactly 0, such as No Relation on all-zero data, showed as "(NaN ± NaN) × 10^-Infinity". It now shows 0.
 
 ## New in 6.22i
 

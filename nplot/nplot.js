@@ -1,6 +1,6 @@
 "use strict";
 // nPlot graphing program
-var version = "6.22i";
+var version = "6.24i";
 // iPad edition (6.20i): touch/pointer input, no-keyboard alternatives for ctrl/shift actions, Safari clipboard fix,
 //   export/import of graphs as files, Copy Slopes for the tangent finder, and error bars / uncertainties hidden by default.
 //   Adapted by Alan Calac (St. Ignatius College Prep) with permission of Geoff Nunes.  Look for "iPad edition" comments.
@@ -207,6 +207,7 @@ var styleList, aTextList, aXList, aYList, aIsFitList, aTWList, aTHList, aWhichCu
 // Section:  Initialization ****************************************************************************************************
 // A few things to do before we get real
 //
+startFromHandoff();          // 6.23i: a new tab opened with "New graph" or "Graph slopes in a new tab"
 hideTheFit();
 clearTangentData();
 document.getElementById('IBOption').style.display = 'none';
@@ -975,6 +976,10 @@ document.getElementById("importFileInput").addEventListener("change", function(e
 
 document.getElementById("copySlopesButton").addEventListener("click", function(e) {
     copySlopes();
+});
+
+document.getElementById("newGraphTabButton").addEventListener("click", function(e) {    // 6.23i
+    newBlankGraphTab();
 });
 
 document.getElementById("recallProceedButton").addEventListener("click", function(e) {
@@ -2653,6 +2658,11 @@ function reportTheFit(chosenFit,a,afin,rmse,covar,curve) {
 	unc = unc * Math.pow(10, Cscale);
 
 	var labelScale = Math.floor(log10(Math.abs(num)));
+	if (!isFinite(labelScale)) {
+	    // 6.23i bug fix: a constant that is exactly 0 (e.g. No Relation on data that are all 0) has no power of ten;
+	    //   log10(0) is -Infinity, which used to turn the result into "(NaN ± NaN) × 10^-Infinity"
+	    labelScale = 0;
+	}
 	if (Math.abs(labelScale) <= scaleThreshold) {
 	    labelScale = 0;
 	} else {
@@ -2792,14 +2802,16 @@ function reportTheFit(chosenFit,a,afin,rmse,covar,curve) {
 	return Cscale;
     }
     function professionalize(value, uncert) {
-	if (uncert == 0) {
-	    var nd = 0;
-	} else {
-	    var nd = Math.floor(log10(uncert) - 1);
+	if (!(uncert > 0) || !isFinite(uncert)) {
+	    // 6.24i bug fix: with zero uncertainty (points that fit the model exactly, e.g. a constant region in a graph
+	    //   made by Copy Slopes) this used to round to the nearest whole number, so 2.834 showed as 3.
+	    //   With nothing to round to, show six significant figures instead.
+	    return {val: String(Number(Number(value).toPrecision(6))), unc: '0'};
 	}
+	var nd = Math.floor(log10(uncert) - 1);
 	var uncert = Math.round(uncert/Math.pow(10, nd));
 	uncert = uncert * Math.pow(10, nd);
-	var dp = Math.abs(nd);
+	var dp = nd < 0 ? -nd : 0;           // 6.24i: no decimal places when the uncertainty is 100 or more (was Math.abs(nd))
 	var uncertString = uncert.toFixed(dp);
 	var value = Math.round(value/Math.pow(10, nd));
 	value = value * Math.pow(10, nd);
@@ -6298,7 +6310,7 @@ function copyTextToClipboard(text, successMessage) {
     try {
 	if (navigator.clipboard && navigator.clipboard.writeText) {
 	    navigator.clipboard.writeText(text).then(function() {
-		showToast(successMessage, 6000);
+		showToast(successMessage, successMessage.indexOf('<button') >= 0 ? 10000 : 6000);
 	    }, function() {
 		showCopyText(text);
 	    });
@@ -6397,7 +6409,98 @@ function copySlopes() {
 	message = message + '<br><b>' + leftOut + (leftOut == 1 ? ' point was' : ' points were') +
 	    ' not inside any region and ' + (leftOut == 1 ? 'was' : 'were') + ' left out.</b>';
     }
-    copyTextToClipboard(lines.join('\n') + '\n', message);
+    lastSlopes = {pairs: pairs.map(function(p) {
+		      return [formatNumber(p[0]), formatNumber((Math.abs(p[1]) <= 1e-9 * biggest || Math.abs(p[1]) < 1e-14) ? 0 : p[1])];
+		  }),
+		  xLabel: document.getElementById('xlabel').value, xUnits: document.getElementById('xunit').value,
+		  yLabel: document.getElementById('ylabel').value, yUnits: document.getElementById('yunit').value};
+    document.getElementById('copyTextGraphButton').style.display = 'inline-block';
+    copyTextToClipboard(lines.join('\n') + '\n', message +
+			'<br><button class="toastButton" onclick="graphSlopesInNewTab()">Graph these slopes in a new tab</button>');
+}
+
+// Subsection:  New graph in a new tab (6.23i) *********************************************************************************
+// "Graph these slopes in a new tab" opens a second nPlot with the slopes already in Sheet 1 and the axes labeled, for
+//   example a v vs. t graph made from an x vs. t graph.  "New blank graph" opens an empty nPlot next to the current one.
+//   The new tab gets its data through localStorage (picked up once, within a minute) and starts with empty sheets,
+//   even in browsers that copy the old tab's session data into a new tab.
+//
+var lastSlopes = null;
+
+function openNplotTab(mode) {
+    var url = location.href.split('#')[0] + '#' + mode;
+    var w = window.open(url, '_blank');
+    if (!w) {
+	showToast('Your browser blocked the new tab. Allow pop-ups for this site and try again.', 6000);
+    }
+}
+
+function graphSlopesInNewTab() {
+    if (!lastSlopes || lastSlopes.pairs.length == 0) {
+	showToast('Press <b>Copy Slopes</b> first.');
+	return;
+    }
+    var yUnits = '';
+    if (lastSlopes.yUnits.trim() != '' && lastSlopes.xUnits.trim() != '') {
+	yUnits = lastSlopes.yUnits.trim() + '/' + lastSlopes.xUnits.trim();     // m and s give m/s
+    }
+    var handoff = {
+	created: Date.now(),
+	rows: lastSlopes.pairs,
+	xLabel: lastSlopes.xLabel,
+	xUnits: lastSlopes.xUnits,
+	yLabel: lastSlopes.yLabel.trim() != '' ? 'slope of ' + lastSlopes.yLabel.trim() : 'slope',
+	yUnits: yUnits
+    };
+    try {
+	localStorage.setItem('nPlotHandoff', JSON.stringify(handoff));
+    } catch (err) {
+	showToast('nPlot could not pass the slopes to a new tab. Open a new graph and paste them instead.', 6000);
+	return;
+    }
+    openNplotTab('slopes');
+}
+
+function newBlankGraphTab() {
+    try { localStorage.removeItem('nPlotHandoff'); } catch (err) {}
+    openNplotTab('new');
+}
+
+function startFromHandoff() {
+    // runs once at start-up, before the data cells are read
+    var mode = location.hash.replace('#', '');
+    if (mode != 'new' && mode != 'slopes') {
+	return;
+    }
+    try { history.replaceState(null, '', location.href.split('#')[0]); } catch (err) {}
+    Object.keys(sessionStorage).forEach(function(key) {        // start with empty sheets
+	if (/^[A-D][A-E]\d+$/.test(key)) {
+	    sessionStorage.removeItem(key);
+	}
+    });
+    if (mode != 'slopes') {
+	return;
+    }
+    var handoff = null;
+    try {
+	handoff = JSON.parse(localStorage.getItem('nPlotHandoff') || 'null');
+	localStorage.removeItem('nPlotHandoff');
+    } catch (err) {}
+    if (!handoff || !Array.isArray(handoff.rows) || Date.now() - handoff.created > 60000) {
+	return;
+    }
+    handoff.rows.slice(0, nRows).forEach(function(row, i) {
+	sessionStorage['AA' + (i + 1)] = String(row[0]);
+	sessionStorage['BA' + (i + 1)] = String(row[1]);
+    });
+    document.getElementById('xlabel').value = handoff.xLabel || '';
+    document.getElementById('xunit').value = handoff.xUnits || '';
+    document.getElementById('ylabel').value = handoff.yLabel || 'slope';
+    document.getElementById('yunit').value = handoff.yUnits || '';
+    setTimeout(function() {
+	showToast('These are the slopes from your other graph. Rename the <i>y</i> axis (for example, <b>velocity</b>) ' +
+		  'and choose a model.', 7000);
+    }, 800);
 }
 
 function copySheetData() {
@@ -7505,6 +7608,18 @@ if (window.PointerEvent) {
 	    }}
 	];
     });
+    attachLongPress('copySlopesButton', function() {        // 6.23i
+	return [
+	    {label: 'Copy slopes', action: copySlopes},
+	    {label: 'Copy slopes and <b>graph them in a new tab</b>', action: function() {
+		copySlopes();
+		if (lastSlopes) {
+		    graphSlopesInNewTab();
+		}
+	    }},
+	    {label: 'Open a blank nPlot in a new tab', action: newBlankGraphTab}
+	];
+    });
     attachLongPress('saveGraphButton', function() {
 	return [
 	    {label: 'Save in this browser', action: saveGraph},
@@ -7632,7 +7747,13 @@ function checkSettings() {
 }
 
 async function checkVersion() {
-    var updateBody ='<p class="upara"><b>New in 6.22i:</b></p>' +
+    var updateBody ='<p class="upara"><b>Fixed in 6.24i:</b> a fit that matches the data exactly no longer rounds its results to whole numbers.</p>' +
+	'<br>' +
+	'<p class="upara"><b>New in 6.23i:</b></p>' +
+	'<p class="upara">After Copy Slopes, tap <b>Graph these slopes in a new tab</b> to get the slope graph in one step.</p>' +
+	'<p class="upara">Open a blank nPlot in a new tab from the Recall Graph panel, or by pressing and holding Copy Slopes.</p>' +
+	'<br>' +
+	'<p class="upara"><b>New in 6.22i:</b></p>' +
 	'<p class="upara">Region edges snap to a neighboring region and to the first and last data points, so no point is left in a gap.</p>' +
 	'<p class="upara">Region numbers stay readable, and move to the bottom of the graph when the data reaches the top.</p>' +
 	'<br>' +

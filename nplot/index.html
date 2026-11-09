@@ -15,7 +15,7 @@
 	<!-- 6.22i: every file name is lower case, because web servers treat nPlot.css and nplot.css as different files -->
 	<link rel = "stylesheet"
 	      type = "text/css"
-	      href = "nplot.css?version=6.22i" />
+	      href = "nplot.css?version=6.24i" />
     </head>
     <body>
 	<div id="mainContainer">
@@ -276,6 +276,7 @@
 		<div id="fileButtons">
 		    <button id="exportGraphButton" class="npButton fileButton">Save to File&hellip;</button>
 		    <button id="importGraphButton" class="npButton fileButton">Open File&hellip;</button>
+		    <button id="newGraphTabButton" class="npButton fileButton">New Graph in New Tab</button>
 		    <input type="file" id="importFileInput" style="display: none">
 		</div>
 		<p id="savedGraphsHeading">Saved in this browser:</p>
@@ -914,6 +915,11 @@
 		    into an empty nPlot graph to plot slope vs. <i>x</i>.  For example, fit a position vs. time graph, copy the
 		    slopes, and paste them in to get a velocity vs. time graph.  Copy Slopes works with the same curved models as
 		    the tangent finder.  (For a straight line the slope is the same everywhere, so just use <i>A</i>.)</p>
+		<p><b>Graphing the Slopes - </b>After Copy Slopes, tap &quot;Graph these slopes in a new tab&quot; in the message
+		    that appears.  A second nPlot opens with the slopes in Sheet 1, the same <i>x</i> axis, and a <i>y</i> axis
+		    labeled &quot;slope of&hellip;&quot; with matching units (for example m/s).  Rename the <i>y</i> axis and
+		    choose a model.  The original graph stays open in its own tab.  You can also press and hold Copy Slopes and
+		    choose &quot;Copy slopes and graph them in a new tab.&quot;</p>
 		<div class ="userManualHeading">
 		    <div id="annote" class="userManualSection">
 			Annotating Your Graph
@@ -1144,6 +1150,8 @@
 		<span class="close">&times;</span>
 		<p>Your browser would not let nPlot copy this automatically. Select all of the text below and copy it.</p>
 		<textarea id="copyTextArea" rows="12" readonly></textarea>
+		<button id="copyTextGraphButton" class="npButton" style="display: none; margin-top: 10px"
+			onclick="graphSlopesInNewTab()">Graph these slopes in a new tab</button>
 	    </div>
 	</div>
 	<div id="exportOptionsModal" class="modal">
@@ -1179,6 +1187,13 @@
 		<p>iPad edition (6.20i and later) adapted by Alan Calac (<a href="https://calacattack.com" target="_blank" class="linked">CalacAttack.com</a>), St. Ignatius College Prep, San Francisco, with the author's
 		    permission. The original nPlot is at <a href="https://noragulfa.com/nPlot/" target="_blank" class="linked">noragulfa.com/nPlot</a>.</p>
 		<p id="changeLogTitle">Change Log</p>
+		<p class="verNumber">v6.24i (iPad edition)</p>
+		<p class="change"><b>Bug Fix: </b>In Professional Mode, a fit with zero uncertainty (data that match the model exactly) rounded its constants to whole numbers, e.g. 2.834 showed as 3. It now shows six significant figures.</p>
+		<p class="change"><b>Bug Fix: </b>In Professional Mode, a constant whose uncertainty was 100 or more was shown with stray decimal places.</p>
+		<p class="verNumber">v6.23i (iPad edition)</p>
+		<p class="change"><b>New Feature: </b>After Copy Slopes, &quot;Graph these slopes in a new tab&quot; opens a second nPlot with the slopes in Sheet 1 and the axes labeled.</p>
+		<p class="change"><b>New Feature: </b>&quot;New Graph in New Tab&quot; in the Recall Graph panel (also in the Copy Slopes press-and-hold menu) opens a blank nPlot.</p>
+		<p class="change"><b>Bug Fix: </b>A fitted constant of exactly 0 (for example No Relation on all-zero data) showed as (NaN &plusmn; NaN) &times; 10<sup>-Infinity</sup>.</p>
 		<p class="verNumber">v6.22i (iPad edition)</p>
 		<p class="change"><b>Change: </b>A region edge dropped near a neighboring region's edge, or near the first or last data point, snaps to it.</p>
 		<p class="change"><b>Change: </b>Region numbers have an outline so they stay readable, and move to the bottom when the data is near the top.</p>

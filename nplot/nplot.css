@@ -1588,3 +1588,17 @@ button, .npButton, .sheetButton, .modelButton, .radioButton, #canvas1 {
     flex-wrap: wrap;
     gap: 8px;
 }
+
+/* 6.23i: button inside a message (e.g. "Graph these slopes in a new tab") */
+.toastButton {
+    margin-top: 10px;
+    padding: 8px 14px;
+    border: 2px solid #FFFFFF;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    color: var(--fontColor);
+    font-family: bahnschrift, 'DIN Alternate', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
