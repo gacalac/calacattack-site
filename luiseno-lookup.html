@@ -245,7 +245,7 @@
 <body>
 <main>
   <h1>Téelamal Powónla</h1>
-  <p class="sub">Luiseño–English vocabulary lookup</p>
+  <p class="sub">Luiseño–English vocabulary lookup · <a href="#cref" id="verlink" style="color:inherit">v<span id="verno"></span></a></p>
 
   <div class="modes" role="group" aria-label="Translation direction">
     <button type="button" id="modeEn" aria-pressed="true">English → Luiseño</button>
@@ -361,6 +361,12 @@
       <li><strong>Time:</strong> numbers take the endings too: <span class="lu">kavíkvinga</span> “at seven,” <span class="lu">táppaananga supúlnga pa'áq</span> “at eleven.”</li>
     </ul>
     <p class="fine">From Book 7, Lesson 5 (Interrogative Words), and Book 4.</p>
+  </details>
+
+  <details class="ref" id="cref">
+    <summary>Version history: what changed and when</summary>
+    <div id="clog" class="vlist-group"></div>
+    <p class="fine">Versions before 1.8 were reconstructed from my working notes, so they have no dates. From 1.8 on, each update adds an entry here.</p>
   </details>
 
   <p class="note" id="note"></p>
@@ -2760,6 +2766,35 @@ document.querySelectorAll('#chars button').forEach(b => b.addEventListener('clic
 buildVerbList();
 $('note').textContent = 'Built from the course vocabulary lists (Book 8 and the glossary) and the rules in Books 3, 5, 7 and 8: ' +
   new Set(DATA.map(d => d[1])).size + ' Luiseño words, ' + VERBS.size + ' verbs, ' + NOUNS.size + ' nouns with known noun suffixes and ' + ADJS.size + ' adjectives. Check unfamiliar forms against the lessons before using them in a sentence.';
+/*CHANGELOG-START*/
+const APP_VERSION = '1.8';
+const CHANGELOG = [
+  { v: '1.8', d: '2026-11-25', items: ['Added this version history and the version number in the header.'] },
+  { v: '1.7', d: '2026-11-22', items: [
+    'Irregular verbs now come from the books (Book 8, Lessons 16 to 20): míyx, híx, ’áaw, qál, qáala, wón, ’áax, món, plus stress-shift futures and past usitatives (míyxuk, ’áaxuk).',
+    'The irregular present habitual and -ma commands (míyxma, ’áa’ma, mónma) are used in the verb tables and in reverse lookup.',
+    'New sentence types: be + a place, “say something” (híx), “Be good!”, “Be located at school!”, and equatives that are not in the present (míyxmaan, míyquş).',
+    'Fixed: the simple future of consonant-final verbs now ends in -an (Lesson 19). Before, it fell back to “will be -ing”. This changed 46 verbs.',
+    'Known gaps: some adjective equatives (“The man is sick”), “usually” with regular verbs, and “say” with a specific thing said.'] },
+  { v: '1.6', d: '', items: ['Fixed the plural of “old woman” to néenishlam.', 'The app is now one standalone HTML page.'] },
+  { v: '1.5', d: '', items: ['Added Book 8 Lessons 14 and 16: a noun possessing a noun, “to have” (’áawq, qáala, ’ómmaq, yáawaq), and the question word háx / hík / híkchum forms.'] },
+  { v: '1.4', d: '', items: ['Added Book 8 Lessons 7, 8, 9 and 22: verbs as nouns, -ki possession, and “want to” (-vichu) forms.'] },
+  { v: '1.3', d: '', items: ['Added Book 6 Lessons 12 and 13: object pronouns and inanimate object forms.', 'Noun plurals, possessive prefixes and object endings (-nga, -ngay, -yuk, -tal, -man).'] },
+  { v: '1.2', d: '', items: ['Added numbers (Books 3, 5 and 7) and question words.'] },
+  { v: '1.1', d: '', items: ['Added verb conjugation: present, past, future, habitual, commands, and “not”, with a verb table for each verb.'] },
+  { v: '1.0', d: '', items: ['First version: English to Luiseño and Luiseño to English vocabulary lookup, the equative chart (am / are / is, was / were), and simple phrase translation.'] }
+];
+(function () {
+  try {
+    const vn = document.getElementById('verno'); if (vn) vn.textContent = APP_VERSION;
+    const box = document.getElementById('clog'); if (!box) return;
+    box.innerHTML = CHANGELOG.map(e => '<h3>Version ' + e.v + (e.d ? ' <span class="g">' + e.d + '</span>' : '') + '</h3><ul class="vrules" style="padding:0 0 0 1.2rem">' +
+      e.items.map(i => '<li>' + i.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>').join('') + '</ul>').join('');
+    const link = document.getElementById('verlink');
+    if (link) link.addEventListener('click', ev => { ev.preventDefault(); const r = document.getElementById('cref'); r.open = true; r.scrollIntoView(); });
+  } catch (e) {}
+})();
+/*CHANGELOG-END*/
 setMode('en');
 
 </script>
